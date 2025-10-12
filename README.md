@@ -1,73 +1,65 @@
-# Welcome to your Lovable project
+# Painel de Descoberta Local - Yoggalize
 
-## Project info
+Este é um painel interativo desenvolvido para ajudar usuários a descobrir estabelecimentos comerciais locais com base em sua localização. A aplicação permite a busca e filtragem de lojas, restaurantes e outros serviços de forma rápida e intuitiva.
 
-**URL**: https://lovable.dev/projects/ff4a6487-0e9e-42a1-9ca1-314ad7b7502d
+## ✨ Funcionalidades Principais
 
-## How can I edit this code?
+- **Detecção de Localização**: O usuário pode optar por usar sua localização atual, detectada pelo navegador com alta precisão, ou digitar um endereço manualmente.
+- **Geocodificação Reversa**: Converte as coordenadas de latitude e longitude do usuário em um endereço legível para fácil verificação.
+- **Edição de Endereço com Autocompletar**: Permite que o usuário edite o endereço diretamente na página de busca, com sugestões de autocompletar para facilitar a digitação.
+- **Filtragem Dinâmica**: Os resultados podem ser filtrados em tempo real por:
+  - **Cidade**: Um menu suspenso com as cidades disponíveis.
+  - **Categoria**: Checkboxes para selecionar um ou mais tipos de estabelecimento (ex: Restaurante, Padaria, etc.).
+  - **Raio de Distância**: Um controle deslizante para ajustar a distância da busca.
+- **Resultados Ordenados**: As lojas encontradas são sempre exibidas da mais próxima para a mais distante.
+- **Interface Responsiva e Intuitiva**: A barra de filtros permanece fixa na lateral durante a rolagem, melhorando a usabilidade em telas maiores.
 
-There are several ways of editing your application.
+## 🚀 Tecnologias Utilizadas
 
-**Use Lovable**
+- **Framework**: React com Vite e TypeScript
+- **Estilização**: Tailwind CSS e shadcn/ui para os componentes.
+- **Roteamento**: React Router
+- **APIs de Geolocalização**: 
+  - **Geolocation API** do navegador para obter as coordenadas do usuário.
+  - **Nominatim (OpenStreetMap)** para geocodificação reversa (coordenadas -> endereço) e para o autocompletar de endereços.
+- **Publicação (Deploy)**: Configurado para deploy na Vercel.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ff4a6487-0e9e-42a1-9ca1-314ad7b7502d) and start prompting.
+## Local (Desenvolvimento)
 
-Changes made via Lovable will be committed automatically to this repo.
+Siga os passos abaixo para executar o projeto em sua máquina local.
 
-**Use your preferred IDE**
+### Pré-requisitos
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- [Node.js](https://nodejs.org/en) (versão 18 ou superior)
+- [Bun](https://bun.sh/) (gerenciador de pacotes)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Instalação
 
-Follow these steps:
+1. Clone o repositório para sua máquina:
+   ```bash
+   git clone https://github.com/seu-usuario/seu-repositorio.git
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. Navegue até a pasta do projeto:
+   ```bash
+   cd seu-repositorio
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+3. Instale as dependências do projeto:
+   ```bash
+   bun install
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Executando o Projeto
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+Com as dependências instaladas, inicie o servidor de desenvolvimento:
+
+```bash
+  bun run dev
 ```
 
-**Edit a file directly in GitHub**
+O projeto estará disponível em `http://localhost:5173` (ou outra porta, se a 5173 estiver em uso).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## ☁️ Publicação (Deploy)
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/ff4a6487-0e9e-42a1-9ca1-314ad7b7502d) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+O projeto está configurado para deploy contínuo na [Vercel](https://vercel.com). Para publicar, basta conectar seu repositório Git à Vercel. O arquivo `vercel.json` já está configurado para garantir que o build e as rotas da aplicação funcionem corretamente.
