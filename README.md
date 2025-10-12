@@ -62,4 +62,4 @@ O projeto estará disponível em `http://localhost:5173` (ou outra porta, se a 5
 
 ## ☁️ Publicação (Deploy)
 
-O projeto está configurado para deploy contínuo na [Vercel](https://vercel.com). Para publicar, basta conectar seu repositório Git à Vercel. O arquivo `vercel.json` já está configurado para garantir que o build e as rotas da aplicação funcionem corretamente.
+O projeto está configurado para deploy contínuo na [Vercel](https://vercel.com). Para publicar, basta conectar seu repositório Git à Vercel. O arquivo `vercel.json` já está configurado para garantir que o build e as rotas da aplicação funcionem corretamente.# yoogalize
