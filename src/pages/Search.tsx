@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { MapPin, Search as SearchIcon, Sparkles, Edit2, SearchX } from "lucide-react";
+import { MapPin, Search as SearchIcon, Sparkles, Edit2, SearchX, BookMarked } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,6 +29,7 @@ type EstablishmentWithDistance = {
   description?: string;
   rating?: number;
   distance: number;
+  linkDelivery?: string | null;
 };
 
 type LojaRaw = {
@@ -57,6 +58,7 @@ type NormalizedEstablishment = {
   longitude: number;
   description?: string;
   rating?: number;
+  linkDelivery?: string | null;
 };
 
 const Search = () => {
@@ -85,6 +87,7 @@ const Search = () => {
       latitude: l.Latitude,
       longitude: l.Longitude,
       description: l.tipo_atendimento ?? undefined,
+      linkDelivery: l["link delivery"],
     }));
 
   // Estados
@@ -355,7 +358,16 @@ const Search = () => {
                     <h3 className="font-bold">{item.name}</h3>
                     <p className="text-sm text-primary font-semibold">{item.category}</p>
                     <p className="text-sm mt-2 text-muted-foreground flex-grow">{item.address}</p>
-                    <p className="text-sm font-bold mt-2 text-right">{item.distance.toFixed(2)} km de distância</p>
+                    <div className="flex justify-between items-center mt-4">
+                        <p className="text-sm font-bold">{item.distance.toFixed(2)} km de distância</p>
+                        {item.linkDelivery && (
+                            <Button asChild size="sm">
+                                <a href={`https://delivery.yooga.app/${item.linkDelivery}`} target="_blank" rel="noopener noreferrer">
+                                    <BookMarked className="mr-2 h-4 w-4" /> Cardápio
+                                </a>
+                            </Button>
+                        )}
+                    </div>
                 </Card>
                 ))}
             </div>
