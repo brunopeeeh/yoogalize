@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { MapPin, Search as SearchIcon, Sparkles, Edit2 } from "lucide-react";
+import { MapPin, Search as SearchIcon, Sparkles, Edit2, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { FilterSidebar } from "@/components/filter-sidebar";
 import { toast } from "sonner";
 import { calculateDistance } from "@/lib/distance";
 
@@ -241,6 +243,13 @@ const Search = () => {
     }
   };
 
+  const handleClearFilters = () => {
+    setSelectedCategories(new Set());
+    setSelectedCity("all");
+    setRadiusKm(5);
+    toast.info("Filtros limpos!");
+  };
+
   return (
     <div className="container mx-auto p-4">
       <header className="flex items-center justify-between mb-4 gap-4">
@@ -285,75 +294,58 @@ const Search = () => {
       </header>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <aside className="md:col-span-1 h-fit sticky top-4">
-          <Card className="p-4">
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Cidades</h3>
-                <Select value={selectedCity} onValueChange={setSelectedCity}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma cidade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as cidades</SelectItem>
-                    {dynamicCities.map(city => (
-                      <SelectItem key={city} value={city}>{city}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">Categorias</h3>
-                {isLoadingData ? (
-                    <p>Carregando...</p>
-                ) : (
-                    <div className="space-y-2">
-                    {dynamicCategories.map(category => (
-                        <div key={category} className="flex items-center space-x-2">
-                        <Checkbox 
-                            id={category}
-                            onCheckedChange={(checked) => {
-                            const newSelected = new Set(selectedCategories);
-                            if (checked) {
-                                newSelected.add(category);
-                            } else {
-                                newSelected.delete(category);
-                            }
-                            setSelectedCategories(newSelected);
-                            }}
-                        />
-                        <label htmlFor={category} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                            {category}
-                        </label>
-                        </div>
-                    ))}
-                    </div>
-                )}
-              </div>
-
-              <div>
-                <h3 className="font-semibold mt-4 mb-2">Raio (km)</h3>
-                <Slider
-                  defaultValue={[radiusKm]}
-                  max={25}
-                  min={1}
-                  step={0.5}
-                  onValueChange={(value) => setRadiusKm(value[0])}
+        <div className="md:hidden mb-4">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="w-full">Filtros</Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+              <SheetHeader>
+                <SheetTitle>Filtros</SheetTitle>
+              </SheetHeader>
+              <div className="h-full">
+                <FilterSidebar
+                  selectedCity={selectedCity}
+                  setSelectedCity={setSelectedCity}
+                  dynamicCities={dynamicCities}
+                  isLoadingData={isLoadingData}
+                  dynamicCategories={dynamicCategories}
+                  selectedCategories={selectedCategories}
+                  setSelectedCategories={setSelectedCategories}
+                  radiusKm={radiusKm}
+                  setRadiusKm={setRadiusKm}
                 />
-                <div className="text-center text-sm mt-1">{radiusKm.toFixed(1)} km</div>
               </div>
-            </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        <aside className="hidden md:block md:col-span-1 h-fit sticky top-4">
+          <Card>
+            <FilterSidebar
+              selectedCity={selectedCity}
+              setSelectedCity={setSelectedCity}
+              dynamicCities={dynamicCities}
+              isLoadingData={isLoadingData}
+              dynamicCategories={dynamicCategories}
+              selectedCategories={selectedCategories}
+              setSelectedCategories={setSelectedCategories}
+              radiusKm={radiusKm}
+              setRadiusKm={setRadiusKm}
+            />
           </Card>
         </aside>
 
         <main className="md:col-span-3">
           {(isSearching || isLoadingData) && <p className="text-center">Buscando...</p>}
           {!isSearching && !isLoadingData && filteredResults.length === 0 && (
-            <div className="flex flex-col items-center justify-center text-center h-full">
-              <Sparkles className="w-16 h-16 text-gray-300 mb-4" />
-              <h2 className="text-xl font-semibold">Nenhum resultado encontrado</h2>
-              <p className="text-gray-500">Tente ajustar os filtros ou aumentar o raio de busca.</p>
+            <div className="flex flex-col items-center justify-center text-center h-full p-8">
+              <SearchX className="w-20 h-20 text-gray-300 mb-6" />
+              <h2 className="text-2xl font-semibold mb-2">Nenhum resultado encontrado</h2>
+              <p className="text-gray-500 max-w-sm mx-auto mb-6">
+                Tente ajustar os filtros, selecionar uma categoria diferente ou aumentar o raio de busca para encontrar mais opções.
+              </p>
+              <Button onClick={handleClearFilters} variant="outline">Limpar Filtros</Button>
             </div>
           )}
           {!isSearching && filteredResults.length > 0 && (

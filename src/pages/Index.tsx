@@ -5,123 +5,196 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AddressAutocomplete } from "@/components/address-autocomplete";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
-type Establishment = {
-  id: string;
-  name: string;
-  category: string;
+type UserLocation = {
+  lat: number;
+  lon: number;
   address: string;
-  distance: number;
+  city: string;
 };
-
-const mockEstablishments: Establishment[] = [
-  { id: "1", name: "Restaurante Sabor da Terra", category: "Restaurante", address: "Rua das Flores, 45", distance: 1.2 },
-  { id: "2", name: "Bar do João", category: "Bar", address: "Av. Central, 123", distance: 2.5 },
-  { id: "3", name: "Pizzaria Bella Napoli", category: "Pizzaria", address: "Rua Roma, 78", distance: 3.1 },
-  { id: "4", name: "Café Aroma", category: "Cafeteria", address: "Praça da Liberdade, 12", distance: 0.8 },
-  { id: "5", name: "Lanchonete Point", category: "Lanchonete", address: "Rua 7 de Setembro, 234", distance: 1.9 },
-  { id: "6", name: "Sushi House", category: "Restaurante", address: "Av. Paulista, 567", distance: 4.2 },
-  { id: "7", name: "Pub The Lion", category: "Bar", address: "Rua Augusta, 890", distance: 2.8 },
-  { id: "8", name: "Padaria Pão Quente", category: "Padaria", address: "Rua das Acácias, 34", distance: 0.5 },
-];
 
 const Index = () => {
   const navigate = useNavigate();
-  const [location, setLocation] = useState("Detectando sua localização...");
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [distance, setDistance] = useState([10]);
   const [category, setCategory] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
+  const [geolocationStatus, setGeolocationStatus] = useState<"prompt" | "granted" | "denied">("prompt");
+
+  const reverseGeocode = async (lat: number, lon: number) => {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`);
+      const data = await response.json();
+      if (data && data.display_name) {
+        const city = data.address.city || data.address.town || data.address.village || "";
+        const location: UserLocation = {
+          lat,
+          lon,
+          address: data.display_name,
+          city,
+        };
+        setUserLocation(location);
+        setGeolocationStatus("granted");
+      } else {
+        throw new Error("Endereço não encontrado");
+      }
+    } catch (error) {
+      console.error("Erro no reverse geocoding:", error);
+      toast.error("Não foi possível obter o nome do seu endereço. Usando localização padrão.");
+      setUserLocation({ lat: -23.5505, lon: -46.6333, address: "São Paulo, SP", city: "São Paulo" }); // Fallback
+      setGeolocationStatus("denied");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          reverseGeocode(latitude, longitude);
+        },
+        (error) => {
+          console.error("Erro ao obter localização:", error);
+          toast.warning("Não foi possível obter sua localização. Por favor, digite seu endereço ou use a localização padrão.");
+          setUserLocation({ lat: -23.5505, lon: -46.6333, address: "São Paulo, SP", city: "São Paulo" }); // Fallback
+          setGeolocationStatus("denied");
+          setIsLoading(false);
+        }
+      );
+    } else {
+      toast.error("Geolocalização não é suportada neste navegador.");
+      setUserLocation({ lat: -23.5505, lon: -46.6333, address: "São Paulo, SP", city: "São Paulo" }); // Fallback
+      setGeolocationStatus("denied");
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Simulate location detection
-    const timer = setTimeout(() => {
-      setLocation("Rua Example, 123 - São Paulo, SP");
-      setIsLoading(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
+    getUserLocation();
   }, []);
-
-  const handleLocationChange = () => {
-    toast.info("Funcionalidade de trocar localização em desenvolvimento");
-  };
 
   const handleSearch = () => {
     if (!category) {
       toast.error("Por favor, selecione uma categoria");
       return;
     }
-    
-    // Filtrar por distância
-    let filtered = mockEstablishments.filter(
-      (est) => est.distance <= distance[0]
-    );
-    
-    // Filtrar por categoria (se não for "todos")
-    if (category !== "todos") {
-      filtered = filtered.filter(
-        (est) => est.category.toLowerCase() === category.toLowerCase()
-      );
+    if (!userLocation) {
+      toast.error("Localização não definida. Por favor, aguarde ou digite seu endereço.");
+      return;
     }
     
-    // Ordenar por distância (menor para maior)
-    const sorted = filtered.sort((a, b) => a.distance - b.distance);
-    
-    // Navegar para página de resultados
-    navigate("/resultados", {
+    navigate("/search", {
       state: {
-        establishments: sorted,
-        category,
+        userLocation,
         distance: distance[0],
-        location
+        category,
       }
     });
-    
-    toast.success(`${sorted.length} estabelecimentos encontrados!`);
   };
 
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-white border-b border-border py-4 px-6 shadow-sm">
-        <div className="max-w-md mx-auto">
+        <div className="max-w-md md:max-w-2xl lg:max-w-4xl mx-auto">
           <h2 className="text-xl font-semibold text-primary">Yoogalize</h2>
         </div>
       </header>
 
-      <main className="max-w-md mx-auto px-6 py-8 space-y-8">
+      <main className="max-w-md md:max-w-2xl lg:max-w-4xl mx-auto px-6 md:px-8 lg:px-10 py-8 space-y-8">
         <section className="text-center">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2">
             Descubra os melhores lugares
           </h1>
-          <p className="text-lg text-primary font-medium">para comer e beber perto de você</p>
+          <p className="text-lg md:text-xl text-primary font-medium">para comer e beber perto de você</p>
         </section>
 
-        <Card className="p-5 bg-card border-border shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="mt-1">
-              <MapPin className="w-5 h-5 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-                Sua Localização
-              </p>
-              {isLoading ? (
-                <div className="h-4 bg-muted animate-pulse rounded w-3/4"></div>
-              ) : (
-                <p className="text-sm text-foreground font-medium break-words">
-                  {location}
+        {geolocationStatus === "prompt" && (
+          <Card className="p-5 bg-card border-border shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="mt-1">
+                <MapPin className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                  Sua Localização
                 </p>
-              )}
+                <Skeleton className="h-4 w-3/4" />
+              </div>
             </div>
-            <button
-              onClick={handleLocationChange}
-              className="text-primary text-sm font-medium hover:underline whitespace-nowrap"
-            >
-              Trocar
-            </button>
-          </div>
-        </Card>
+          </Card>
+        )}
+
+        {geolocationStatus === "granted" && (
+          <Dialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
+            <DialogTrigger asChild>
+              <Card className="p-5 bg-card border-border shadow-sm cursor-pointer hover:bg-accent">
+                <div className="flex items-start gap-3">
+                  <div className="mt-1">
+                    <MapPin className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                      Sua Localização
+                    </p>
+                    <p className="text-sm text-foreground font-medium break-words">
+                      {userLocation?.address}
+                    </p>
+                  </div>
+                  <button
+                    className="text-primary text-sm font-medium hover:underline whitespace-nowrap"
+                  >
+                    Trocar
+                  </button>
+                </div>
+              </Card>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Alterar sua localização</DialogTitle>
+              </DialogHeader>
+              <AddressAutocomplete 
+                initialAddress={userLocation?.address || ""}
+                onAddressSelect={(newLocation) => {
+                  setUserLocation(newLocation);
+                  setIsLocationDialogOpen(false);
+                }}
+                onCancel={() => setIsLocationDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {geolocationStatus === "denied" && (
+          <Card className="p-5 bg-card border-border shadow-sm">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start gap-3">
+                <div className="mt-1">
+                  <MapPin className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                    Digite sua localização
+                  </p>
+                </div>
+              </div>
+              <AddressAutocomplete 
+                initialAddress={userLocation?.address || ""}
+                onAddressSelect={(newLocation) => {
+                  setUserLocation(newLocation);
+                  setGeolocationStatus("granted");
+                }}
+                onCancel={() => {}}
+              />
+            </div>
+          </Card>
+        )}
 
         <section className="space-y-2">
           <label htmlFor="category-select" className="text-sm font-medium text-foreground">

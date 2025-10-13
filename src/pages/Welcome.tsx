@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,17 +6,39 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
+type Suggestion = {
+  place_id: string;
+  display_name: string;
+  lat: string;
+  lon: string;
+  address: {
+    road?: string;
+    city?: string;
+    state?: string;
+    postcode?: string;
+    country?: string;
+    [key: string]: any; // Allow other properties
+  };
+};
+
 const Welcome = () => {
   const navigate = useNavigate();
   const [manualAddress, setManualAddress] = useState("");
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [currentCoords, setCurrentCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
-  const DEFAULT_COORDS = { lat: -23.550520, lon: -46.633308 };
+  const formatAddress = (addressObj: Suggestion['address']): string => {
+    if (!addressObj) return '';
+    const { road, city, state, postcode, country } = addressObj;
+    const addressParts = [road, city, state, postcode, country];
+    return addressParts.filter(Boolean).join(', ');
+  };
 
   const handleUseCurrentLocation = () => {
     setIsLoadingLocation(true);
     setCurrentCoords(null);
+    setSuggestions([]);
 
     if (!navigator.geolocation) {
       toast.error("Ops! Seu navegador não suporta geolocalização.");
@@ -41,19 +63,8 @@ const Welcome = () => {
           const data = await response.json();
 
           if (data && data.address) {
-            const { road, quarter, borough, city, state, postcode, country } = data.address;
-            const addressParts = [
-              road,
-              quarter,
-              borough,
-              city,
-              state,
-              postcode,
-              country
-            ];
-            const formattedAddress = addressParts.filter(p => p).join(', ');
-            
-            setManualAddress(formattedAddress);
+            const formatted = formatAddress(data.address);
+            setManualAddress(formatted);
             toast.success("Localização encontrada!");
           } else {
             throw new Error("Endereço não encontrado para estas coordenadas.");
@@ -87,12 +98,43 @@ const Welcome = () => {
     );
   };
 
-  const handleManualAddress = () => {
+  useEffect(() => {
+    if (!manualAddress.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    const debounceTimer = setTimeout(async () => {
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(manualAddress)}&format=json&limit=5&addressdetails=1`);
+        const data = await response.json();
+        setSuggestions(data || []);
+      } catch (error) {
+        console.error("Erro ao buscar sugestões:", error);
+        setSuggestions([]);
+      }
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [manualAddress]);
+
+  const handleSelectSuggestion = (suggestion: Suggestion) => {
+    const formatted = formatAddress(suggestion.address);
+    setManualAddress(formatted || suggestion.display_name); // Fallback para o nome completo
+    setCurrentCoords({
+      lat: parseFloat(suggestion.lat),
+      lon: parseFloat(suggestion.lon),
+    });
+    setSuggestions([]);
+  };
+
+  const handleManualAddress = async () => {
     if (!manualAddress.trim()) {
       toast.error("Por favor, digite um endereço ou coordenadas.");
       return;
     }
 
+    setIsLoadingLocation(true);
     let userLocation;
 
     if (currentCoords) {
@@ -100,28 +142,38 @@ const Welcome = () => {
         ...currentCoords,
         address: manualAddress,
       };
-    } else {
-      const coordsMatch = manualAddress.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
-      if (coordsMatch) {
-        userLocation = {
-          lat: parseFloat(coordsMatch[1]),
-          lon: parseFloat(coordsMatch[2]),
-          address: manualAddress,
-        };
-      } else {
-        toast.info("Usando endereço manual. A busca será baseada no texto.");
-        userLocation = {
-          ...DEFAULT_COORDS,
-          address: manualAddress,
-        };
-      }
+      toast.success("Endereço confirmado! 📍");
+      navigate("/busca", { state: { userLocation } });
+      setIsLoadingLocation(false);
+      return;
     }
 
-    toast.success("Endereço confirmado! 📍");
-    
-    navigate("/busca", {
-      state: { userLocation },
-    });
+    // Se não houver coordenadas, geocodifique o endereço de texto
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(manualAddress)}&format=json&limit=1&addressdetails=1`);
+      const data = await response.json();
+      if (!data || data.length === 0) {
+        throw new Error("Endereço não encontrado");
+      }
+      
+      const result = data[0];
+      const formatted = formatAddress(result.address);
+
+      userLocation = {
+        lat: parseFloat(result.lat),
+        lon: parseFloat(result.lon),
+        address: formatted || result.display_name, // Fallback para o nome completo
+      };
+
+      toast.success("Endereço confirmado! 📍");
+      navigate("/busca", { state: { userLocation } });
+
+    } catch (error) {
+      console.error("Erro no geocoding:", error);
+      toast.error("Não foi possível encontrar este endereço. Tente ser mais específico.");
+    } finally {
+      setIsLoadingLocation(false);
+    }
   };
   
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,7 +215,7 @@ const Welcome = () => {
               size="lg"
             >
               <Navigation className="mr-2 h-5 w-5" />
-              {isLoadingLocation ? "Detectando localização..." : "Usar Minha Localização Atual"}
+              {isLoadingLocation && !manualAddress ? "Detectando..." : "Usar Minha Localização Atual"}
             </Button>
           </div>
 
@@ -178,7 +230,7 @@ const Welcome = () => {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 relative">
             <label htmlFor="manual-address" className="text-sm font-medium text-foreground block">
               Digite seu endereço
             </label>
@@ -194,15 +246,28 @@ const Welcome = () => {
                 }
               }}
               className="h-12 text-base"
+              autoComplete="off"
             />
+            {suggestions.length > 0 && (
+              <ul className="absolute top-full mt-1 w-full bg-card border rounded-md shadow-lg z-20 max-h-60 overflow-y-auto">
+                {suggestions.map((s) => (
+                  <li 
+                    key={s.place_id} 
+                    className="p-3 text-sm cursor-pointer hover:bg-accent"
+                    onClick={() => handleSelectSuggestion(s)} >
+                    {formatAddress(s.address) || s.display_name}
+                  </li>
+                ))}
+              </ul>
+            )}
             <Button
               onClick={handleManualAddress}
               variant="outline"
-              disabled={!manualAddress.trim()}
+              disabled={!manualAddress.trim() || isLoadingLocation}
               className="w-full h-12 text-base font-medium"
               size="lg"
             >
-              Confirmar Localização
+              {isLoadingLocation && manualAddress ? "Confirmando..." : "Confirmar Localização"}
             </Button>
           </div>
         </Card>
