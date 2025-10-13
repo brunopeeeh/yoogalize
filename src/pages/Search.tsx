@@ -88,7 +88,7 @@ const Search = () => {
     }));
 
   // Estados
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [allEstablishments, setAllEstablishments] = useState<NormalizedEstablishment[]>([]);
   const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
   const [dynamicCities, setDynamicCities] = useState<string[]>([]);
@@ -148,7 +148,7 @@ const Search = () => {
       })
       .filter(establishment => {
         const isInRadius = establishment.distance <= radiusKm;
-        const isCategoryMatch = selectedCategories.size === 0 || selectedCategories.has(establishment.category);
+        const isCategoryMatch = selectedCategory === 'all' || establishment.category === selectedCategory;
         const isCityMatch = selectedCity === 'all' || establishment.city === selectedCity;
         return isInRadius && isCategoryMatch && isCityMatch;
       })
@@ -157,7 +157,7 @@ const Search = () => {
     setFilteredResults(results);
     setIsSearching(false);
 
-  }, [selectedCategories, selectedCity, radiusKm, allEstablishments, effectiveLocation, isLoadingData]);
+  }, [selectedCategory, selectedCity, radiusKm, allEstablishments, effectiveLocation, isLoadingData]);
 
 
   // Redirect if user location is not available
@@ -244,7 +244,7 @@ const Search = () => {
   };
 
   const handleClearFilters = () => {
-    setSelectedCategories(new Set());
+    setSelectedCategory("all");
     setSelectedCity("all");
     setRadiusKm(5);
     toast.info("Filtros limpos!");
@@ -310,8 +310,8 @@ const Search = () => {
                   dynamicCities={dynamicCities}
                   isLoadingData={isLoadingData}
                   dynamicCategories={dynamicCategories}
-                  selectedCategories={selectedCategories}
-                  setSelectedCategories={setSelectedCategories}
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
                   radiusKm={radiusKm}
                   setRadiusKm={setRadiusKm}
                 />
@@ -320,16 +320,16 @@ const Search = () => {
           </Sheet>
         </div>
 
-        <aside className="hidden md:block md:col-span-1 h-fit sticky top-4">
-          <Card>
+        <aside className="hidden md:block md:col-span-1 sticky top-4 h-[calc(100vh-5rem)]">
+          <Card className="h-full">
             <FilterSidebar
               selectedCity={selectedCity}
               setSelectedCity={setSelectedCity}
               dynamicCities={dynamicCities}
               isLoadingData={isLoadingData}
               dynamicCategories={dynamicCategories}
-              selectedCategories={selectedCategories}
-              setSelectedCategories={setSelectedCategories}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
               radiusKm={radiusKm}
               setRadiusKm={setRadiusKm}
             />
