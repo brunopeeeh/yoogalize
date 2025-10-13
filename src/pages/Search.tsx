@@ -103,6 +103,7 @@ const Search = () => {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [filteredResults, setFilteredResults] = useState<EstablishmentWithDistance[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   // Efeito para carregar e normalizar os dados das lojas
   useEffect(() => {
@@ -138,6 +139,7 @@ const Search = () => {
     if (!effectiveLocation || isLoadingData) return;
 
     setIsSearching(true);
+    setVisibleCount(10); // Reinicia a contagem de itens visíveis
 
     const results = allEstablishments
       .map(establishment => {
@@ -353,7 +355,7 @@ const Search = () => {
           )}
           {!isSearching && filteredResults.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {filteredResults.map(item => (
+                {filteredResults.slice(0, visibleCount).map(item => (
                 <Card key={item.id} className="p-4 flex flex-col">
                     <h3 className="font-bold">{item.name}</h3>
                     <p className="text-sm text-primary font-semibold">{item.category}</p>
@@ -370,6 +372,13 @@ const Search = () => {
                     </div>
                 </Card>
                 ))}
+                 {visibleCount < filteredResults.length && (
+                    <div className="col-span-1 lg:col-span-2 flex justify-center mt-4">
+                        <Button onClick={() => setVisibleCount(prevCount => prevCount + 10)}>
+                            Ver mais
+                        </Button>
+                    </div>
+                )}
             </div>
           )}
         </main>
