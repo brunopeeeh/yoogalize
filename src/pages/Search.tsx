@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { FilterSidebar } from "@/components/filter-sidebar";
 import { toast } from "sonner";
 import { calculateDistance } from "@/lib/distance";
+import { ResultCardSkeleton } from "@/components/result-card-skeleton";
 
 type UserLocation = {
   lat: number;
@@ -295,6 +296,8 @@ const Search = () => {
             </div>
           )}
         </div>
+
+
         <Button onClick={() => navigate("/")} className="flex-shrink-0">Início</Button>
       </header>
       
@@ -342,44 +345,52 @@ const Search = () => {
         </aside>
 
         <main className="md:col-span-3">
-          {(isSearching || isLoadingData) && <p className="text-center">Buscando...</p>}
-          {!isSearching && !isLoadingData && filteredResults.length === 0 && (
-            <div className="flex flex-col items-center justify-center text-center h-full p-8">
-              <SearchX className="w-20 h-20 text-gray-300 mb-6" />
-              <h2 className="text-2xl font-semibold mb-2">Nenhum resultado encontrado</h2>
-              <p className="text-gray-500 max-w-sm mx-auto mb-6">
-                Tente ajustar os filtros, selecionar uma categoria diferente ou aumentar o raio de busca para encontrar mais opções.
-              </p>
-              <Button onClick={handleClearFilters} variant="outline">Limpar Filtros</Button>
-            </div>
-          )}
-          {!isSearching && filteredResults.length > 0 && (
+          {(isSearching || isLoadingData) ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {filteredResults.slice(0, visibleCount).map(item => (
-                <Card key={item.id} className="p-4 flex flex-col">
-                    <h3 className="font-bold">{item.name}</h3>
-                    <p className="text-sm text-primary font-semibold">{item.category}</p>
-                    <p className="text-sm mt-2 text-muted-foreground flex-grow">{item.address}</p>
-                    <div className="flex justify-between items-center mt-4">
-                        <p className="text-sm font-bold">{item.distance.toFixed(2)} km de distância</p>
-                        {item.linkDelivery && (
-                            <Button asChild size="sm">
-                                <a href={`https://delivery.yooga.app/${item.linkDelivery}`} target="_blank" rel="noopener noreferrer">
-                                    <BookMarked className="mr-2 h-4 w-4" /> Cardápio
-                                </a>
-                            </Button>
-                        )}
-                    </div>
-                </Card>
-                ))}
-                 {visibleCount < filteredResults.length && (
-                    <div className="col-span-1 lg:col-span-2 flex justify-center mt-4">
-                        <Button onClick={() => setVisibleCount(prevCount => prevCount + 10)}>
-                            Ver mais
-                        </Button>
-                    </div>
-                )}
+              {Array.from({ length: 10 }).map((_, index) => (
+                <ResultCardSkeleton key={index} />
+              ))}
             </div>
+          ) : (
+            <>
+              {filteredResults.length === 0 ? (
+                <div className="flex flex-col items-center justify-center text-center h-full p-8">
+                  <SearchX className="w-20 h-20 text-gray-300 mb-6" />
+                  <h2 className="text-2xl font-semibold mb-2">Nenhum resultado encontrado</h2>
+                  <p className="text-gray-500 max-w-sm mx-auto mb-6">
+                    Tente ajustar os filtros, selecionar uma categoria diferente ou aumentar o raio de busca para encontrar mais opções.
+                  </p>
+                  <Button onClick={handleClearFilters} variant="outline">Limpar Filtros</Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {filteredResults.slice(0, visibleCount).map(item => (
+                    <Card key={item.id} className="p-4 flex flex-col">
+                        <h3 className="font-bold">{item.name}</h3>
+                        <p className="text-sm text-primary font-semibold">{item.category}</p>
+                        <p className="text-sm mt-2 text-muted-foreground flex-grow">{item.address}</p>
+                        <div className="flex justify-between items-center mt-4">
+                            <p className="text-sm font-bold">{item.distance.toFixed(2)} km de distância</p>
+                            {item.linkDelivery && (
+                                <Button asChild size="sm">
+                                    <a href={`https://delivery.yooga.app/${item.linkDelivery}`} target="_blank" rel="noopener noreferrer">
+                                        <BookMarked className="mr-2 h-4 w-4" /> Cardápio
+                                    </a>
+                                </Button>
+                            )}
+                        </div>
+                    </Card>
+                    ))}
+                     {visibleCount < filteredResults.length && (
+                        <div className="col-span-1 lg:col-span-2 flex justify-center mt-4">
+                            <Button onClick={() => setVisibleCount(prevCount => prevCount + 10)}>
+                                Ver mais
+                            </Button>
+                        </div>
+                    )}
+                </div>
+              )}
+            </>
           )}
         </main>
       </div>
