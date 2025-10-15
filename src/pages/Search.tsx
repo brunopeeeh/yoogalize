@@ -17,6 +17,7 @@ type UserLocation = {
   lat: number;
   lon: number;
   address: string;
+  city: string;
 };
 
 type EstablishmentWithDistance = {
@@ -96,8 +97,8 @@ const Search = () => {
   const [allEstablishments, setAllEstablishments] = useState<NormalizedEstablishment[]>([]);
   const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
   const [dynamicCities, setDynamicCities] = useState<string[]>([]);
-  const [selectedCity, setSelectedCity] = useState<string>("all");
-  const [isSearching, setIsSearching] = useState(true);
+  const [selectedCity, setSelectedCity] = useState<string>(location.state?.userLocation?.city || "all");
+  const [isSearching, setIsSearching] = useState(false);
   const [radiusKm, setRadiusKm] = useState(5);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [editedAddress, setEditedAddress] = useState(effectiveLocation?.address || "");
@@ -105,6 +106,41 @@ const Search = () => {
   const [filteredResults, setFilteredResults] = useState<EstablishmentWithDistance[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Efeito para executar a busca sempre que os filtros ou a localização mudarem.
+  useEffect(() => {
+    executeSearch();
+  }, [effectiveLocation, radiusKm, selectedCategory, selectedCity, allEstablishments]);
+
+  const executeSearch = () => {
+    if (!effectiveLocation || isLoadingData) return;
+
+    if (isInitialLoad) setIsInitialLoad(false);
+    setIsSearching(true);
+    setVisibleCount(10); // Reinicia a contagem de itens visíveis
+
+    const results = allEstablishments
+      .map(establishment => {
+        const distance = calculateDistance(
+          effectiveLocation.lat,
+          effectiveLocation.lon,
+          establishment.latitude,
+          establishment.longitude
+        );
+        return { ...establishment, distance };
+      })
+      .filter(establishment => {
+        const isInRadius = establishment.distance <= radiusKm;
+        const isCategoryMatch = selectedCategory === 'all' || establishment.category === selectedCategory;
+        const isCityMatch = selectedCity === 'all' || establishment.city === selectedCity;
+        return isInRadius && isCategoryMatch && isCityMatch;
+      })
+      .sort((a, b) => a.distance - b.distance);
+
+    setFilteredResults(results);
+    setIsSearching(false);
+  };
 
   // Efeito para carregar e normalizar os dados das lojas
   useEffect(() => {
@@ -134,36 +170,6 @@ const Search = () => {
 
     fetchData();
   }, []);
-
-  // Efeito para filtrar os resultados quando as seleções mudam
-  useEffect(() => {
-    if (!effectiveLocation || isLoadingData) return;
-
-    setIsSearching(true);
-    setVisibleCount(10); // Reinicia a contagem de itens visíveis
-
-    const results = allEstablishments
-      .map(establishment => {
-        const distance = calculateDistance(
-          effectiveLocation.lat,
-          effectiveLocation.lon,
-          establishment.latitude,
-          establishment.longitude
-        );
-        return { ...establishment, distance };
-      })
-      .filter(establishment => {
-        const isInRadius = establishment.distance <= radiusKm;
-        const isCategoryMatch = selectedCategory === 'all' || establishment.category === selectedCategory;
-        const isCityMatch = selectedCity === 'all' || establishment.city === selectedCity;
-        return isInRadius && isCategoryMatch && isCityMatch;
-      })
-      .sort((a, b) => a.distance - b.distance);
-
-    setFilteredResults(results);
-    setIsSearching(false);
-
-  }, [selectedCategory, selectedCity, radiusKm, allEstablishments, effectiveLocation, isLoadingData]);
 
 
   // Redirect if user location is not available
@@ -206,14 +212,15 @@ const Search = () => {
     setSuggestions([]);
     
     try {
-      let lat, lon, finalAddress;
+      let lat, lon, finalAddress, newCity;
 
       if (suggestion && suggestion.address) {
         lat = suggestion.lat;
         lon = suggestion.lon;
-        const { road, quarter, borough, city, state, postcode, country } = suggestion.address;
-        const addressParts = [road, quarter, borough, city, state, postcode, country];
-        finalAddress = addressParts.filter(p => p).join(', ');
+        const { road, quarter, borough, city, town, village, suburb, city_district, state, postcode, country } = suggestion.address;
+        const addressParts = [road, quarter, borough, city, state, postcode, country].filter(Boolean);
+        finalAddress = addressParts.join(', ');
+        newCity = city || town || village || suburb || city_district || "";
       } else {
         const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressToSearch)}&format=json&limit=1&addressdetails=1`);
         const data = await response.json();
@@ -224,11 +231,13 @@ const Search = () => {
         lon = result.lon;
 
         if (result.address) {
-            const { road, quarter, borough, city, state, postcode, country } = result.address;
-            const addressParts = [road, quarter, borough, city, state, postcode, country];
-            finalAddress = addressParts.filter(p => p).join(', ');
+            const { road, quarter, borough, city, town, village, suburb, city_district, state, postcode, country } = result.address;
+            const addressParts = [road, quarter, borough, city, state, postcode, country].filter(Boolean);
+            finalAddress = addressParts.join(', ');
+            newCity = city || town || village || suburb || city_district || "";
         } else {
             finalAddress = result.display_name;
+            newCity = "all"; // Fallback se não conseguir extrair a cidade
         }
       }
 
@@ -236,7 +245,9 @@ const Search = () => {
         lat: parseFloat(lat),
         lon: parseFloat(lon),
         address: finalAddress,
+        city: newCity,
       });
+      setSelectedCity(newCity);
       setEditedAddress(finalAddress);
       toast.success("Endereço atualizado!");
 
@@ -322,6 +333,7 @@ const Search = () => {
                   setSelectedCategory={setSelectedCategory}
                   radiusKm={radiusKm}
                   setRadiusKm={setRadiusKm}
+                  onSearchClick={() => {}} // O useEffect agora cuida da busca
                 />
               </div>
             </SheetContent>
@@ -340,12 +352,21 @@ const Search = () => {
               setSelectedCategory={setSelectedCategory}
               radiusKm={radiusKm}
               setRadiusKm={setRadiusKm}
+              onSearchClick={() => {}} // O useEffect agora cuida da busca
             />
           </Card>
         </aside>
 
         <main className="md:col-span-3">
-          {(isSearching || isLoadingData) ? (
+          {isInitialLoad ? (
+            <div className="flex flex-col items-center justify-center text-center h-full p-8">
+              <Sparkles className="w-20 h-20 text-gray-300 mb-6" />
+              <h2 className="text-2xl font-semibold mb-2">Bem-vindo ao Painel de Descoberta!</h2>
+              <p className="text-gray-500 max-w-sm mx-auto mb-6">
+                Utilize os filtros na lateral para buscar as lojas pelos segmentos, cidades e raio de distância.
+              </p>
+            </div>
+          ) : (isSearching || isLoadingData) ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {Array.from({ length: 10 }).map((_, index) => (
                 <ResultCardSkeleton key={index} />
@@ -358,7 +379,7 @@ const Search = () => {
                   <SearchX className="w-20 h-20 text-gray-300 mb-6" />
                   <h2 className="text-2xl font-semibold mb-2">Nenhum resultado encontrado</h2>
                   <p className="text-gray-500 max-w-sm mx-auto mb-6">
-                    Tente ajustar os filtros, selecionar uma categoria diferente ou aumentar o raio de busca para encontrar mais opções.
+                    Tente ajustar os filtros, selecionar um segmento diferente ou aumentar o raio de busca para encontrar mais opções.
                   </p>
                   <Button onClick={handleClearFilters} variant="outline">Limpar Filtros</Button>
                 </div>
