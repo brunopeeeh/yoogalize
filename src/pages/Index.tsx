@@ -31,7 +31,7 @@ const Index = () => {
       const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`);
       const data = await response.json();
       if (data && data.display_name) {
-        const city = data.address.city || data.address.town || data.address.village || "";
+        const city = data.address.city || data.address.town || data.address.village || data.address.suburb || data.address.city_district || "";
         const location: UserLocation = {
           lat,
           lon,
@@ -82,7 +82,7 @@ const Index = () => {
 
   const handleSearch = () => {
     if (!category) {
-      toast.error("Por favor, selecione uma categoria");
+      toast.error("Por favor, selecione um segmento");
       return;
     }
     if (!userLocation) {
@@ -198,11 +198,11 @@ const Index = () => {
 
         <section className="space-y-2">
           <label htmlFor="category-select" className="text-sm font-medium text-foreground">
-            Categoria
+            Segmento
           </label>
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger id="category-select" className="h-14 text-base">
-              <SelectValue placeholder="Selecione uma categoria" />
+              <SelectValue placeholder="Selecione um segmento" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos os Segmentos</SelectItem>

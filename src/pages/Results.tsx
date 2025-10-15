@@ -81,7 +81,7 @@ const Results = () => {
               Nenhum estabelecimento encontrado
             </h3>
             <p className="text-muted-foreground mb-6">
-              Tente aumentar o raio de busca ou selecionar outra categoria
+              Tente aumentar o raio de busca ou selecionar outro segmento
             </p>
             <Button onClick={() => navigate("/")} variant="outline">
               Voltar para busca
