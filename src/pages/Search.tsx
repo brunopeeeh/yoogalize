@@ -106,17 +106,12 @@ const Search = () => {
   const [filteredResults, setFilteredResults] = useState<EstablishmentWithDistance[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
-  // Efeito para executar a busca sempre que os filtros ou a localização mudarem.
-  useEffect(() => {
-    executeSearch();
-  }, [effectiveLocation, radiusKm, selectedCategory, selectedCity, allEstablishments]);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const executeSearch = () => {
     if (!effectiveLocation || isLoadingData) return;
 
-    if (isInitialLoad) setIsInitialLoad(false);
+    if (!hasSearched) setHasSearched(true);
     setIsSearching(true);
     setVisibleCount(10); // Reinicia a contagem de itens visíveis
 
@@ -217,10 +212,12 @@ const Search = () => {
       if (suggestion && suggestion.address) {
         lat = suggestion.lat;
         lon = suggestion.lon;
-        const { road, quarter, borough, city, town, village, suburb, city_district, state, postcode, country } = suggestion.address;
-        const addressParts = [road, quarter, borough, city, state, postcode, country].filter(Boolean);
+        const { road, quarter, borough, city, town, village, suburb, city_district, state, postcode, country } = suggestion.address; // Mantém para o endereço completo
+        const addressParts = [road, quarter, borough, city, state, postcode, country].filter(Boolean); // Mantém para o endereço completo
         finalAddress = addressParts.join(', ');
-        newCity = city || town || village || suburb || city_district || "";
+        // Função utilitária para extrair a cidade de forma mais confiável
+        const getCity = (addr: any) => addr.city || addr.town || addr.village || addr.suburb || addr.city_district || "";
+        newCity = getCity(suggestion.address);
       } else {
         const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressToSearch)}&format=json&limit=1&addressdetails=1`);
         const data = await response.json();
@@ -231,10 +228,11 @@ const Search = () => {
         lon = result.lon;
 
         if (result.address) {
-            const { road, quarter, borough, city, town, village, suburb, city_district, state, postcode, country } = result.address;
-            const addressParts = [road, quarter, borough, city, state, postcode, country].filter(Boolean);
+            const { road, quarter, borough, city, town, village, suburb, city_district, state, postcode, country } = result.address; // Mantém para o endereço completo
+            const addressParts = [road, quarter, borough, city, state, postcode, country].filter(Boolean); // Mantém para o endereço completo
             finalAddress = addressParts.join(', ');
-            newCity = city || town || village || suburb || city_district || "";
+            const getCity = (addr: any) => addr.city || addr.town || addr.village || addr.suburb || addr.city_district || "";
+            newCity = getCity(result.address);
         } else {
             finalAddress = result.display_name;
             newCity = "all"; // Fallback se não conseguir extrair a cidade
@@ -333,7 +331,7 @@ const Search = () => {
                   setSelectedCategory={setSelectedCategory}
                   radiusKm={radiusKm}
                   setRadiusKm={setRadiusKm}
-                  onSearchClick={() => {}} // O useEffect agora cuida da busca
+                  onSearchClick={executeSearch}
                 />
               </div>
             </SheetContent>
@@ -352,17 +350,17 @@ const Search = () => {
               setSelectedCategory={setSelectedCategory}
               radiusKm={radiusKm}
               setRadiusKm={setRadiusKm}
-              onSearchClick={() => {}} // O useEffect agora cuida da busca
+              onSearchClick={executeSearch}
             />
           </Card>
         </aside>
 
         <main className="md:col-span-3">
-          {isInitialLoad ? (
+          {!hasSearched ? (
             <div className="flex flex-col items-center justify-center text-center h-full p-8">
-              <Sparkles className="w-20 h-20 text-gray-300 mb-6" />
+              <img src="/yoogalize.png" alt="Mascote Yoogalize" className="h-32 w-auto mb-6" />
               <h2 className="text-2xl font-semibold mb-2">Bem-vindo ao Painel de Descoberta!</h2>
-              <p className="text-gray-500 max-w-sm mx-auto mb-6">
+              <p className="text-gray-500 max-w-md mx-auto mb-6">
                 Utilize os filtros na lateral para buscar as lojas pelos segmentos, cidades e raio de distância.
               </p>
             </div>
@@ -376,7 +374,7 @@ const Search = () => {
             <>
               {filteredResults.length === 0 ? (
                 <div className="flex flex-col items-center justify-center text-center h-full p-8">
-                  <SearchX className="w-20 h-20 text-gray-300 mb-6" />
+                  <img src="/yoogalize_triste.png" alt="Mascote Yoogalize triste" className="h-32 w-auto mb-6" />
                   <h2 className="text-2xl font-semibold mb-2">Nenhum resultado encontrado</h2>
                   <p className="text-gray-500 max-w-sm mx-auto mb-6">
                     Tente ajustar os filtros, selecionar um segmento diferente ou aumentar o raio de busca para encontrar mais opções.
