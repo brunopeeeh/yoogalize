@@ -3,6 +3,8 @@ import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Label } from "./ui/label";
+import { Switch } from "./ui/switch";
 
 type FilterSidebarProps = {
   selectedCity: string;
@@ -14,6 +16,8 @@ type FilterSidebarProps = {
   setSelectedCategory: (category: string) => void;
   radiusKm: number;
   setRadiusKm: (radius: number) => void;
+  openNow: boolean;
+  setOpenNow: (open: boolean) => void;
   onSearchClick: () => void;
 };
 
@@ -27,6 +31,8 @@ export const FilterSidebar = ({
   setSelectedCategory,
   radiusKm,
   setRadiusKm,
+  openNow,
+  setOpenNow,
   onSearchClick,
 }: FilterSidebarProps) => {
   return (
@@ -80,6 +86,18 @@ export const FilterSidebar = ({
             <div className="text-center text-sm mt-1">
               {radiusKm.toFixed(1)} km
             </div>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between">
+            <Label htmlFor="open-now-filter" className="font-semibold">
+              Abertas Agora
+            </Label>
+            <Switch
+              id="open-now-filter"
+              checked={openNow}
+              onCheckedChange={setOpenNow}
+              disabled={isLoadingData}
+            />
           </div>
         </div>
 

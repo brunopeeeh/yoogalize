@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { MapPin, Search as SearchIcon, Sparkles, Edit2, SearchX, BookMarked } from "lucide-react";
+import { MapPin, Search as SearchIcon, Sparkles, Edit2, SearchX, BookMarked, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { calculateDistance } from "@/lib/distance";
 import { ResultCardSkeleton } from "@/components/result-card-skeleton";
 import { OpeningHoursStatus } from "@/components/opening-hours-status";
+import { isEstablishmentOpen } from "@/lib/utils"; // Importa a função
+import { getFavoriteIds, addFavoriteId, removeFavoriteId } from "@/lib/favorites";
 
 type UserLocation = {
   lat: number;
@@ -117,6 +119,7 @@ const Search = () => {
   const [selectedCity, setSelectedCity] = useState<string>(location.state?.userLocation?.city || "all");
   const [isSearching, setIsSearching] = useState(false);
   const [radiusKm, setRadiusKm] = useState(5);
+  const [openNow, setOpenNow] = useState(false); // Estado para o novo filtro
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [editedAddress, setEditedAddress] = useState(effectiveLocation?.address || "");
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -124,6 +127,19 @@ const Search = () => {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
   const [hasSearched, setHasSearched] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>(() => getFavoriteIds());
+
+  const handleToggleFavorite = (id: string) => {
+    if (favoriteIds.includes(id)) {
+      removeFavoriteId(id);
+      setFavoriteIds(prev => prev.filter(favId => favId !== id));
+      toast("Removido dos favoritos.");
+    } else {
+      addFavoriteId(id);
+      setFavoriteIds(prev => [...prev, id]);
+      toast.success("Adicionado aos favoritos!");
+    }
+  };
 
   const executeSearch = () => {
     if (!effectiveLocation || isLoadingData) return;
@@ -146,7 +162,11 @@ const Search = () => {
         const isInRadius = establishment.distance <= radiusKm;
         const isCategoryMatch = selectedCategory === 'all' || establishment.category === selectedCategory;
         const isCityMatch = selectedCity === 'all' || establishment.city === selectedCity;
-        return isInRadius && isCategoryMatch && isCityMatch;
+        
+        // Lógica do filtro "Aberto Agora"
+        const isOpenNow = !openNow || isEstablishmentOpen(establishment.operatingHours);
+
+        return isInRadius && isCategoryMatch && isCityMatch && isOpenNow;
       })
       .sort((a, b) => a.distance - b.distance);
 
@@ -279,6 +299,7 @@ const Search = () => {
     setSelectedCategory("all");
     setSelectedCity("all");
     setRadiusKm(5);
+    setOpenNow(false);
     toast.info("Filtros limpos!");
   };
 
@@ -325,6 +346,7 @@ const Search = () => {
 
 
         <Button onClick={() => navigate("/")} className="flex-shrink-0">Início</Button>
+        <Button onClick={() => navigate("/favoritos")} variant="outline" className="flex-shrink-0">Meus Favoritos</Button>
       </header>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -348,6 +370,8 @@ const Search = () => {
                   setSelectedCategory={setSelectedCategory}
                   radiusKm={radiusKm}
                   setRadiusKm={setRadiusKm}
+                  openNow={openNow}
+                  setOpenNow={setOpenNow}
                   onSearchClick={executeSearch}
                 />
               </div>
@@ -367,6 +391,8 @@ const Search = () => {
               setSelectedCategory={setSelectedCategory}
               radiusKm={radiusKm}
               setRadiusKm={setRadiusKm}
+              openNow={openNow}
+              setOpenNow={setOpenNow}
               onSearchClick={executeSearch}
             />
           </Card>
@@ -402,7 +428,12 @@ const Search = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {filteredResults.slice(0, visibleCount).map(item => (
                     <Card key={item.id} className="p-4 flex flex-col">
-                        <h3 className="font-bold">{item.name}</h3>
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-bold pr-2">{item.name}</h3>
+                          <Button variant="ghost" size="icon" className="flex-shrink-0 h-8 w-8" onClick={() => handleToggleFavorite(item.id)}>
+                            <Heart className={`w-5 h-5 ${favoriteIds.includes(item.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
+                          </Button>
+                        </div>
                         <p className="text-sm text-primary font-semibold">{item.category}</p>
                         <p className="text-sm mt-2 text-muted-foreground">{item.address}</p>
                         <div className="flex-grow mt-2">
@@ -437,4 +468,4 @@ const Search = () => {
   );
 };
 
-export default Search;
+export default Search; 

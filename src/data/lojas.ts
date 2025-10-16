@@ -12,6 +12,7 @@ export type LojaRaw = {
   "endereco completo": string;
   latitude: number;
   longitude: number;
+  horario_funcionamento?: any; // Adicionado para tipar o campo que vem do JSON
 };
 
 export type Establishment = {
@@ -23,6 +24,7 @@ export type Establishment = {
   longitude: number;
   description?: string;
   rating?: number;
+  operatingHours?: any; // Adicionado para receber os dados normalizados
 };
 
 export async function fetchLojas(): Promise<LojaRaw[]> {
@@ -30,7 +32,8 @@ export async function fetchLojas(): Promise<LojaRaw[]> {
   if (!res.ok) {
     throw new Error("Falha ao carregar lojas.json");
   }
-  return res.json();
+  const data = await res.json();
+  return data.result; // Acessar o array dentro da propriedade 'result'
 }
 
 export function normalizeEstablishments(lojas: LojaRaw[]): Establishment[] {
@@ -50,5 +53,6 @@ export function normalizeEstablishments(lojas: LojaRaw[]): Establishment[] {
     latitude: l.latitude,
     longitude: l.longitude,
     description: l.tipo_atendimento ?? undefined,
+    operatingHours: l.horario_funcionamento, // Mapeamento corrigido
   }));
 }

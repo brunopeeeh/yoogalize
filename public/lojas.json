@@ -5026,7 +5026,7 @@
     {
       "nome_empresa": "Sorveteria Quero Mais - Santa Lúcia",
       "modelo_negocio": "Sorveteria",
-      "tipo_atendimento": "sem vendas",
+      "tipo_atendimento": "Presencial e delivery",
       "logradouro": "Av Rio Branco",
       "número": "227",
       "bairro": "Santa Lúcia",
@@ -6323,7 +6323,7 @@
     },
     {
       "nome_empresa": "Bar Bareno",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Restaurante",
       "tipo_atendimento": "Presencial e delivery",
       "logradouro": "Av Carlos Moreira Lima",
       "número": "95",
@@ -7448,7 +7448,7 @@
     },
     {
       "nome_empresa": "Casa Do Tropeiro",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Loja de Conveniência",
       "tipo_atendimento": "Presencial e delivery",
       "logradouro": "Av Rio Marinho",
       "número": "103",
@@ -11727,7 +11727,7 @@
     },
     {
       "nome_empresa": "Leonara Poleze Confeitaria",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Doceria",
       "tipo_atendimento": "Presencial e delivery",
       "logradouro": "Rua São Pedro Apóstolo",
       "número": "716",
@@ -17018,7 +17018,7 @@
     },
     {
       "nome_empresa": "Ddd_ Acaiteria",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Açaiteria",
       "tipo_atendimento": "Presencial, Ifood e Delivery",
       "logradouro": "Rua Alan Kardec",
       "número": "84",
@@ -17773,7 +17773,7 @@
     },
     {
       "nome_empresa": "Projeto Brasa Hamburgueria - Jardim Camburi",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Hamburgueria",
       "tipo_atendimento": "somente Ifood e delivery",
       "logradouro": "Avenida José Moreira Martins Rato",
       "número": "556",
@@ -17867,7 +17867,7 @@
     },
     {
       "nome_empresa": "Distribuidora Meia Noite",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Distribuidora de Bebidas",
       "tipo_atendimento": "Presencial e delivery",
       "logradouro": "Rua Doutor Mário Ribeiro",
       "número": "05",
@@ -17955,7 +17955,7 @@
     },
     {
       "nome_empresa": "Dado’s Burger E Bar",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Hamburgueria",
       "tipo_atendimento": "Presencial e delivery",
       "logradouro": "Rua Projetada",
       "número": "0",
@@ -18165,7 +18165,7 @@
     },
     {
       "nome_empresa": "Casa 27 Churraskin",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Churrasquinho",
       "tipo_atendimento": "somente presencial",
       "logradouro": "Avenida Antonio De Almeida Filho",
       "número": "505",
@@ -18253,7 +18253,7 @@
     },
     {
       "nome_empresa": "Manda Frango",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Franguinho",
       "tipo_atendimento": "Presencial, Ifood e Delivery",
       "logradouro": "Rua Aracati",
       "número": "82",
@@ -18516,7 +18516,7 @@
     },
     {
       "nome_empresa": "Cafe Caramello - Fábrica",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Cafeteria",
       "tipo_atendimento": "somente Delivery",
       "logradouro": "Avenida Vitória",
       "número": "2903",
@@ -19698,7 +19698,7 @@
     },
     {
       "nome_empresa": "Mandacaru Gastrobar - Loja 2",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Restaurante",
       "tipo_atendimento": "somente presencial",
       "logradouro": "Rua Luciano Das Neves",
       "número": "286",
@@ -33532,7 +33532,7 @@
     },
     {
       "nome_empresa": "Tabacaria E Whiskeria Los Hermanos",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Tabacaria",
       "tipo_atendimento": "Presencial, Ifood e Delivery",
       "logradouro": "Rua Benedito Barcelos",
       "número": "109",
@@ -34813,7 +34813,7 @@
     {
       "nome_empresa": "Chef Chowder Bake Shop",
       "modelo_negocio": "Doceria",
-      "tipo_atendimento": "sem vendas",
+      "tipo_atendimento": "Presencial e delivery",
       "logradouro": "Alameda Hélio Da Costa Ferraz",
       "número": "290",
       "bairro": "Santa Helena",
@@ -37106,7 +37106,7 @@
     },
     {
       "nome_empresa": "Dark Shop Supplements Boulevard V.v.",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Suplementos",
       "tipo_atendimento": "somente presencial",
       "logradouro": "Rodovia Do Sol",
       "número": "5000",
@@ -38018,7 +38018,7 @@
     },
     {
       "nome_empresa": "Cabal Tabacaria",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Tabacaria",
       "tipo_atendimento": "Presencial e delivery",
       "logradouro": "Rua Juvercino De Souza",
       "número": "212",
@@ -40183,7 +40183,7 @@
     },
     {
       "nome_empresa": "Vila Sucos",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Lanchonete",
       "tipo_atendimento": "Presencial e delivery",
       "logradouro": "Avenida Jerônimo Monteiro",
       "número": "1294",
@@ -42341,7 +42341,7 @@
     },
     {
       "nome_empresa": "Cafeteria Terrafé - Escola Americana",
-      "modelo_negocio": "Outros",
+      "modelo_negocio": "Cafeteria",
       "tipo_atendimento": "",
       "logradouro": "Avenida Marechal Mascarenhas De Moraes",
       "número": "1910",
