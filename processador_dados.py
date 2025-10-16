@@ -6,42 +6,32 @@ import json
 
 # ======= CONFIGURAÇÕES =======
 INPUT_FILE = "Base cliente Vila Velha.xlsx"
-# O arquivo de saída é o que a aplicação consome diretamente
 OUTPUT_FILE = "public/lojas.json"
 
-# ======= FUNÇÕES AUXILIARES (do validacao.py) =======
+# ======= FUNÇÕES AUXILIARES =======
 def get_coords_from_address(address):
     """Converte endereço em latitude e longitude via Nominatim."""
     if not isinstance(address, str) or not address.strip():
         return None, None
 
     url = "https://nominatim.openstreetmap.org/search"
-    params = {
-        "q": address,
-        "format": "json",
-        "addressdetails": 1,
-        "limit": 1
-    }
-    headers = {"User-Agent": "YoogaGeocodeScript/1.2"} # Versão atualizada
+    params = {"q": address, "format": "json", "addressdetails": 1, "limit": 1}
+    headers = {"User-Agent": "YoogaGeocodeScript/1.5"}
 
     try:
         resp = requests.get(url, params=params, headers=headers, timeout=15)
-        resp.raise_for_status() # Lança um erro para status HTTP 4xx/5xx
-
+        resp.raise_for_status()
         data = resp.json()
         if not data:
             return None, None
-
-        lat = float(data[0]["lat"])
-        lon = float(data[0]["lon"])
-        return lat, lon
-
+        return float(data[0]["lat"]), float(data[0]["lon"])
     except requests.exceptions.RequestException as e:
-        print(f"⚠️  Erro de rede ao buscar '{address}': {e}")
+        print(f"⚠️ Erro de rede ao buscar '{address}': {e}")
         return None, None
     except Exception as e:
-        print(f"⚠️  Erro inesperado ao buscar '{address}': {e}")
+        print(f"⚠️ Erro inesperado ao buscar '{address}': {e}")
         return None, None
+
 
 def get_coords_from_cep(text):
     """Procura CEP no texto e tenta buscar localização pelo CEP."""
@@ -53,6 +43,48 @@ def get_coords_from_cep(text):
     cep = cep_pattern.group().replace("-", "")
     print(f"     ℹ️ Tentando via CEP: {cep}")
     return get_coords_from_address(f"CEP {cep}, Brasil")
+
+
+def traduzir_type(tipo):
+    """Traduz o tipo de atendimento para texto legível."""
+    mapa = {
+        "IMEDIATE": "Delivery",
+        "BOTH": "Delivery e Agendamento",
+        "SCHEDULED": "Agendamento"
+    }
+    return mapa.get(tipo.upper(), tipo)
+
+
+def validar_horario_funcionamento(dados):
+    """Garante que todos os dias da semana existam e que os tipos estejam traduzidos."""
+    dias_semana = [
+        {"day_of_week": 0, "day": "Domingo"},
+        {"day_of_week": 1, "day": "Segunda-feira"},
+        {"day_of_week": 2, "day": "Terça-feira"},
+        {"day_of_week": 3, "day": "Quarta-feira"},
+        {"day_of_week": 4, "day": "Quinta-feira"},
+        {"day_of_week": 5, "day": "Sexta-feira"},
+        {"day_of_week": 6, "day": "Sábado"},
+    ]
+
+    # Cria um mapa rápido de dias já presentes
+    mapa_existentes = {d["day_of_week"]: d for d in dados if "day_of_week" in d}
+
+    resultado = []
+    for d in dias_semana:
+        dia_dados = mapa_existentes.get(d["day_of_week"], {"hours": []})
+        dia_dados["day_of_week"] = d["day_of_week"]
+        dia_dados["day"] = d["day"]
+
+        # Traduz o tipo dentro dos hours, se houver
+        for h in dia_dados.get("hours", []):
+            if "type" in h:
+                h["type"] = traduzir_type(h["type"])
+
+        resultado.append(dia_dados)
+
+    return resultado
+
 
 # ======= EXECUÇÃO =======
 print(f"📖 Lendo planilha de entrada: {INPUT_FILE}")
@@ -67,56 +99,55 @@ dados_finais_json = {}
 for sheet_name, df in sheets.items():
     print(f"\n📍 Processando aba: {sheet_name}")
 
-    # Garante que as colunas de coordenadas existam
+    # Garante colunas de coordenadas
     if "Latitude" not in df.columns:
         df["Latitude"] = None
     if "Longitude" not in df.columns:
         df["Longitude"] = None
 
-    # --- 1. Lógica de Validação (Geocoding) ---
+    # --- 1. Geocoding ---
     for i, row in df.iterrows():
-        # A coluna 10 (índice) é a "endereço completo"
         endereco = row.get("endereço completo", df.iloc[i, 10])
-
-        # Verifica se as coordenadas já existem e são válidas
         lat_existente = pd.to_numeric(row.get("Latitude"), errors='coerce')
         lon_existente = pd.to_numeric(row.get("Longitude"), errors='coerce')
 
         if pd.notna(lat_existente) and pd.notna(lon_existente):
-            print(f"  ✅ ({i+1}/{len(df)}) Coordenadas já existem.")
             continue
 
         print(f"  🔍 ({i+1}/{len(df)}) Buscando coordenadas para: {endereco}")
-
         lat, lon = get_coords_from_address(endereco)
-
-        # Se não encontrou, tenta via CEP
         if lat is None or lon is None:
             lat, lon = get_coords_from_cep(str(endereco))
-            if lat and lon:
-                print("     ✅ Coordenadas encontradas via CEP!")
-            else:
-                print("     ⚠️ Endereço e CEP não encontrados.")
-
         df.at[i, "Latitude"] = lat
         df.at[i, "Longitude"] = lon
-        time.sleep(1.1)  # Aumenta o delay para garantir o respeito ao rate limit da API
+        time.sleep(1.1)
 
-    # --- 2. Lógica de Conversão ---
-    print(f"🔄 Convertendo aba '{sheet_name}' para o formato JSON...")
-    
-    # Remove linhas onde as coordenadas não puderam ser encontradas
-    df_valid = df.dropna(subset=['Latitude', 'Longitude'])
-    
-    # Converte o DataFrame limpo para uma lista de dicionários
+    # --- 2. Converte e valida horario_funcionamento ---
+    if "horario_funcionamento" in df.columns:
+        def parse_horario(valor):
+            if isinstance(valor, str) and valor.strip():
+                try:
+                    dados = json.loads(valor)
+                    return validar_horario_funcionamento(dados)
+                except json.JSONDecodeError:
+                    print(f"⚠️ Erro ao decodificar horário: {valor}")
+                    return validar_horario_funcionamento([])
+            return validar_horario_funcionamento([])
+        df["horario_funcionamento"] = df["horario_funcionamento"].apply(parse_horario)
+    else:
+        df["horario_funcionamento"] = [validar_horario_funcionamento([]) for _ in range(len(df))]
+
+    # --- 3. Remove linhas sem coordenadas ---
+    df_valid = df.dropna(subset=["Latitude", "Longitude"])
+
+    # --- 4. Converte para lista de dicionários ---
     registros = df_valid.fillna("").to_dict(orient="records")
-    
-    # Adiciona ao dicionário final que será salvo como JSON
+
     dados_finais_json[sheet_name] = registros
 
-# --- 3. Salvando o arquivo JSON final ---
+# --- 5. Salva o JSON final ---
 print(f"\n💾 Salvando arquivo JSON final em: {OUTPUT_FILE}")
 with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
     json.dump(dados_finais_json, f, ensure_ascii=False, indent=2)
 
-print(f"\n✅ Processo concluído com sucesso!")
+print("\n✅ Processo concluído com sucesso!")

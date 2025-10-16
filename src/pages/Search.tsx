@@ -12,6 +12,7 @@ import { FilterSidebar } from "@/components/filter-sidebar";
 import { toast } from "sonner";
 import { calculateDistance } from "@/lib/distance";
 import { ResultCardSkeleton } from "@/components/result-card-skeleton";
+import { OpeningHoursStatus } from "@/components/opening-hours-status";
 
 type UserLocation = {
   lat: number;
@@ -19,6 +20,18 @@ type UserLocation = {
   address: string;
   city: string;
 };
+
+type HourRange = {
+  start: string;
+  end:string;
+  type: string;
+}
+
+type DailyHours = {
+  day_of_week: number;
+  day: string;
+  hours: HourRange[];
+}
 
 type EstablishmentWithDistance = {
   id: string;
@@ -32,6 +45,7 @@ type EstablishmentWithDistance = {
   rating?: number;
   distance: number;
   linkDelivery?: string | null;
+  operatingHours?: DailyHours[];
 };
 
 type LojaRaw = {
@@ -48,6 +62,7 @@ type LojaRaw = {
   "endereço completo": string;
   Latitude: number;
   Longitude: number;
+  horario_funcionamento?: DailyHours[];
 };
 
 type NormalizedEstablishment = {
@@ -61,6 +76,7 @@ type NormalizedEstablishment = {
   description?: string;
   rating?: number;
   linkDelivery?: string | null;
+  operatingHours?: DailyHours[];
 };
 
 const Search = () => {
@@ -90,6 +106,7 @@ const Search = () => {
       longitude: l.Longitude,
       description: l.tipo_atendimento ?? undefined,
       linkDelivery: l["link delivery"],
+      operatingHours: l.horario_funcionamento,
     }));
 
   // Estados
@@ -143,16 +160,16 @@ const Search = () => {
       setIsLoadingData(true);
       try {
         const response = await fetch('/lojas.json');
-        const dataByCity: Record<string, LojaRaw[]> = await response.json();
+        const data: { result: LojaRaw[] } = await response.json();
         
-        const allLojasRaw = Object.values(dataByCity).flat();
+        const allLojasRaw = data.result;
         const normalized = normalizeEstablishments(allLojasRaw);
         setAllEstablishments(normalized);
 
         const uniqueCategories = [...new Set(normalized.map(e => e.category))];
         setDynamicCategories(uniqueCategories.sort());
 
-        const uniqueCities = Object.keys(dataByCity);
+        const uniqueCities = [...new Set(normalized.map(e => e.city.trim()))];
         setDynamicCities(uniqueCities.sort());
 
       } catch (error) {
@@ -387,7 +404,10 @@ const Search = () => {
                     <Card key={item.id} className="p-4 flex flex-col">
                         <h3 className="font-bold">{item.name}</h3>
                         <p className="text-sm text-primary font-semibold">{item.category}</p>
-                        <p className="text-sm mt-2 text-muted-foreground flex-grow">{item.address}</p>
+                        <p className="text-sm mt-2 text-muted-foreground">{item.address}</p>
+                        <div className="flex-grow mt-2">
+                          <OpeningHoursStatus operatingHours={item.operatingHours} />
+                        </div>
                         <div className="flex justify-between items-center mt-4">
                             <p className="text-sm font-bold">{item.distance.toFixed(2)} km de distância</p>
                             {item.linkDelivery && (
