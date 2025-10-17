@@ -3,6 +3,7 @@ import requests
 import time
 import re
 import json
+from datetime import datetime, timedelta
 
 # ======= CONFIGURAÇÕES =======
 INPUT_FILE = "Base cliente Vila Velha.xlsx"
@@ -43,16 +44,39 @@ def traduzir_type(tipo):
     mapa = {"IMEDIATE": "Delivery", "BOTH": "Delivery e Agendamento", "SCHEDULED": "Agendamento"}
     return mapa.get(tipo.upper(), tipo)
 
+def ajustar_horario(time_str):
+    """Ajusta o horário subtraindo 3 horas (UTC-3)."""
+    if not time_str or not isinstance(time_str, str):
+        return None
+    try:
+        # Converte a string de tempo para um objeto datetime
+        t = datetime.strptime(time_str, "%H:%M:%S")
+        # Subtrai 3 horas
+        novo_t = t - timedelta(hours=3)
+        # Formata de volta para string
+        return novo_t.strftime("%H:%M:%S")
+    except ValueError:
+        # Retorna o valor original se o formato for inválido
+        return time_str
+
 def validar_horario_funcionamento(dados):
-    """Garante que todos os dias da semana existam e que os tipos estejam traduzidos."""
+    """Garante que todos os dias da semana existam, traduz tipos e ajusta o fuso horário."""
     dias_semana = [{"day_of_week": i, "day": d} for i, d in enumerate(["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"])]
     mapa_existentes = {d["day_of_week"]: d for d in dados if "day_of_week" in d}
     resultado = []
     for d in dias_semana:
         dia_dados = mapa_existentes.get(d["day_of_week"], {"hours": []})
         dia_dados.update(d)
+        
+        # Ajusta o horário para cada intervalo
         for h in dia_dados.get("hours", []):
-            if "type" in h: h["type"] = traduzir_type(h["type"])
+            if "type" in h:
+                h["type"] = traduzir_type(h["type"])
+            if "start" in h:
+                h["start"] = ajustar_horario(h["start"])
+            if "end" in h:
+                h["end"] = ajustar_horario(h["end"])
+        
         resultado.append(dia_dados)
     return resultado
 

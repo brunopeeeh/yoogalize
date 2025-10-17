@@ -3,20 +3,21 @@ import requests
 import time
 import re
 import json
+from datetime import datetime, timedelta
 
 # ======= CONFIGURAÇÕES =======
-INPUT_FILE = "base_cliente.xlsx"
+INPUT_FILE = "Base cliente Vila Velha.xlsx"
 OUTPUT_FILE = "public/lojas.json"
 
 # ======= FUNÇÕES AUXILIARES =======
-def get_coords_from_address(address):
-    """Converte endereço em latitude e longitude via Nominatim."""
+def get_coords_from_address(address, require_street_level=False):
+    """Converte endereço em latitude e longitude via Nominatim, com validação de precisão."""
     if not isinstance(address, str) or not address.strip():
         return None, None
 
     url = "https://nominatim.openstreetmap.org/search"
     params = {"q": address, "format": "json", "addressdetails": 1, "limit": 1}
-    headers = {"User-Agent": "YoogaGeocodeScript/1.5"}
+    headers = {"User-Agent": "YoogaGeocodeScript/1.6"} # Versão incrementada
 
     try:
         resp = requests.get(url, params=params, headers=headers, timeout=15)
@@ -24,26 +25,23 @@ def get_coords_from_address(address):
         data = resp.json()
         if not data:
             return None, None
-        return float(data[0]["lat"]), float(data[0]["lon"])
+
+        result = data[0]
+
+        # Se uma correspondência a nível de rua é necessária, verifica o tipo de resultado.
+        if require_street_level:
+            bad_types = ['city', 'town', 'village', 'hamlet', 'suburb', 'county', 'state', 'country', 'administrative']
+            if result.get('type') in bad_types:
+                print(f"     Resultado muito genérico para '{address}' (tipo: {result.get('type')}). Rejeitando.")
+                return None, None
+
+        return float(result["lat"]), float(result["lon"])
     except requests.exceptions.RequestException as e:
-        print(f"⚠️ Erro de rede ao buscar '{address}': {e}")
+        print(f"Erro de rede ao buscar '{address}': {e}")
         return None, None
     except Exception as e:
-        print(f"⚠️ Erro inesperado ao buscar '{address}': {e}")
+        print(f"Erro inesperado ao buscar '{address}': {e}")
         return None, None
-
-
-def get_coords_from_cep(text):
-    """Procura CEP no texto e tenta buscar localização pelo CEP."""
-    if not isinstance(text, str):
-        return None, None
-    cep_pattern = re.search(r"\b\d{5}-?\d{3}\b", text)
-    if not cep_pattern:
-        return None, None
-    cep = cep_pattern.group().replace("-", "")
-    print(f"     ℹ️ Tentando via CEP: {cep}")
-    return get_coords_from_address(f"CEP {cep}, Brasil")
-
 
 def traduzir_type(tipo):
     """Traduz o tipo de atendimento para texto legível."""
@@ -54,6 +52,17 @@ def traduzir_type(tipo):
     }
     return mapa.get(tipo.upper(), tipo)
 
+def extract_and_adjust_time(dt_string):
+    """Extrai HH:MM:SS de uma string de data/hora ISO, ajusta para UTC-3 e retorna como string."""
+    if not isinstance(dt_string, str) or 'inválida' in dt_string:
+        return None
+    try:
+        dt_obj_utc = datetime.fromisoformat(dt_string.replace('Z', '+00:00'))
+        fuso_horario_utc_menos_3 = timedelta(hours=-3)
+        dt_obj_adjusted = dt_obj_utc + fuso_horario_utc_menos_3
+        return dt_obj_adjusted.strftime('%H:%M:%S')
+    except (ValueError, TypeError):
+        return None
 
 def validar_horario_funcionamento(dados):
     """Garante que todos os dias da semana existam e que os tipos estejam traduzidos."""
@@ -67,7 +76,6 @@ def validar_horario_funcionamento(dados):
         {"day_of_week": 6, "day": "Sábado"},
     ]
 
-    # Cria um mapa rápido de dias já presentes
     mapa_existentes = {d["day_of_week"]: d for d in dados if "day_of_week" in d}
 
     resultado = []
@@ -76,7 +84,6 @@ def validar_horario_funcionamento(dados):
         dia_dados["day_of_week"] = d["day_of_week"]
         dia_dados["day"] = d["day"]
 
-        # Traduz o tipo dentro dos hours, se houver
         for h in dia_dados.get("hours", []):
             if "type" in h:
                 h["type"] = traduzir_type(h["type"])
@@ -87,67 +94,81 @@ def validar_horario_funcionamento(dados):
 
 
 # ======= EXECUÇÃO =======
-print(f"📖 Lendo planilha de entrada: {INPUT_FILE}")
+print(f"Lendo planilha de entrada: {INPUT_FILE}")
 try:
     sheets = pd.read_excel(INPUT_FILE, sheet_name=None)
 except FileNotFoundError:
-    print(f"❌ ERRO: O arquivo de entrada '{INPUT_FILE}' não foi encontrado.")
+    print(f"ERRO: O arquivo de entrada '{INPUT_FILE}' não foi encontrado.")
     exit()
 
 dados_finais_json = {}
 
 for sheet_name, df in sheets.items():
-    print(f"\n📍 Processando aba: {sheet_name}")
+    print(f"\nProcessando aba: {sheet_name}")
 
-    # Garante colunas de coordenadas
-    if "Latitude" not in df.columns:
-        df["Latitude"] = None
-    if "Longitude" not in df.columns:
-        df["Longitude"] = None
+    if "Latitude" not in df.columns: df["Latitude"] = None
+    if "Longitude" not in df.columns: df["Longitude"] = None
 
-    # --- 1. Geocoding ---
     for i, row in df.iterrows():
-        endereco = row.get("endereço completo", df.iloc[i, 10])
         lat_existente = pd.to_numeric(row.get("Latitude"), errors='coerce')
         lon_existente = pd.to_numeric(row.get("Longitude"), errors='coerce')
 
         if pd.notna(lat_existente) and pd.notna(lon_existente):
             continue
 
-        print(f"  🔍 ({i+1}/{len(df)}) Buscando coordenadas para: {endereco}")
-        lat, lon = get_coords_from_address(endereco)
+        endereco = row.get("endereço completo", "")
+        print(f"  ({i+1}/{len(df)}) Buscando coordenadas para: {endereco}")
+        
+        # 1. Tenta buscar pelo endereço completo, exigindo resultado a nível de rua
+        lat, lon = get_coords_from_address(endereco, require_street_level=True)
+
+        # 2. Se falhar, tenta uma busca mais específica com CEP, cidade e estado
         if lat is None or lon is None:
-            lat, lon = get_coords_from_cep(str(endereco))
+            cep = row.get('cep', '')
+            cidade = row.get('cidade', '')
+            estado = row.get('estado', '')
+            if cep and cidade and estado:
+                cep_query = f"{cep}, {cidade}, {estado}, Brasil"
+                print(f"     Tentando via CEP: {cep_query}")
+                lat, lon = get_coords_from_address(cep_query)
+
         df.at[i, "Latitude"] = lat
         df.at[i, "Longitude"] = lon
         time.sleep(1.1)
 
-    # --- 2. Converte e valida horario_funcionamento ---
     if "horario_funcionamento" in df.columns:
         def parse_horario(valor):
             if isinstance(valor, str) and valor.strip():
                 try:
                     dados = json.loads(valor)
+                    for day_schedule in dados:
+                        if 'hours' in day_schedule and isinstance(day_schedule['hours'], list):
+                            cleaned_hours = []
+                            for hour_range in day_schedule['hours']:
+                                start_time = extract_and_adjust_time(hour_range.get('start'))
+                                end_time = extract_and_adjust_time(hour_range.get('end'))
+                                
+                                if start_time and end_time:
+                                    hour_range['start'] = start_time
+                                    hour_range['end'] = end_time
+                                    cleaned_hours.append(hour_range)
+                            day_schedule['hours'] = cleaned_hours
+                    
                     return validar_horario_funcionamento(dados)
                 except json.JSONDecodeError:
-                    print(f"⚠️ Erro ao decodificar horário: {valor}")
+                    print(f"Erro ao decodificar horário: {valor}")
                     return validar_horario_funcionamento([])
             return validar_horario_funcionamento([])
         df["horario_funcionamento"] = df["horario_funcionamento"].apply(parse_horario)
     else:
         df["horario_funcionamento"] = [validar_horario_funcionamento([]) for _ in range(len(df))]
 
-    # --- 3. Remove linhas sem coordenadas ---
     df_valid = df.dropna(subset=["Latitude", "Longitude"])
-
-    # --- 4. Converte para lista de dicionários ---
     registros = df_valid.fillna("").to_dict(orient="records")
-
     dados_finais_json[sheet_name] = registros
 
-# --- 5. Salva o JSON final ---
-print(f"\n💾 Salvando arquivo JSON final em: {OUTPUT_FILE}")
+print(f"\nSalvando arquivo JSON final em: {OUTPUT_FILE}")
 with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
     json.dump(dados_finais_json, f, ensure_ascii=False, indent=2)
 
-print("\n✅ Processo concluído com sucesso!")
+print("\nProcesso concluído com sucesso!")
