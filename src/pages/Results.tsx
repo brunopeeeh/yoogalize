@@ -3,6 +3,7 @@ import { ArrowLeft, Store, MapPin, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatDistance } from "@/lib/distance";
 
 type Establishment = {
   id: string;
@@ -121,7 +122,7 @@ const Results = () => {
                     <div className="flex items-center gap-2 pt-1">
                       <Navigation className="w-4 h-4 text-primary" />
                       <span className="text-primary font-semibold">
-                        {est.distance} km de distância
+                        {formatDistance(est.distance)} de distância
                       </span>
                       {index === 0 && (
                         <Badge className="ml-2 bg-primary text-primary-foreground text-xs">

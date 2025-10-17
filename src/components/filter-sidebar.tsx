@@ -14,12 +14,15 @@ type FilterSidebarProps = {
   dynamicCategories: string[];
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
+  dynamicServiceTypes: string[];
+  selectedServiceType: string;
+  setSelectedServiceType: (type: string) => void;
   radiusKm: number;
   setRadiusKm: (radius: number) => void;
   openNow: boolean;
   setOpenNow: (open: boolean) => void;
   onSearchClick: () => void;
-};
+}
 
 export const FilterSidebar = ({
   selectedCity,
@@ -29,6 +32,9 @@ export const FilterSidebar = ({
   dynamicCategories,
   selectedCategory,
   setSelectedCategory,
+  dynamicServiceTypes,
+  selectedServiceType,
+  setSelectedServiceType,
   radiusKm,
   setRadiusKm,
   openNow,
@@ -74,6 +80,29 @@ export const FilterSidebar = ({
           </div>
 
           <div className="mt-4">
+            <h3 className="font-semibold mb-2">Tipo de atendimento</h3>
+            {isLoadingData ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <Select
+                value={selectedServiceType}
+                onValueChange={setSelectedServiceType}
+                disabled={isLoadingData}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
+                  {dynamicServiceTypes.map((type) => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          <div className="mt-4">
             <h3 className="font-semibold mt-4 mb-2">Raio (km)</h3>
             <Slider
               defaultValue={[radiusKm]}
@@ -109,4 +138,4 @@ export const FilterSidebar = ({
       </div>
     </ScrollArea>
   );
-};
+}

@@ -8,25 +8,27 @@ import Search from "./pages/Search";
 import Results from "./pages/Results";
 import Favorites from "./pages/Favorites"; // Adicionado
 import NotFound from "./pages/NotFound";
+import { ThemeProvider } from "next-themes";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Welcome />} />
-          <Route path="/busca" element={<Search />} />
-          <Route path="/resultados" element={<Results />} />
-          <Route path="/favoritos" element={<Favorites />} /> {/* Adicionado */}
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider attribute="class" defaultTheme="system">
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Welcome />} />
+            <Route path="/busca" element={<Search />} />
+            <Route path="/resultados" element={<Results />} />
+            <Route path="/favoritos" element={<Favorites />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
