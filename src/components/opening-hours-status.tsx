@@ -16,7 +16,19 @@ type OpeningHoursStatusProps = {
 };
 
 export const OpeningHoursStatus = ({ operatingHours }: OpeningHoursStatusProps) => {
-  const { status, message } = getOpeningHoursInfo(operatingHours);
+  let parsedOperatingHours = operatingHours;
+
+  // Garante que o horário de funcionamento seja um objeto, não uma string JSON
+  if (typeof operatingHours === 'string') {
+    try {
+      parsedOperatingHours = JSON.parse(operatingHours);
+    } catch (error) {
+      console.error("Erro ao fazer parse do horário de funcionamento:", error);
+      parsedOperatingHours = undefined; // Reseta para um estado seguro em caso de erro
+    }
+  }
+
+  const { status, message } = getOpeningHoursInfo(parsedOperatingHours);
 
   if (message === 'Horário não informado') {
     return (
