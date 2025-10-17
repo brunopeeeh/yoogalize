@@ -1,0 +1,1446 @@
+{
+  "result": [
+    {
+      "nome_empresa": "Fruteria Brasil - Shopping Vitória",
+      "modelo_negocio": "Açaiteria",
+      "tipo_atendimento": "somente presencial",
+      "logradouro": "Avenida Américo Buaiz",
+      "número": "200",
+      "bairro": "Enseada Do Suá",
+      "cidade": "Vitória",
+      "estado": "ES",
+      "cep": "29050-902",
+      "link delivery": null,
+      "endereco completo": "Avenida Américo Buaiz, 200 - Enseada Do Suá, Vitória - ES, 29050-902",
+      "horario_funcionamento": [
+        {
+          "hours": [],
+          "day_of_week": 0,
+          "day": "Domingo"
+        },
+        {
+          "hours": [],
+          "day_of_week": 1,
+          "day": "Segunda-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 2,
+          "day": "Terça-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 3,
+          "day": "Quarta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 4,
+          "day": "Quinta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 5,
+          "day": "Sexta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 6,
+          "day": "Sábado"
+        }
+      ],
+      "Latitude": -20.312523,
+      "Longitude": -40.288225
+    },
+    {
+      "nome_empresa": "Quintal Da Natureza",
+      "modelo_negocio": "Produtos Naturais",
+      "tipo_atendimento": "Presencial e delivery",
+      "logradouro": "Rua Engenheiro Fábio Ruschi",
+      "número": "371",
+      "bairro": "Bento Ferreira",
+      "cidade": "Vitória",
+      "estado": "ES",
+      "cep": "29050-670",
+      "link delivery": "quintaldanatureza",
+      "endereco completo": "Rua Engenheiro Fábio Ruschi, 371 - Bento Ferreira, Vitória - ES, 29050-670",
+      "horario_funcionamento": [
+        {
+          "day_of_week": 0,
+          "day": "Domingo",
+          "hours": [
+            {
+              "start": "08:00:00",
+              "end": "12:00:00",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 1,
+          "day": "Segunda-feira",
+          "hours": [
+            {
+              "start": "08:00:20",
+              "end": "16:30:20",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 2,
+          "day": "Terça-feira",
+          "hours": [
+            {
+              "start": "08:00:44",
+              "end": "16:30:44",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 3,
+          "day": "Quarta-feira",
+          "hours": [
+            {
+              "start": "08:00:03",
+              "end": "16:30:03",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 4,
+          "day": "Quinta-feira",
+          "hours": [
+            {
+              "start": "08:00:31",
+              "end": "16:30:31",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 5,
+          "day": "Sexta-feira",
+          "hours": [
+            {
+              "start": "08:00:03",
+              "end": "14:00:03",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 6,
+          "day": "Sábado",
+          "hours": []
+        }
+      ],
+      "Latitude": -20.313288,
+      "Longitude": -40.306535
+    },
+    {
+      "nome_empresa": "Cookie It Café",
+      "modelo_negocio": "Padaria / Cafeteria",
+      "tipo_atendimento": "Presencial e Ifood",
+      "logradouro": "Rua Aleixo Netto",
+      "número": "516",
+      "bairro": "Praia Do Canto",
+      "cidade": "Vitória",
+      "estado": "ES",
+      "cep": "29055-260",
+      "link delivery": "cookie-it-cafe",
+      "endereco completo": "Rua Aleixo Netto, 516 - Praia Do Canto, Vitória - ES, 29055-260",
+      "horario_funcionamento": [
+        {
+          "hours": [],
+          "day_of_week": 0,
+          "day": "Domingo"
+        },
+        {
+          "hours": [],
+          "day_of_week": 1,
+          "day": "Segunda-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 2,
+          "day": "Terça-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 3,
+          "day": "Quarta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 4,
+          "day": "Quinta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 5,
+          "day": "Sexta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 6,
+          "day": "Sábado"
+        }
+      ],
+      "Latitude": -20.302201,
+      "Longitude": -40.297101
+    },
+    {
+      "nome_empresa": "Cookie It Café - Vila Velha",
+      "modelo_negocio": "Padaria / Cafeteria",
+      "tipo_atendimento": "Presencial e Ifood",
+      "logradouro": "Avenida Antônio Gil Vellozo",
+      "número": "2002",
+      "bairro": "Praia Da Costa",
+      "cidade": "Vila Velha",
+      "estado": "ES",
+      "cep": "29101-022",
+      "link delivery": "cookieitcafeblufoodpark",
+      "endereco completo": "Avenida Antônio Gil Vellozo, 2002 - Praia Da Costa, Vila Velha - ES, 29101-022",
+      "horario_funcionamento": [
+        {
+          "hours": [],
+          "day_of_week": 0,
+          "day": "Domingo"
+        },
+        {
+          "hours": [],
+          "day_of_week": 1,
+          "day": "Segunda-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 2,
+          "day": "Terça-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 3,
+          "day": "Quarta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 4,
+          "day": "Quinta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 5,
+          "day": "Sexta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 6,
+          "day": "Sábado"
+        }
+      ],
+      "Latitude": -20.344934,
+      "Longitude": -40.284165
+    },
+    {
+      "nome_empresa": "Cervejas Mythos",
+      "modelo_negocio": "Bar / Petiscaria",
+      "tipo_atendimento": "Presencial e delivery",
+      "logradouro": "Rua Amélia Tartuce Nasser",
+      "número": "1145",
+      "bairro": "Jardim Da Penha",
+      "cidade": "Vitória",
+      "estado": "ES",
+      "cep": "29060-110",
+      "link delivery": "cervejas-mythos",
+      "endereco completo": "Rua Amélia Tartuce Nasser, 1145 - Jardim Da Penha, Vitória - ES, 29060-110",
+      "horario_funcionamento": [
+        {
+          "day_of_week": 0,
+          "day": "Domingo",
+          "hours": [
+            {
+              "start": "11:30:49",
+              "end": "15:00:08",
+              "type": "Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 1,
+          "day": "Segunda-feira",
+          "hours": []
+        },
+        {
+          "day_of_week": 2,
+          "day": "Terça-feira",
+          "hours": [
+            {
+              "start": "17:00:36",
+              "end": "22:00:36",
+              "type": "Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 3,
+          "day": "Quarta-feira",
+          "hours": [
+            {
+              "start": "17:00:10",
+              "end": "22:00:06",
+              "type": "Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 4,
+          "day": "Quinta-feira",
+          "hours": [
+            {
+              "start": "17:00:20",
+              "end": "22:00:29",
+              "type": "Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 5,
+          "day": "Sexta-feira",
+          "hours": [
+            {
+              "start": "16:30:32",
+              "end": "22:00:59",
+              "type": "Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 6,
+          "day": "Sábado",
+          "hours": [
+            {
+              "start": "11:00:42",
+              "end": "21:00:13",
+              "type": "Agendamento"
+            }
+          ]
+        }
+      ],
+      "Latitude": -20.27919,
+      "Longitude": -40.290006
+    },
+    {
+      "nome_empresa": "Sonho Gelado - Jardim Camburi",
+      "modelo_negocio": "Sorveteria",
+      "tipo_atendimento": "somente presencial",
+      "logradouro": "Avenida Armando Duarte Rabello",
+      "número": "294",
+      "bairro": "Jardim Camburi",
+      "cidade": "Vitória",
+      "estado": "ES",
+      "cep": "29092-280",
+      "link delivery": "sonho-gelado-jardim-camburi",
+      "endereco completo": "Avenida Armando Duarte Rabello, 294 - Jardim Camburi, Vitória - ES, 29092-280",
+      "horario_funcionamento": [
+        {
+          "day": "Domingo",
+          "day_of_week": 0,
+          "hours": []
+        },
+        {
+          "day": "Segunda-feira",
+          "day_of_week": 1,
+          "hours": []
+        },
+        {
+          "day": "Terça-feira",
+          "day_of_week": 2,
+          "hours": []
+        },
+        {
+          "day": "Quarta-feira",
+          "day_of_week": 3,
+          "hours": []
+        },
+        {
+          "day": "Quinta-feira",
+          "day_of_week": 4,
+          "hours": []
+        },
+        {
+          "day": "Sexta-feira",
+          "day_of_week": 5,
+          "hours": []
+        },
+        {
+          "day": "Sábado",
+          "day_of_week": 6,
+          "hours": []
+        }
+      ],
+      "Latitude": -20.251815,
+      "Longitude": -40.270595
+    },
+    {
+      "nome_empresa": "Salgados D’ Margo",
+      "modelo_negocio": "Lanchonete",
+      "tipo_atendimento": "somente Delivery",
+      "logradouro": "Avenida São Gabriel Da Palha",
+      "número": "18",
+      "bairro": "Vale Encantado",
+      "cidade": "Vila Velha",
+      "estado": "ES",
+      "cep": "29113-300",
+      "link delivery": "salgados-d-margo",
+      "endereco completo": "Avenida São Gabriel Da Palha, 18 - Vale Encantado, Vila Velha - ES, 29113-300",
+      "horario_funcionamento": [
+        {
+          "day_of_week": 0,
+          "day": "Domingo",
+          "hours": []
+        },
+        {
+          "day_of_week": 1,
+          "day": "Segunda-feira",
+          "hours": []
+        },
+        {
+          "day_of_week": 2,
+          "day": "Terça-feira",
+          "hours": [
+            {
+              "start": "16:15:34",
+              "end": "22:40:01",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 3,
+          "day": "Quarta-feira",
+          "hours": [
+            {
+              "start": "16:15:12",
+              "end": "22:40:07",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 4,
+          "day": "Quinta-feira",
+          "hours": [
+            {
+              "start": "16:15:55",
+              "end": "22:40:58",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 5,
+          "day": "Sexta-feira",
+          "hours": [
+            {
+              "start": "16:15:46",
+              "end": "22:40:20",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 6,
+          "day": "Sábado",
+          "hours": [
+            {
+              "start": "16:15:35",
+              "end": "22:40:35",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        }
+      ],
+      "Latitude": -20.37614,
+      "Longitude": -40.34973
+    },
+    {
+      "nome_empresa": "Café Ser Amor",
+      "modelo_negocio": "Padaria / Cafeteria",
+      "tipo_atendimento": "somente presencial",
+      "logradouro": "Avenida Hugo Musso",
+      "número": "176",
+      "bairro": "Praia Da Costa",
+      "cidade": "Vila Velha",
+      "estado": "ES",
+      "cep": "29101-280",
+      "link delivery": "cafe-ser-amor",
+      "endereco completo": "Avenida Hugo Musso, 176 - Praia Da Costa, Vila Velha - ES, 29101-280",
+      "horario_funcionamento": [
+        {
+          "hours": [],
+          "day_of_week": 0,
+          "day": "Domingo"
+        },
+        {
+          "hours": [],
+          "day_of_week": 1,
+          "day": "Segunda-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 2,
+          "day": "Terça-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 3,
+          "day": "Quarta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 4,
+          "day": "Quinta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 5,
+          "day": "Sexta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 6,
+          "day": "Sábado"
+        }
+      ],
+      "Latitude": -20.333424,
+      "Longitude": -40.283153
+    },
+    {
+      "nome_empresa": "Santa Salada Express",
+      "modelo_negocio": "Saladeria",
+      "tipo_atendimento": "Presencial, Ifood e Delivery",
+      "logradouro": "Avenida João Baptista Parra",
+      "número": "713",
+      "bairro": "Praia Do Suá",
+      "cidade": "Vitória",
+      "estado": "ES",
+      "cep": "29052-120",
+      "link delivery": "santa-salada",
+      "endereco completo": "Avenida João Baptista Parra, 713 - Praia Do Suá, Vitória - ES, 29052-120",
+      "horario_funcionamento": [
+        {
+          "day_of_week": 0,
+          "day": "Domingo",
+          "hours": []
+        },
+        {
+          "day_of_week": 1,
+          "day": "Segunda-feira",
+          "hours": [
+            {
+              "start": "09:30:49",
+              "end": "15:00:50",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 2,
+          "day": "Terça-feira",
+          "hours": [
+            {
+              "start": "09:30:57",
+              "end": "15:00:55",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 3,
+          "day": "Quarta-feira",
+          "hours": [
+            {
+              "start": "09:30:08",
+              "end": "15:00:59",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 4,
+          "day": "Quinta-feira",
+          "hours": [
+            {
+              "start": "09:30:15",
+              "end": "15:00:04",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 5,
+          "day": "Sexta-feira",
+          "hours": [
+            {
+              "start": "09:30:22",
+              "end": "15:00:09",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 6,
+          "day": "Sábado",
+          "hours": [
+            {
+              "start": "09:30:33",
+              "end": "15:00:15",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        }
+      ],
+      "Latitude": -20.312458,
+      "Longitude": -40.295142
+    },
+    {
+      "nome_empresa": "Churrasquinho Do Fred",
+      "modelo_negocio": "Churrasquinho",
+      "tipo_atendimento": "somente presencial",
+      "logradouro": "Rua Humberto Pereira",
+      "número": "176",
+      "bairro": "Praia De Itaparica",
+      "cidade": "Vila Velha",
+      "estado": "ES",
+      "cep": "29102-170",
+      "link delivery": "churrasquinho-do-fred",
+      "endereco completo": "Rua Humberto Pereira, 176 - Praia De Itaparica, Vila Velha - ES, 29102-170",
+      "horario_funcionamento": [
+        {
+          "day": "Domingo",
+          "day_of_week": 0,
+          "hours": []
+        },
+        {
+          "day": "Segunda-feira",
+          "day_of_week": 1,
+          "hours": []
+        },
+        {
+          "day": "Terça-feira",
+          "day_of_week": 2,
+          "hours": []
+        },
+        {
+          "day": "Quarta-feira",
+          "day_of_week": 3,
+          "hours": []
+        },
+        {
+          "day": "Quinta-feira",
+          "day_of_week": 4,
+          "hours": []
+        },
+        {
+          "day": "Sexta-feira",
+          "day_of_week": 5,
+          "hours": []
+        },
+        {
+          "day": "Sábado",
+          "day_of_week": 6,
+          "hours": []
+        }
+      ],
+      "Latitude": -20.374091,
+      "Longitude": -40.307235
+    },
+    {
+      "nome_empresa": "Dhiow Lanches",
+      "modelo_negocio": "Hamburgueria",
+      "tipo_atendimento": "somente Delivery",
+      "logradouro": "Rua Leonel Fernandes",
+      "número": "18",
+      "bairro": "Grande Vitória",
+      "cidade": "Vitória",
+      "estado": "ES",
+      "cep": "29024-075",
+      "link delivery": "dhiow-lanches-",
+      "endereco completo": "Rua Leonel Fernandes, 18 - Grande Vitória, Vitória - ES, 29024-075",
+      "horario_funcionamento": [
+        {
+          "day_of_week": 0,
+          "day": "Domingo",
+          "hours": []
+        },
+        {
+          "day_of_week": 1,
+          "day": "Segunda-feira",
+          "hours": [
+            {
+              "start": "18:40:52",
+              "end": "23:00:52",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 2,
+          "day": "Terça-feira",
+          "hours": []
+        },
+        {
+          "day_of_week": 3,
+          "day": "Quarta-feira",
+          "hours": [
+            {
+              "start": "18:40:46",
+              "end": "23:00:46",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 4,
+          "day": "Quinta-feira",
+          "hours": [
+            {
+              "start": "18:40:02",
+              "end": "23:00:02",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 5,
+          "day": "Sexta-feira",
+          "hours": [
+            {
+              "start": "18:40:53",
+              "end": "23:00:53",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 6,
+          "day": "Sábado",
+          "hours": [
+            {
+              "start": "18:40:56",
+              "end": "23:00:56",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        }
+      ],
+      "Latitude": -20.291606,
+      "Longitude": -40.344373
+    },
+    {
+      "nome_empresa": "Spettaria & Cia",
+      "modelo_negocio": "Churrasquinho",
+      "tipo_atendimento": "Presencial, Ifood e Delivery",
+      "logradouro": "Rua Itacibá",
+      "número": "135",
+      "bairro": "Praia De Itaparica",
+      "cidade": "Vila Velha",
+      "estado": "ES",
+      "cep": "29102-280",
+      "link delivery": "spettaria-&-cia",
+      "endereco completo": "Rua Itacibá, 135 - Praia De Itaparica, Vila Velha - ES, 29102-280",
+      "horario_funcionamento": [
+        {
+          "day_of_week": 0,
+          "day": "Domingo",
+          "hours": [
+            {
+              "start": "10:30:02",
+              "end": "23:59:39",
+              "type": "Delivery"
+            },
+            {
+              "start": "00:00:39",
+              "end": "04:00:39",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 1,
+          "day": "Segunda-feira",
+          "hours": [
+            {
+              "start": "10:30:38",
+              "end": "23:59:00",
+              "type": "Delivery"
+            },
+            {
+              "start": "00:00:00",
+              "end": "04:00:00",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 2,
+          "day": "Terça-feira",
+          "hours": [
+            {
+              "start": "10:30:29",
+              "end": "23:59:24",
+              "type": "Delivery"
+            },
+            {
+              "start": "00:00:24",
+              "end": "04:00:24",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 3,
+          "day": "Quarta-feira",
+          "hours": [
+            {
+              "start": "10:30:26",
+              "end": "23:59:42",
+              "type": "Delivery"
+            },
+            {
+              "start": "00:00:42",
+              "end": "04:00:42",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 4,
+          "day": "Quinta-feira",
+          "hours": [
+            {
+              "start": "10:30:08",
+              "end": "23:59:08",
+              "type": "Delivery"
+            },
+            {
+              "start": "00:00:08",
+              "end": "04:00:08",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 5,
+          "day": "Sexta-feira",
+          "hours": [
+            {
+              "start": "10:30:49",
+              "end": "23:59:30",
+              "type": "Delivery"
+            },
+            {
+              "start": "00:00:30",
+              "end": "02:00:34",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 6,
+          "day": "Sábado",
+          "hours": [
+            {
+              "start": "10:30:28",
+              "end": "23:59:50",
+              "type": "Delivery"
+            },
+            {
+              "start": "00:00:50",
+              "end": "04:00:50",
+              "type": "Delivery"
+            }
+          ]
+        }
+      ],
+      "Latitude": -20.378281,
+      "Longitude": -40.308293
+    },
+    {
+      "nome_empresa": "Fioretto - Itaparica",
+      "modelo_negocio": "Sorveteria",
+      "tipo_atendimento": "Presencial e delivery",
+      "logradouro": "Avenida Saturnino Rangel Mauro",
+      "número": "3250",
+      "bairro": "Praia De Itaparica",
+      "cidade": "Vila Velha",
+      "estado": "ES",
+      "cep": "29102-036",
+      "link delivery": "fioretto-itaparica",
+      "endereco completo": "Avenida Saturnino Rangel Mauro, 3250 - Praia De Itaparica, Vila Velha - ES, 29102-036",
+      "horario_funcionamento": [
+        {
+          "hours": [],
+          "day_of_week": 0,
+          "day": "Domingo"
+        },
+        {
+          "hours": [],
+          "day_of_week": 1,
+          "day": "Segunda-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 2,
+          "day": "Terça-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 3,
+          "day": "Quarta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 4,
+          "day": "Quinta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 5,
+          "day": "Sexta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 6,
+          "day": "Sábado"
+        }
+      ],
+      "Latitude": -20.381039,
+      "Longitude": -40.310521
+    },
+    {
+      "nome_empresa": "Cantina Vicenza - Barra Do Jucu",
+      "modelo_negocio": "Restaurante",
+      "tipo_atendimento": "somente Delivery",
+      "logradouro": "Rua Professor João Cardoso",
+      "número": "390",
+      "bairro": "Barra Do Jucu",
+      "cidade": "Vila Velha",
+      "estado": "ES",
+      "cep": "29125-040",
+      "link delivery": "cantina-vicenza-barra-do-jucu",
+      "endereco completo": "Rua Professor João Cardoso, 390 - Barra Do Jucu, Vila Velha - ES, 29125-040",
+      "horario_funcionamento": [
+        {
+          "day_of_week": 0,
+          "day": "Domingo",
+          "hours": [
+            {
+              "start": "11:00:07",
+              "end": "15:30:59",
+              "type": "Delivery"
+            },
+            {
+              "start": "18:00:23",
+              "end": "22:30:30",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 1,
+          "day": "Segunda-feira",
+          "hours": []
+        },
+        {
+          "day_of_week": 2,
+          "day": "Terça-feira",
+          "hours": [
+            {
+              "start": "18:00:07",
+              "end": "22:30:03",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 3,
+          "day": "Quarta-feira",
+          "hours": []
+        },
+        {
+          "day_of_week": 4,
+          "day": "Quinta-feira",
+          "hours": [
+            {
+              "start": "18:00:13",
+              "end": "22:30:13",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 5,
+          "day": "Sexta-feira",
+          "hours": [
+            {
+              "start": "18:00:58",
+              "end": "22:30:58",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 6,
+          "day": "Sábado",
+          "hours": [
+            {
+              "start": "18:00:44",
+              "end": "22:30:17",
+              "type": "Delivery"
+            }
+          ]
+        }
+      ],
+      "Latitude": -20.422981,
+      "Longitude": -40.3267
+    },
+    {
+      "nome_empresa": "Barra Gelato",
+      "modelo_negocio": "Sorveteria",
+      "tipo_atendimento": "Presencial e delivery",
+      "logradouro": "R Joaquim Lyra",
+      "número": "75",
+      "bairro": "Barra Do Jucu",
+      "cidade": "Vila Velha",
+      "estado": "ES",
+      "cep": "29125-050",
+      "link delivery": "barra-gelato",
+      "endereco completo": "R Joaquim Lyra, 75 - Barra Do Jucu, Vila Velha - ES, 29125-050",
+      "horario_funcionamento": [
+        {
+          "day_of_week": 0,
+          "day": "Domingo",
+          "hours": [
+            {
+              "start": "14:30:27",
+              "end": "23:00:15",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 1,
+          "day": "Segunda-feira",
+          "hours": [
+            {
+              "start": "16:30:13",
+              "end": "21:00:13",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 2,
+          "day": "Terça-feira",
+          "hours": []
+        },
+        {
+          "day_of_week": 3,
+          "day": "Quarta-feira",
+          "hours": [
+            {
+              "start": "16:30:37",
+              "end": "23:00:37",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 4,
+          "day": "Quinta-feira",
+          "hours": [
+            {
+              "start": "16:30:58",
+              "end": "23:00:58",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 5,
+          "day": "Sexta-feira",
+          "hours": [
+            {
+              "start": "16:30:09",
+              "end": "23:00:09",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 6,
+          "day": "Sábado",
+          "hours": [
+            {
+              "start": "16:30:30",
+              "end": "23:00:30",
+              "type": "Delivery"
+            }
+          ]
+        }
+      ],
+      "Latitude": -20.424878,
+      "Longitude": -40.328511
+    },
+    {
+      "nome_empresa": "Gj Ltda",
+      "modelo_negocio": "Bar / Petiscaria",
+      "tipo_atendimento": "somente presencial",
+      "logradouro": "Rua 13 De Maio",
+      "número": "sn",
+      "bairro": "Rio Marinho",
+      "cidade": "Vitória",
+      "estado": "ES",
+      "cep": "29112-410",
+      "link delivery": "societylaranjao",
+      "endereco completo": "Rua 13 De Maio, sn - Rio Marinho, Vitória - ES, 29112-410",
+      "horario_funcionamento": [
+        {
+          "hours": [],
+          "day_of_week": 0,
+          "day": "Domingo"
+        },
+        {
+          "hours": [],
+          "day_of_week": 1,
+          "day": "Segunda-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 2,
+          "day": "Terça-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 3,
+          "day": "Quarta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 4,
+          "day": "Quinta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 5,
+          "day": "Sexta-feira"
+        },
+        {
+          "hours": [],
+          "day_of_week": 6,
+          "day": "Sábado"
+        }
+      ],
+      "Latitude": -20.364005,
+      "Longitude": -40.358988
+    },
+    {
+      "nome_empresa": "Hope Tabacaria E Headshop",
+      "modelo_negocio": "Tabacaria",
+      "tipo_atendimento": "Presencial e delivery",
+      "logradouro": "Rua Luciano Das Neves",
+      "número": "268",
+      "bairro": "Centro De Vila Velha",
+      "cidade": "Vila Velha",
+      "estado": "ES",
+      "cep": "29100-200",
+      "link delivery": "hopetabacariaeheadshop",
+      "endereco completo": "Rua Luciano Das Neves, 268 - Centro De Vila Velha, Vila Velha - ES, 29100-200",
+      "horario_funcionamento": [
+        {
+          "day": "Domingo",
+          "day_of_week": 0,
+          "hours": []
+        },
+        {
+          "day": "Segunda-feira",
+          "day_of_week": 1,
+          "hours": [
+            {
+              "start": "10:00:05",
+              "end": "18:00:05",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day": "Terça-feira",
+          "day_of_week": 2,
+          "hours": [
+            {
+              "start": "10:00:43",
+              "end": "19:00:43",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day": "Quarta-feira",
+          "day_of_week": 3,
+          "hours": [
+            {
+              "start": "10:00:49",
+              "end": "19:00:49",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day": "Quinta-feira",
+          "day_of_week": 4,
+          "hours": [
+            {
+              "start": "10:00:15",
+              "end": "19:00:15",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day": "Sexta-feira",
+          "day_of_week": 5,
+          "hours": [
+            {
+              "start": "10:00:32",
+              "end": "19:00:32",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day": "Sábado",
+          "day_of_week": 6,
+          "hours": [
+            {
+              "start": "10:00:47",
+              "end": "14:30:47",
+              "type": "Delivery"
+            }
+          ]
+        }
+      ],
+      "Latitude": -20.331136,
+      "Longitude": -40.292237
+    },
+    {
+      "nome_empresa": "Deck's Casa De Carnes",
+      "modelo_negocio": "Distribuidora de Bebidas",
+      "tipo_atendimento": "Presencial, Ifood e Delivery",
+      "logradouro": "Rua Humberto Pereira",
+      "número": "135",
+      "bairro": "Praia De Itaparica",
+      "cidade": "Vila Velha",
+      "estado": "ES",
+      "cep": "29102-170",
+      "link delivery": "decks-casa-de-carnes",
+      "endereco completo": "Rua Humberto Pereira, 135 - Praia De Itaparica, Vila Velha - ES, 29102-170",
+      "horario_funcionamento": [
+        {
+          "day_of_week": 0,
+          "day": "Domingo",
+          "hours": [
+            {
+              "start": "10:45:58",
+              "end": "15:00:58",
+              "type": "Delivery e Agendamento"
+            },
+            {
+              "start": "18:00:23",
+              "end": "22:45:23",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 1,
+          "day": "Segunda-feira",
+          "hours": []
+        },
+        {
+          "day_of_week": 2,
+          "day": "Terça-feira",
+          "hours": [
+            {
+              "start": "10:45:05",
+              "end": "14:00:39",
+              "type": "Delivery e Agendamento"
+            },
+            {
+              "start": "18:00:05",
+              "end": "22:45:05",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 3,
+          "day": "Quarta-feira",
+          "hours": [
+            {
+              "start": "10:43:26",
+              "end": "14:00:22",
+              "type": "Delivery e Agendamento"
+            },
+            {
+              "start": "18:00:22",
+              "end": "22:45:22",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 4,
+          "day": "Quinta-feira",
+          "hours": [
+            {
+              "start": "10:45:09",
+              "end": "14:00:16",
+              "type": "Delivery e Agendamento"
+            },
+            {
+              "start": "18:00:09",
+              "end": "22:45:01",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 5,
+          "day": "Sexta-feira",
+          "hours": [
+            {
+              "start": "10:30:10",
+              "end": "14:00:53",
+              "type": "Delivery e Agendamento"
+            },
+            {
+              "start": "18:00:34",
+              "end": "22:45:34",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        },
+        {
+          "day_of_week": 6,
+          "day": "Sábado",
+          "hours": [
+            {
+              "start": "10:30:17",
+              "end": "15:00:29",
+              "type": "Delivery e Agendamento"
+            },
+            {
+              "start": "18:00:12",
+              "end": "22:45:12",
+              "type": "Delivery e Agendamento"
+            }
+          ]
+        }
+      ],
+      "Latitude": -20.374544,
+      "Longitude": -40.306154
+    },
+    {
+      "nome_empresa": "Hops Club",
+      "modelo_negocio": "Bar / Petiscaria",
+      "tipo_atendimento": "Presencial e Ifood",
+      "logradouro": "Rua Francisco Santos",
+      "número": "35",
+      "bairro": "Jardim Camburi",
+      "cidade": "Vitória",
+      "estado": "ES",
+      "cep": "29090-680",
+      "link delivery": "hops-club-cerveja-artesanal",
+      "endereco completo": "Rua Francisco Santos, 35 - Jardim Camburi, Vitória - ES, 29090-680",
+      "horario_funcionamento": [
+        {
+          "day": "Domingo",
+          "day_of_week": 0,
+          "hours": [
+            {
+              "start": "17:00:11",
+              "end": "22:00:11",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day": "Segunda-feira",
+          "day_of_week": 1,
+          "hours": []
+        },
+        {
+          "day": "Terça-feira",
+          "day_of_week": 2,
+          "hours": [
+            {
+              "start": "17:00:52",
+              "end": "22:00:52",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day": "Quarta-feira",
+          "day_of_week": 3,
+          "hours": [
+            {
+              "start": "17:00:44",
+              "end": "22:00:44",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day": "Quinta-feira",
+          "day_of_week": 4,
+          "hours": [
+            {
+              "start": "17:00:05",
+              "end": "22:00:05",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day": "Sexta-feira",
+          "day_of_week": 5,
+          "hours": [
+            {
+              "start": "17:00:26",
+              "end": "22:30:26",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day": "Sábado",
+          "day_of_week": 6,
+          "hours": [
+            {
+              "start": "17:00:53",
+              "end": "22:00:53",
+              "type": "Delivery"
+            }
+          ]
+        }
+      ],
+      "Latitude": -20.256638,
+      "Longitude": -40.265952
+    }
+  ]
+}
