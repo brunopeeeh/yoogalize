@@ -25,7 +25,7 @@ type LojaRaw = {
   estado: string;
   cep: string;
   'link delivery': string | null;
-  'endereço completo': string;
+  'endereco completo': string;
   Latitude: number;
   Longitude: number;
   horario_funcionamento?: DailyHours[];
@@ -62,7 +62,7 @@ const Favorites = () => {
       id: `${slug(l.nome_empresa)}-${l.Latitude}-${l.Longitude}`,
       name: l.nome_empresa,
       category: l.modelo_negocio.trim(),
-      address: l['endereço completo'],
+      address: l['endereco completo'],
       city: l.cidade.trim(),
       latitude: l.Latitude,
       longitude: l.Longitude,

@@ -10,9 +10,9 @@ export type LojaRaw = {
   cep: string;
   "link delivery": string | null;
   "endereco completo": string;
-  latitude: number;
-  longitude: number;
-  horario_funcionamento?: any; // Adicionado para tipar o campo que vem do JSON
+  Latitude: number;
+  Longitude: number;
+  horario_funcionamento?: any;
 };
 
 export type Establishment = {
@@ -44,15 +44,14 @@ export function normalizeEstablishments(lojas: LojaRaw[]): Establishment[] {
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
-
   return lojas.map((l) => ({
-    id: `${slug(l.nome_empresa)}-${l.latitude}-${l.longitude}`,
+    id: `${slug(l.nome_empresa)}-${l.Latitude}-${l.Longitude}`,
     name: l.nome_empresa,
     category: l.modelo_negocio.trim(),
     address: l["endereco completo"],
-    latitude: l.latitude,
-    longitude: l.longitude,
+    latitude: l.Latitude,
+    longitude: l.Longitude,
     description: l.tipo_atendimento ?? undefined,
-    operatingHours: l.horario_funcionamento, // Mapeamento corrigido
+    operatingHours: l.horario_funcionamento,
   }));
 }

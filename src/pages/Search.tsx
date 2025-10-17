@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { FilterSidebar } from "@/components/filter-sidebar";
 import { toast } from "sonner";
-import { calculateDistance } from "@/lib/distance";
+import { calculateDistance, formatDistance } from "@/lib/distance";
 import { ResultCardSkeleton } from "@/components/result-card-skeleton";
 import { OpeningHoursStatus } from "@/components/opening-hours-status";
 import { isEstablishmentOpen } from "@/lib/utils"; // Importa a função
@@ -48,6 +48,7 @@ type EstablishmentWithDistance = {
   distance: number;
   linkDelivery?: string | null;
   operatingHours?: DailyHours[];
+  serviceType?: string; // manter no tipo com distância
 };
 
 type LojaRaw = {
@@ -67,6 +68,7 @@ type LojaRaw = {
   horario_funcionamento?: DailyHours[];
 };
 
+// Tipos e normalização
 type NormalizedEstablishment = {
   id: string;
   name: string;
@@ -79,6 +81,7 @@ type NormalizedEstablishment = {
   rating?: number;
   linkDelivery?: string | null;
   operatingHours?: DailyHours[];
+  serviceType?: string; // novo campo
 };
 
 const Search = () => {
@@ -109,6 +112,7 @@ const Search = () => {
       description: l.tipo_atendimento ?? undefined,
       linkDelivery: l["link delivery"],
       operatingHours: l.horario_funcionamento,
+      serviceType: l.tipo_atendimento?.trim() ?? undefined, // preenchendo tipo de atendimento
     }));
 
   // Estados
@@ -116,6 +120,8 @@ const Search = () => {
   const [allEstablishments, setAllEstablishments] = useState<NormalizedEstablishment[]>([]);
   const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
   const [dynamicCities, setDynamicCities] = useState<string[]>([]);
+  const [dynamicServiceTypes, setDynamicServiceTypes] = useState<string[]>([]);
+  const [selectedServiceType, setSelectedServiceType] = useState<string>("all");
   const [selectedCity, setSelectedCity] = useState<string>(location.state?.userLocation?.city || "all");
   const [isSearching, setIsSearching] = useState(false);
   const [radiusKm, setRadiusKm] = useState(5);
@@ -146,7 +152,7 @@ const Search = () => {
 
     if (!hasSearched) setHasSearched(true);
     setIsSearching(true);
-    setVisibleCount(10); // Reinicia a contagem de itens visíveis
+    setVisibleCount(10);
 
     const results = allEstablishments
       .map(establishment => {
@@ -162,11 +168,12 @@ const Search = () => {
         const isInRadius = establishment.distance <= radiusKm;
         const isCategoryMatch = selectedCategory === 'all' || establishment.category === selectedCategory;
         const isCityMatch = selectedCity === 'all' || establishment.city === selectedCity;
-        
-        // Lógica do filtro "Aberto Agora"
         const isOpenNow = !openNow || isEstablishmentOpen(establishment.operatingHours);
+        const isServiceTypeMatch =
+          selectedServiceType === 'all' ||
+          (establishment.description ?? '').trim() === selectedServiceType;
 
-        return isInRadius && isCategoryMatch && isCityMatch && isOpenNow;
+        return isInRadius && isCategoryMatch && isCityMatch && isOpenNow && isServiceTypeMatch;
       })
       .sort((a, b) => a.distance - b.distance);
 
@@ -181,7 +188,7 @@ const Search = () => {
       try {
         const response = await fetch('/lojas.json');
         const data: { result: LojaRaw[] } = await response.json();
-        
+
         const allLojasRaw = data.result;
         const normalized = normalizeEstablishments(allLojasRaw);
         setAllEstablishments(normalized);
@@ -192,6 +199,12 @@ const Search = () => {
         const uniqueCities = [...new Set(normalized.map(e => e.city.trim()))];
         setDynamicCities(uniqueCities.sort());
 
+        const uniqueServiceTypes = [...new Set(
+          normalized
+            .map(e => e.description?.trim())
+            .filter((v): v is string => !!v)
+        )];
+        setDynamicServiceTypes(uniqueServiceTypes.sort());
       } catch (error) {
         console.error("Erro ao carregar lojas.json:", error);
         toast.error("Não foi possível carregar os estabelecimentos.");
@@ -368,6 +381,9 @@ const Search = () => {
                   dynamicCategories={dynamicCategories}
                   selectedCategory={selectedCategory}
                   setSelectedCategory={setSelectedCategory}
+                  dynamicServiceTypes={dynamicServiceTypes}
+                  selectedServiceType={selectedServiceType}
+                  setSelectedServiceType={setSelectedServiceType}
                   radiusKm={radiusKm}
                   setRadiusKm={setRadiusKm}
                   openNow={openNow}
@@ -389,6 +405,9 @@ const Search = () => {
               dynamicCategories={dynamicCategories}
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
+              dynamicServiceTypes={dynamicServiceTypes}
+              selectedServiceType={selectedServiceType}
+              setSelectedServiceType={setSelectedServiceType}
               radiusKm={radiusKm}
               setRadiusKm={setRadiusKm}
               openNow={openNow}
@@ -434,13 +453,15 @@ const Search = () => {
                             <Heart className={`w-5 h-5 ${favoriteIds.includes(item.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
                           </Button>
                         </div>
-                        <p className="text-sm text-primary font-semibold">{item.category}</p>
+                        <p className="text-sm text-primary font-semibold">
+                          {item.category} {item.serviceType ? `- ${item.serviceType}` : ''}
+                        </p>
                         <p className="text-sm mt-2 text-muted-foreground">{item.address}</p>
                         <div className="flex-grow mt-2">
                           <OpeningHoursStatus operatingHours={item.operatingHours} />
                         </div>
                         <div className="flex justify-between items-center mt-4">
-                            <p className="text-sm font-bold">{item.distance.toFixed(2)} km de distância</p>
+                            <p className="text-sm font-bold">{formatDistance(item.distance)} de distância</p>
                             {item.linkDelivery && (
                                 <Button asChild size="sm">
                                     <a href={`https://delivery.yooga.app/${item.linkDelivery}`} target="_blank" rel="noopener noreferrer">
@@ -468,4 +489,4 @@ const Search = () => {
   );
 };
 
-export default Search; 
+export default Search;
