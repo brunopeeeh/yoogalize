@@ -22,7 +22,7 @@ type Suggestion = {
 };
 
 const Welcome = () => {
-  const MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoiYnJ1bm9wZWVoIiwiYSI6ImNtZ2xiMDUyeDE0czMybXBxMDJqMzNhaTMifQ.avNOq-OXZFvbBT6baT5cCA"; // Substitua pela sua chave real
+  const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
   const isCEP = (text: string): boolean => {
     return /^(\d{5}-\d{3}|\d{8})$/.test(text);
