@@ -22,6 +22,12 @@ type Suggestion = {
 };
 
 const Welcome = () => {
+  const MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoiYnJ1bm9wZWVoIiwiYSI6ImNtZ2xiMDUyeDE0czMybXBxMDJqMzNhaTMifQ.avNOq-OXZFvbBT6baT5cCA"; // Substitua pela sua chave real
+
+  const isCEP = (text: string): boolean => {
+    return /^(\d{5}-\d{3}|\d{8})$/.test(text);
+  };
+
   const navigate = useNavigate();
   const [manualAddress, setManualAddress] = useState("");
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
@@ -53,17 +59,18 @@ const Welcome = () => {
 
         try {
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_ACCESS_TOKEN}&language=pt&limit=1`
           );
 
           if (!response.ok) {
-            throw new Error("A resposta da rede não foi bem-sucedida.");
+            throw new Error("Erro na geocodificação reversa do Mapbox.");
           }
           
           const data = await response.json();
 
-          if (data && data.address) {
-            const formatted = formatAddress(data.address);
+          if (data && data.features && data.features.length > 0) {
+            const result = data.features[0];
+            const formatted = result.place_name; // O place_name do Mapbox já é o endereço formatado
             setManualAddress(formatted);
             toast.success("Localização encontrada!");
           } else {
@@ -106,9 +113,33 @@ const Welcome = () => {
 
     const debounceTimer = setTimeout(async () => {
       try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(manualAddress)}&format=json&limit=5&addressdetails=1`);
-        const data = await response.json();
-        setSuggestions(data || []);
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(manualAddress)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=5`
+        );
+        if (!response.ok) {
+          throw new Error("Erro ao buscar sugestões no Mapbox.");
+        }
+        const mapboxData = await response.json();
+
+        if (!mapboxData || !mapboxData.features || mapboxData.features.length === 0) {
+          setSuggestions([]);
+          return;
+        }
+
+        const adaptedSuggestions: Suggestion[] = mapboxData.features.map((feature: any) => ({
+          place_id: feature.id,
+          display_name: feature.place_name,
+          lat: feature.center[1].toString(), // latitude
+          lon: feature.center[0].toString(), // longitude
+          address: {
+            road: feature.address?.road || feature.properties?.address || '', // Mapbox pode ter 'address' dentro de 'context' ou 'properties'
+            city: feature.context?.place?.name || '',
+            state: feature.context?.region?.name || '',
+            postcode: feature.context?.postcode?.name || '',
+            country: 'Brasil', // Assumindo que estamos filtrando por BR
+          },
+        }));
+        setSuggestions(adaptedSuggestions);
       } catch (error) {
         console.error("Erro ao buscar sugestões:", error);
         setSuggestions([]);
@@ -119,8 +150,7 @@ const Welcome = () => {
   }, [manualAddress]);
 
   const handleSelectSuggestion = (suggestion: Suggestion) => {
-    const formatted = formatAddress(suggestion.address);
-    setManualAddress(formatted || suggestion.display_name); // Fallback para o nome completo
+    setManualAddress(suggestion.display_name); // Usar o display_name diretamente
     setCurrentCoords({
       lat: parseFloat(suggestion.lat),
       lon: parseFloat(suggestion.lon),
@@ -131,31 +161,89 @@ const Welcome = () => {
   const handleManualAddress = async () => {
     const trimmedAddress = manualAddress.trim();
     if (!trimmedAddress) {
-      toast.error("Por favor, digite um endereço ou coordenadas.");
+      toast.error("Por favor, digite um endereço ou CEP.");
       return;
     }
 
     setIsLoadingLocation(true);
 
     try {
-      // Se já temos as coordenadas (selecionou uma sugestão), não precisamos buscar de novo.
-      const coords = currentCoords ?? await (async () => {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(trimmedAddress)}&format=json&limit=1&addressdetails=1`);
-        const data = await response.json();
-        if (!data || data.length === 0) {
-          throw new Error("Endereço não encontrado");
+      let lat, lon, finalAddress, newCity;
+      const isInputCEP = isCEP(trimmedAddress);
+
+      if (currentCoords) {
+        lat = currentCoords.lat;
+        lon = currentCoords.lon;
+        finalAddress = trimmedAddress;
+        newCity = "";
+      } else if (isInputCEP) {
+        // Busca por CEP usando ViaCEP
+        const cepResponse = await fetch(`https://viacep.com.br/ws/${trimmedAddress.replace(/\D/g, '')}/json/`);
+        if (!cepResponse.ok) {
+          throw new Error("Erro ao buscar CEP na ViaCEP.");
         }
-        const result = data[0];
-        return { lat: parseFloat(result.lat), lon: parseFloat(result.lon) };
-      })();
+        const cepData = await cepResponse.json();
 
-      const userLocation = { ...coords, address: trimmedAddress };
+        if (cepData.erro) {
+          throw new Error("CEP não encontrado ou inválido.");
+        }
 
-      toast.success("Endereço confirmado! 📍");
+        const fullAddressFromCEP = `${cepData.logradouro}, ${cepData.bairro}, ${cepData.localidade} - ${cepData.uf}`;
+        
+        // Agora, use o Mapbox para obter as coordenadas do endereço completo do CEP
+        const mapboxResponse = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(fullAddressFromCEP)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=1`);
+        if (!mapboxResponse.ok) {
+          throw new Error("Erro ao geocodificar endereço do CEP no Mapbox.");
+        }
+        const mapboxData = await mapboxResponse.json();
+
+        if (!mapboxData || !mapboxData.features || mapboxData.features.length === 0) {
+          throw new Error("Não foi possível geocodificar o endereço do CEP.");
+        }
+
+        const result = mapboxData.features[0];
+        lat = result.center[1]; // latitude
+        lon = result.center[0]; // longitude
+        finalAddress = fullAddressFromCEP; // Usar o endereço formatado da ViaCEP
+        newCity = cepData.localidade; // Usar a cidade da ViaCEP
+
+      } else {
+        const mapboxResponse = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(trimmedAddress)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=1`
+        );
+        if (!mapboxResponse.ok) {
+          throw new Error("Erro ao buscar endereço no Mapbox.");
+        }
+        const mapboxData = await mapboxResponse.json();
+
+        if (!mapboxData || !mapboxData.features || mapboxData.features.length === 0) {
+          throw new Error("Endereço não encontrado.");
+        }
+
+        const result = mapboxData.features[0];
+        lat = result.center[1]; // latitude
+        lon = result.center[0]; // longitude
+        
+        // Tentando construir um endereço mais completo a partir do Mapbox
+        const road = result.address?.road || result.properties?.address || '';
+        const neighborhood = result.context?.neighborhood?.name || result.context?.place?.name || ''; // Pode variar
+        const city = result.context?.place?.name || '';
+        const state = result.context?.region?.name || '';
+        const postcode = result.context?.postcode?.name || '';
+        const country = 'Brasil'; // Já filtramos por BR
+
+        const addressParts = [road, neighborhood, city, state, postcode, country].filter(Boolean);
+        finalAddress = addressParts.join(', ');
+        newCity = city; // Usar a cidade do contexto do Mapbox
+      }
+
+      const userLocation = { lat: lat, lon: lon, address: finalAddress, city: newCity };
+
+      toast.success("Localização confirmada! 📍");
       navigate("/busca", { state: { userLocation } });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro no geocoding:", error);
-      toast.error("Não foi possível encontrar este endereço. Tente ser mais específico.");
+      toast.error(error.message || "Não foi possível encontrar esta localização. Tente ser mais específico.");
     } finally {
       setIsLoadingLocation(false);
     }
@@ -222,7 +310,7 @@ const Welcome = () => {
             <Input
               id="manual-address"
               type="text"
-              placeholder="Ex: Rua Augusta, 1234 - São Paulo"
+              placeholder="Ex: Rua Augusta, 1234 - São Paulo ou CEP 01305-000"
               value={manualAddress}
               onChange={handleAddressChange}
               onKeyPress={(e) => {
@@ -240,7 +328,10 @@ const Welcome = () => {
                     key={s.place_id} 
                     className="p-3 text-sm cursor-pointer hover:bg-accent"
                     onClick={() => handleSelectSuggestion(s)} >
-                    {formatAddress(s.address) || s.display_name}
+                    <div className="font-medium">{s.display_name}</div>
+                    {formatAddress(s.address) && formatAddress(s.address) !== s.display_name && (
+                      <div className="text-xs text-muted-foreground">{formatAddress(s.address)}</div>
+                    )}
                   </li>
                 ))}
               </ul>
