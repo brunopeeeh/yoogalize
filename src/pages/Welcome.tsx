@@ -97,7 +97,7 @@ const Welcome = () => {
           console.error("Erro no reverse geocoding:", error);
           const formattedAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
           setManualAddress(formattedAddress);
-          toast.warn("Não foi possível obter o nome do endereço, mas as coordenadas foram salvas.");
+          toast.warning("Não foi possível obter o nome do endereço, mas as coordenadas foram salvas.");
         } finally {
           setIsLoadingLocation(false);
         }
