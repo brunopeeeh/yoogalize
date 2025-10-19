@@ -1,12 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { MapPin, Search as SearchIcon, Sparkles, Edit2, SearchX, BookMarked, Heart } from "lucide-react";
+import { MapPin, Edit2, BookMarked, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { FilterSidebar } from "@/components/filter-sidebar";
 import { toast } from "sonner";
@@ -15,7 +12,8 @@ import { ResultCardSkeleton } from "@/components/result-card-skeleton";
 import { OpeningHoursStatus } from "@/components/opening-hours-status";
 import { isEstablishmentOpen } from "@/lib/utils";
 import { getFavoriteIds, addFavoriteId, removeFavoriteId } from "@/lib/favorites";
-import { Establishment as LojaRaw, OperatingHour, NominatimSuggestion, NominatimAddress } from "@/lib/types";
+import { NominatimSuggestion, NominatimAddress, NormalizedEstablishment } from "@/lib/types";
+import { useEstablishments } from "@/hooks/useEstablishments";
 
 // Tipos
 type UserLocation = {
@@ -25,47 +23,9 @@ type UserLocation = {
   city: string;
 };
 
-type NormalizedEstablishment = {
-  id: string;
-  name: string;
-  category: string;
-  address: string;
-  city: string;
-  latitude: number;
-  longitude: number;
-  description?: string;
-  rating?: number;
-  linkDelivery?: string | null;
-  operatingHours?: OperatingHour[];
-  serviceType?: string;
-};
-
 type EstablishmentWithDistance = NormalizedEstablishment & {
   distance: number;
 };
-
-const slug = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-
-const normalizeEstablishments = (lojas: LojaRaw[]): NormalizedEstablishment[] =>
-  lojas.map((l) => ({
-    id: `${slug(l.nome_empresa)}-${l.Latitude}-${l.Longitude}`,
-    name: l.nome_empresa,
-    category: l.modelo_negocio.trim(),
-    address: l["endereco completo"],
-    city: l.cidade.trim(),
-    latitude: l.Latitude,
-    longitude: l.Longitude,
-    description: l.tipo_atendimento ?? undefined,
-    linkDelivery: l["link delivery"],
-    operatingHours: l.horario_funcionamento,
-    serviceType: l.tipo_atendimento?.trim() ?? undefined,
-  }));
 
 const Search = () => {
   const navigate = useNavigate();
@@ -73,22 +33,27 @@ const Search = () => {
   
   const initialLocation = location.state?.userLocation as UserLocation | undefined;
 
+  const { 
+    allEstablishments, 
+    dynamicCategories, 
+    dynamicCities, 
+    dynamicServiceTypes, 
+    isLoadingData 
+  } = useEstablishments();
+
   const [effectiveLocation, setEffectiveLocation] = useState<UserLocation | undefined>(initialLocation);
   
-  // Estados
+  // Estados de Filtro
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [allEstablishments, setAllEstablishments] = useState<NormalizedEstablishment[]>([]);
-  const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
-  const [dynamicCities, setDynamicCities] = useState<string[]>([]);
-  const [dynamicServiceTypes, setDynamicServiceTypes] = useState<string[]>([]);
   const [selectedServiceType, setSelectedServiceType] = useState<string>("all");
   const [selectedCity, setSelectedCity] = useState<string>(location.state?.userLocation?.city || "all");
-  const [isSearching, setIsSearching] = useState(false);
   const [radiusKm, setRadiusKm] = useState(5);
   const [openNow, setOpenNow] = useState(false);
+
+  // Estados de UI
+  const [isSearching, setIsSearching] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [editedAddress, setEditedAddress] = useState(effectiveLocation?.address || "");
-  const [isLoadingData, setIsLoadingData] = useState(true);
   const [filteredResults, setFilteredResults] = useState<EstablishmentWithDistance[]>([]);
   const [suggestions, setSuggestions] = useState<NominatimSuggestion[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
@@ -141,43 +106,7 @@ const Search = () => {
     setIsSearching(false);
   };
 
-  // Efeito para carregar e normalizar os dados das lojas
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoadingData(true);
-      try {
-        const response = await fetch('/lojas.json');
-        const data: { result: LojaRaw[] } = await response.json();
-
-        const allLojasRaw = data.result;
-        const normalized = normalizeEstablishments(allLojasRaw);
-        setAllEstablishments(normalized);
-
-        const uniqueCategories = [...new Set(normalized.map(e => e.category))];
-        setDynamicCategories(uniqueCategories.sort());
-
-        const uniqueCities = [...new Set(normalized.map(e => e.city.trim()))];
-        setDynamicCities(uniqueCities.sort());
-
-        const uniqueServiceTypes = [...new Set(
-          normalized
-            .map(e => e.description?.trim())
-            .filter((v): v is string => !!v)
-        )];
-        setDynamicServiceTypes(uniqueServiceTypes.sort());
-      } catch (error) {
-        console.error("Erro ao carregar lojas.json:", error);
-        toast.error("Não foi possível carregar os estabelecimentos.");
-      } finally {
-        setIsLoadingData(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-
-  // Redirect if user location is not available
+  // Efeitos
   useEffect(() => {
     if (!initialLocation) {
       toast.error("Localização do usuário não encontrada. Redirecionando...");
@@ -185,7 +114,6 @@ const Search = () => {
     }
   }, [initialLocation, navigate]);
 
-  // Efeito para buscar sugestões de endereço (autocomplete)
   useEffect(() => {
     if (!editedAddress || !isEditingLocation) {
       setSuggestions([]);
@@ -245,7 +173,7 @@ const Search = () => {
             newCity = getCity(result.address);
         } else {
             finalAddress = result.display_name;
-            newCity = "all"; // Fallback se não conseguir extrair a cidade
+            newCity = "all"; // Fallback
         }
       }
 
@@ -401,7 +329,7 @@ const Search = () => {
                   <p className="text-gray-500 max-w-sm mx-auto mb-6">
                     Tente ajustar os filtros, selecionar um segmento diferente ou aumentar o raio de busca para encontrar mais opções.
                   </p>
-                  <Button onClick={handleClearFilters} variant="outline">Limpar Filtros</Button>
+                  <Button onClick={() => handleClearFilters()} variant="outline">Limpar Filtros</Button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
