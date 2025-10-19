@@ -7,29 +7,7 @@ import { OpeningHoursStatus } from '@/components/opening-hours-status';
 import { ArrowLeft, BookMarked, Heart, Frown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Establishment as LojaRaw, NormalizedEstablishment } from '@/lib/types';
-
-// Funções de utilidade movidas para fora do componente para evitar recriação
-const slug = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-
-const normalizeEstablishments = (lojas: LojaRaw[]): NormalizedEstablishment[] =>
-  lojas.map((l) => ({
-    id: `${slug(l.nome_empresa)}-${l.Latitude}-${l.Longitude}`,
-    name: l.nome_empresa,
-    category: l.modelo_negocio.trim(),
-    address: l['endereco completo'],
-    city: l.cidade.trim(),
-    latitude: l.Latitude,
-    longitude: l.Longitude,
-    description: l.tipo_atendimento ?? undefined,
-    linkDelivery: l['link delivery'],
-    operatingHours: l.horario_funcionamento,
-  }));
+import { normalizeEstablishments } from '@/lib/normalizers';
 
 const Favorites = () => {
   const navigate = useNavigate();

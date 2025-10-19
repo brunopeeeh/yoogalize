@@ -63,4 +63,5 @@ export type NormalizedEstablishment = {
   description?: string;
   linkDelivery?: string | null;
   operatingHours?: OperatingHour[];
+  serviceType?: string;
 };
