@@ -50,6 +50,7 @@ const Welcome = () => {
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [currentCoords, setCurrentCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [currentCity, setCurrentCity] = useState<string>("");
 
   const formatAddress = (addressObj: Suggestion['address']): string => {
     if (!addressObj) return '';
@@ -88,7 +89,9 @@ const Welcome = () => {
           if (data && data.features && data.features.length > 0) {
             const result = data.features[0];
             const formatted = result.place_name; // O place_name do Mapbox já é o endereço formatado
+            const city = result.context?.find((c: any) => c.id.startsWith('place'))?.text || '';
             setManualAddress(formatted);
+            setCurrentCity(city);
             toast.success("Localização encontrada!");
           } else {
             throw new Error("Endereço não encontrado para estas coordenadas.");
@@ -172,6 +175,7 @@ const Welcome = () => {
       lat: parseFloat(suggestion.lat),
       lon: parseFloat(suggestion.lon),
     });
+    setCurrentCity(suggestion.address.city || "");
     setSuggestions([]);
   };
 
@@ -192,7 +196,7 @@ const Welcome = () => {
         lat = currentCoords.lat;
         lon = currentCoords.lon;
         finalAddress = trimmedAddress;
-        newCity = "";
+        newCity = currentCity;
       } else if (isInputCEP) {
         const cepResponse = await fetch(`https://viacep.com.br/ws/${trimmedAddress.replace(/\D/g, '')}/json/`);
         if (!cepResponse.ok) {
@@ -268,6 +272,7 @@ const Welcome = () => {
     setManualAddress(e.target.value);
     if (currentCoords) {
       setCurrentCoords(null);
+      setCurrentCity("");
     }
   };
 
