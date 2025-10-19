@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MapPin, Search as SearchIcon, Sparkles, Edit2, SearchX, BookMarked, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,11 @@ import { toast } from "sonner";
 import { calculateDistance, formatDistance } from "@/lib/distance";
 import { ResultCardSkeleton } from "@/components/result-card-skeleton";
 import { OpeningHoursStatus } from "@/components/opening-hours-status";
-import { isEstablishmentOpen } from "@/lib/utils"; // Importa a função
+import { isEstablishmentOpen } from "@/lib/utils";
 import { getFavoriteIds, addFavoriteId, removeFavoriteId } from "@/lib/favorites";
+import { Establishment as LojaRaw, OperatingHour, NominatimSuggestion, NominatimAddress } from "@/lib/types";
 
+// Tipos
 type UserLocation = {
   lat: number;
   lon: number;
@@ -23,52 +25,6 @@ type UserLocation = {
   city: string;
 };
 
-type HourRange = {
-  start: string;
-  end:string;
-  type: string;
-}
-
-type DailyHours = {
-  day_of_week: number;
-  day: string;
-  hours: HourRange[];
-}
-
-type EstablishmentWithDistance = {
-  id: string;
-  name: string;
-  category: string;
-  address: string;
-  city: string;
-  latitude: number;
-  longitude: number;
-  description?: string;
-  rating?: number;
-  distance: number;
-  linkDelivery?: string | null;
-  operatingHours?: DailyHours[];
-  serviceType?: string; // manter no tipo com distância
-};
-
-type LojaRaw = {
-  nome_empresa: string;
-  modelo_negocio: string;
-  tipo_atendimento: string | null;
-  logradouro: string;
-  número: string;
-  bairro: string;
-  cidade: string;
-  estado: string;
-  cep: string;
-  "link delivery": string | null;
-  "endereco completo": string;
-  Latitude: number;
-  Longitude: number;
-  horario_funcionamento?: DailyHours[];
-};
-
-// Tipos e normalização
 type NormalizedEstablishment = {
   id: string;
   name: string;
@@ -80,9 +36,36 @@ type NormalizedEstablishment = {
   description?: string;
   rating?: number;
   linkDelivery?: string | null;
-  operatingHours?: DailyHours[];
-  serviceType?: string; // novo campo
+  operatingHours?: OperatingHour[];
+  serviceType?: string;
 };
+
+type EstablishmentWithDistance = NormalizedEstablishment & {
+  distance: number;
+};
+
+const slug = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+const normalizeEstablishments = (lojas: LojaRaw[]): NormalizedEstablishment[] =>
+  lojas.map((l) => ({
+    id: `${slug(l.nome_empresa)}-${l.Latitude}-${l.Longitude}`,
+    name: l.nome_empresa,
+    category: l.modelo_negocio.trim(),
+    address: l["endereco completo"],
+    city: l.cidade.trim(),
+    latitude: l.Latitude,
+    longitude: l.Longitude,
+    description: l.tipo_atendimento ?? undefined,
+    linkDelivery: l["link delivery"],
+    operatingHours: l.horario_funcionamento,
+    serviceType: l.tipo_atendimento?.trim() ?? undefined,
+  }));
 
 const Search = () => {
   const navigate = useNavigate();
@@ -92,29 +75,6 @@ const Search = () => {
 
   const [effectiveLocation, setEffectiveLocation] = useState<UserLocation | undefined>(initialLocation);
   
-  const slug = (value: string) =>
-    value
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-
-  const normalizeEstablishments = (lojas: LojaRaw[]): NormalizedEstablishment[] =>
-    lojas.map((l) => ({
-      id: `${slug(l.nome_empresa)}-${l.Latitude}-${l.Longitude}`,
-      name: l.nome_empresa,
-      category: l.modelo_negocio.trim(),
-      address: l["endereco completo"],
-      city: l.cidade.trim(),
-      latitude: l.Latitude,
-      longitude: l.Longitude,
-      description: l.tipo_atendimento ?? undefined,
-      linkDelivery: l["link delivery"],
-      operatingHours: l.horario_funcionamento,
-      serviceType: l.tipo_atendimento?.trim() ?? undefined, // preenchendo tipo de atendimento
-    }));
-
   // Estados
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [allEstablishments, setAllEstablishments] = useState<NormalizedEstablishment[]>([]);
@@ -125,12 +85,12 @@ const Search = () => {
   const [selectedCity, setSelectedCity] = useState<string>(location.state?.userLocation?.city || "all");
   const [isSearching, setIsSearching] = useState(false);
   const [radiusKm, setRadiusKm] = useState(5);
-  const [openNow, setOpenNow] = useState(false); // Estado para o novo filtro
+  const [openNow, setOpenNow] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [editedAddress, setEditedAddress] = useState(effectiveLocation?.address || "");
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [filteredResults, setFilteredResults] = useState<EstablishmentWithDistance[]>([]);
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<NominatimSuggestion[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
   const [hasSearched, setHasSearched] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => getFavoriteIds());
@@ -246,7 +206,7 @@ const Search = () => {
     return () => clearTimeout(debounceTimer);
   }, [editedAddress, isEditingLocation]);
 
-  const handleUpdateAddress = async (suggestion: any = null) => {
+  const handleUpdateAddress = async (suggestion: NominatimSuggestion | null = null) => {
     const addressToSearch = suggestion ? suggestion.display_name : editedAddress;
     if (!addressToSearch.trim()) {
       toast.error("O endereço não pode estar vazio.");
@@ -262,15 +222,15 @@ const Search = () => {
       if (suggestion && suggestion.address) {
         lat = suggestion.lat;
         lon = suggestion.lon;
-        const { road, quarter, borough, city, town, village, suburb, city_district, state, postcode, country } = suggestion.address; // Mantém para o endereço completo
-        const addressParts = [road, quarter, borough, city, state, postcode, country].filter(Boolean); // Mantém para o endereço completo
+        const { road, quarter, borough, city, town, village, suburb, city_district, state, postcode, country } = suggestion.address;
+        const addressParts = [road, quarter, borough, city, state, postcode, country].filter(Boolean);
         finalAddress = addressParts.join(', ');
-        // Função utilitária para extrair a cidade de forma mais confiável
-        const getCity = (addr: any) => addr.city || addr.town || addr.village || addr.suburb || addr.city_district || "";
+        
+        const getCity = (addr: NominatimAddress) => addr.city || addr.town || addr.village || addr.suburb || addr.city_district || "";
         newCity = getCity(suggestion.address);
       } else {
         const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressToSearch)}&format=json&limit=1&addressdetails=1`);
-        const data = await response.json();
+        const data: NominatimSuggestion[] = await response.json();
         if (!data || data.length === 0) throw new Error("Endereço não encontrado");
         
         const result = data[0];
@@ -278,10 +238,10 @@ const Search = () => {
         lon = result.lon;
 
         if (result.address) {
-            const { road, quarter, borough, city, town, village, suburb, city_district, state, postcode, country } = result.address; // Mantém para o endereço completo
-            const addressParts = [road, quarter, borough, city, state, postcode, country].filter(Boolean); // Mantém para o endereço completo
+            const { road, quarter, borough, city, town, village, suburb, city_district, state, postcode, country } = result.address;
+            const addressParts = [road, quarter, borough, city, state, postcode, country].filter(Boolean);
             finalAddress = addressParts.join(', ');
-            const getCity = (addr: any) => addr.city || addr.town || addr.village || addr.suburb || addr.city_district || "";
+            const getCity = (addr: NominatimAddress) => addr.city || addr.town || addr.village || addr.suburb || addr.city_district || "";
             newCity = getCity(result.address);
         } else {
             finalAddress = result.display_name;

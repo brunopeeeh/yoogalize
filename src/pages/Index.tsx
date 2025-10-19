@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ const Index = () => {
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [geolocationStatus, setGeolocationStatus] = useState<"prompt" | "granted" | "denied">("prompt");
 
-  const reverseGeocode = async (lat: number, lon: number) => {
+  const reverseGeocode = useCallback(async (lat: number, lon: number) => {
     try {
       const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`);
       const data = await response.json();
@@ -51,9 +51,9 @@ const Index = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const getUserLocation = () => {
+  const getUserLocation = useCallback(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -74,11 +74,11 @@ const Index = () => {
       setGeolocationStatus("denied");
       setIsLoading(false);
     }
-  };
+  }, [reverseGeocode]);
 
   useEffect(() => {
     getUserLocation();
-  }, []);
+  }, [getUserLocation]);
 
   const handleSearch = () => {
     if (!category) {

@@ -1,18 +1,9 @@
 import { Clock } from "lucide-react";
 import { getOpeningHoursInfo } from "@/lib/utils";
-
-type HourRange = {
-  start: string;
-  end: string;
-};
-
-type DailyHours = {
-  day_of_week: number;
-  hours: HourRange[];
-};
+import { OperatingHour } from "@/lib/types";
 
 type OpeningHoursStatusProps = {
-  operatingHours?: DailyHours[];
+  operatingHours?: OperatingHour[];
 };
 
 export const OpeningHoursStatus = ({ operatingHours }: OpeningHoursStatusProps) => {
