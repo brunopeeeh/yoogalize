@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,72 +6,37 @@ import { getFavoriteIds, removeFavoriteId } from '@/lib/favorites';
 import { OpeningHoursStatus } from '@/components/opening-hours-status';
 import { ArrowLeft, BookMarked, Heart, Frown } from 'lucide-react';
 import { toast } from 'sonner';
+import { Establishment as LojaRaw, NormalizedEstablishment } from '@/lib/types';
 
-// Reutilizando os tipos de Search.tsx para consistência
-type DailyHours = {
-  day_of_week: number;
-  day: string;
-  hours: { start: string; end: string; type: string }[];
-};
+// Funções de utilidade movidas para fora do componente para evitar recriação
+const slug = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 
-type LojaRaw = {
-  nome_empresa: string;
-  modelo_negocio: string;
-  tipo_atendimento: string | null;
-  logradouro: string;
-  número: string;
-  bairro: string;
-  cidade: string;
-  estado: string;
-  cep: string;
-  'link delivery': string | null;
-  'endereco completo': string;
-  Latitude: number;
-  Longitude: number;
-  horario_funcionamento?: DailyHours[];
-};
-
-type NormalizedEstablishment = {
-  id: string;
-  name: string;
-  category: string;
-  address: string;
-  city: string;
-  latitude: number;
-  longitude: number;
-  description?: string;
-  linkDelivery?: string | null;
-  operatingHours?: DailyHours[];
-};
+const normalizeEstablishments = (lojas: LojaRaw[]): NormalizedEstablishment[] =>
+  lojas.map((l) => ({
+    id: `${slug(l.nome_empresa)}-${l.Latitude}-${l.Longitude}`,
+    name: l.nome_empresa,
+    category: l.modelo_negocio.trim(),
+    address: l['endereco completo'],
+    city: l.cidade.trim(),
+    latitude: l.Latitude,
+    longitude: l.Longitude,
+    description: l.tipo_atendimento ?? undefined,
+    linkDelivery: l['link delivery'],
+    operatingHours: l.horario_funcionamento,
+  }));
 
 const Favorites = () => {
   const navigate = useNavigate();
   const [favoriteStores, setFavoriteStores] = useState<NormalizedEstablishment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const slug = (value: string) =>
-    value
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-
-  const normalizeEstablishments = (lojas: LojaRaw[]): NormalizedEstablishment[] =>
-    lojas.map((l) => ({
-      id: `${slug(l.nome_empresa)}-${l.Latitude}-${l.Longitude}`,
-      name: l.nome_empresa,
-      category: l.modelo_negocio.trim(),
-      address: l['endereco completo'],
-      city: l.cidade.trim(),
-      latitude: l.Latitude,
-      longitude: l.Longitude,
-      description: l.tipo_atendimento ?? undefined,
-      linkDelivery: l['link delivery'],
-      operatingHours: l.horario_funcionamento,
-    }));
-
-  const loadFavorites = async () => {
+  const loadFavorites = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch('/lojas.json');
@@ -89,11 +54,11 @@ const Favorites = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadFavorites();
-  }, []);
+  }, [loadFavorites]);
 
   const handleRemoveFavorite = (id: string) => {
     removeFavoriteId(id);

@@ -1,3 +1,5 @@
+import { OperatingHour } from "../lib/types";
+
 export type LojaRaw = {
   nome_empresa: string;
   modelo_negocio: string;
@@ -12,7 +14,7 @@ export type LojaRaw = {
   "endereco completo": string;
   Latitude: number;
   Longitude: number;
-  horario_funcionamento?: any;
+  horario_funcionamento?: OperatingHour[];
 };
 
 export type Establishment = {
@@ -24,7 +26,7 @@ export type Establishment = {
   longitude: number;
   description?: string;
   rating?: number;
-  operatingHours?: any; // Adicionado para receber os dados normalizados
+  operatingHours?: OperatingHour[]; // Adicionado para receber os dados normalizados
 };
 
 export async function fetchLojas(): Promise<LojaRaw[]> {

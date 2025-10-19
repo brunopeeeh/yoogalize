@@ -1,19 +1,10 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { OperatingHour } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
-type HourRange = {
-  start: string; // Formato esperado: "HH:MM:SS"
-  end: string;   // Formato esperado: "HH:MM:SS"
-};
-
-type DailyHours = {
-  day_of_week: number; // 0 = Sunday
-  hours: HourRange[];
-};
 
 /**
  * Obtém informações da hora atual no fuso de Brasília (America/Sao_Paulo).
@@ -77,12 +68,12 @@ export type OpeningHoursInfo = {
   message: string;
 };
 
-export function isEstablishmentOpen(operatingHours?: DailyHours[]): boolean {
+export function isEstablishmentOpen(operatingHours?: OperatingHour[]): boolean {
   const { status } = getOpeningHoursInfo(operatingHours);
   return status === "open";
 }
 
-export function getOpeningHoursInfo(operatingHours?: DailyHours[]): OpeningHoursInfo {
+export function getOpeningHoursInfo(operatingHours?: OperatingHour[]): OpeningHoursInfo {
   if (!operatingHours || !Array.isArray(operatingHours) || operatingHours.length === 0) {
     return { status: "closed", message: "Horário não informado" };
   }
@@ -96,7 +87,7 @@ export function getOpeningHoursInfo(operatingHours?: DailyHours[]): OpeningHours
 
         if (startMin === -1 || endMin === -1) return null;
 
-        let startMinutesIntoWeek = daySchedule.day_of_week * 24 * 60 + startMin;
+        const startMinutesIntoWeek = daySchedule.day_of_week * 24 * 60 + startMin;
         let endMinutesIntoWeek = daySchedule.day_of_week * 24 * 60 + endMin;
 
         if (endMinutesIntoWeek < startMinutesIntoWeek) {
