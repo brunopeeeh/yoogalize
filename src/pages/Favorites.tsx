@@ -44,6 +44,15 @@ const Favorites = () => {
     toast('Removido dos favoritos.');
   };
 
+  const handleSearchClick = () => {
+    const savedSearchState = sessionStorage.getItem('searchState');
+    if (savedSearchState) {
+      navigate('/busca');
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <header className="flex items-center gap-4 mb-6">
@@ -60,7 +69,7 @@ const Favorites = () => {
             <Frown className="mx-auto h-12 w-12 text-gray-400" />
             <h2 className="mt-4 text-xl font-semibold">Nenhuma loja favorita</h2>
             <p className="mt-2 text-gray-500">Você ainda não adicionou nenhuma loja aos seus favoritos.</p>
-            <Button className="mt-6" onClick={() => navigate('/busca')}>Buscar Lojas</Button>
+            <Button className="mt-6" onClick={handleSearchClick}>Buscar Lojas</Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

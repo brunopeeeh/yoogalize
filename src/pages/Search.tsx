@@ -30,6 +30,21 @@ type EstablishmentWithDistance = NormalizedEstablishment & {
 const Search = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const getInitialState = () => {
+    const savedStateJSON = sessionStorage.getItem('searchState');
+    if (savedStateJSON) {
+      try {
+        return JSON.parse(savedStateJSON);
+      } catch (e) {
+        console.error("Failed to parse search state from session storage", e);
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const savedState = getInitialState();
   
   const initialLocation = location.state?.userLocation as UserLocation | undefined;
 
@@ -41,23 +56,23 @@ const Search = () => {
     isLoadingData 
   } = useEstablishments();
 
-  const [effectiveLocation, setEffectiveLocation] = useState<UserLocation | undefined>(initialLocation);
-  
+  const [effectiveLocation, setEffectiveLocation] = useState<UserLocation | undefined>(initialLocation || savedState?.effectiveLocation);
+
   // Estados de Filtro
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedServiceType, setSelectedServiceType] = useState<string>("all");
-  const [selectedCity, setSelectedCity] = useState<string>(location.state?.userLocation?.city || "all");
-  const [radiusKm, setRadiusKm] = useState(5);
-  const [openNow, setOpenNow] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>(savedState?.selectedCategory || "all");
+  const [selectedServiceType, setSelectedServiceType] = useState<string>(savedState?.selectedServiceType || "all");
+  const [selectedCity, setSelectedCity] = useState<string>(initialLocation?.city || savedState?.selectedCity || "all");
+  const [radiusKm, setRadiusKm] = useState<number>(savedState?.radiusKm || 5);
+  const [openNow, setOpenNow] = useState<boolean>(savedState?.openNow || false);
 
   // Estados de UI
   const [isSearching, setIsSearching] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [editedAddress, setEditedAddress] = useState(effectiveLocation?.address || "");
-  const [filteredResults, setFilteredResults] = useState<EstablishmentWithDistance[]>([]);
+  const [filteredResults, setFilteredResults] = useState<EstablishmentWithDistance[]>(savedState?.filteredResults || []);
   const [suggestions, setSuggestions] = useState<NominatimSuggestion[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
-  const [hasSearched, setHasSearched] = useState(false);
+  const [hasSearched, setHasSearched] = useState<boolean>(savedState?.hasSearched || false);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => getFavoriteIds());
 
   const handleToggleFavorite = (id: string) => {
@@ -108,11 +123,45 @@ const Search = () => {
 
   // Efeitos
   useEffect(() => {
-    if (!initialLocation) {
+    // Clear saved state if this is a new search from the welcome page
+    if (initialLocation) {
+      sessionStorage.removeItem('searchState');
+    }
+  }, [initialLocation]);
+
+  useEffect(() => {
+    // Only redirect if we have no location from navigation AND no saved location.
+    if (!initialLocation && !savedState?.effectiveLocation) {
       toast.error("Localização do usuário não encontrada. Redirecionando...");
       navigate("/");
     }
-  }, [initialLocation, navigate]);
+  }, [initialLocation, savedState, navigate]);
+
+  // Save state to session storage whenever it changes
+  useEffect(() => {
+    if (hasSearched) {
+      const searchState = {
+        effectiveLocation,
+        selectedCategory,
+        selectedServiceType,
+        selectedCity,
+        radiusKm,
+        openNow,
+        filteredResults,
+        hasSearched,
+      };
+      sessionStorage.setItem('searchState', JSON.stringify(searchState));
+    }
+  }, [
+    effectiveLocation,
+    selectedCategory,
+    selectedServiceType,
+    selectedCity,
+    radiusKm,
+    openNow,
+    filteredResults,
+    hasSearched,
+  ]);
 
   useEffect(() => {
     if (!editedAddress || !isEditingLocation) {
@@ -133,6 +182,12 @@ const Search = () => {
 
     return () => clearTimeout(debounceTimer);
   }, [editedAddress, isEditingLocation]);
+
+  useEffect(() => {
+    if (hasSearched) {
+      executeSearch();
+    }
+  }, [openNow]);
 
   const handleUpdateAddress = async (suggestion: NominatimSuggestion | null = null) => {
     const addressToSearch = suggestion ? suggestion.display_name : editedAddress;
@@ -329,7 +384,7 @@ const Search = () => {
                   <p className="text-gray-500 max-w-sm mx-auto mb-6">
                     Tente ajustar os filtros, selecionar um segmento diferente ou aumentar o raio de busca para encontrar mais opções.
                   </p>
-                  <Button onClick={() => handleClearFilters()} variant="outline">Limpar Filtros</Button>
+                  <Button onClick={handleClearFilters} variant="outline">Limpar Filtros</Button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
