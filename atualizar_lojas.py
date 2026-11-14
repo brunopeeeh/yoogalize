@@ -469,6 +469,23 @@ def main():
     if fora_do_es:
         print(f"⚠️ {len(fora_do_es)} lojas com coordenadas fora do ES (ignoradas): {', '.join(fora_do_es)}")
 
+    # Sincronização automática com o Neon Postgres na Vercel
+    if os.environ.get("SYNC_NEON", "true").lower() in ("true", "1", "yes"):
+        try:
+            sync_url = os.environ.get(
+                "SYNC_URL",
+                "https://descubra-yooga.vercel.app/api/migrate?token=yooga-neon-2026&force=true"
+            )
+            print("\n☁️ Sincronizando com o Neon PostgreSQL (Vercel)...")
+            resp = requests.get(sync_url, timeout=30)
+            if resp.status_code == 200:
+                data = resp.json()
+                print(f"✅ Neon PostgreSQL atualizado com sucesso: {data.get('lojas')} lojas e {data.get('horarios')} horários no ar!")
+            else:
+                print(f"⚠️ Resposta da sincronização com Neon: {resp.status_code} - {resp.text}")
+        except Exception as e:
+            print(f"⚠️ Falha ao sincronizar com Neon: {e}")
+
 
 if __name__ == "__main__":
     main()
