@@ -118,6 +118,39 @@ describe('/api/lojas serverless endpoint', () => {
     });
   });
 
+  it('filtra lojas por clube de cupons quando clube=true', async () => {
+    let statusCode = 200;
+    let responseData: { total: number; results: Array<{ temClubeCupons?: boolean }> } | null = null;
+
+    const req = {
+      method: 'GET',
+      query: {
+        clube: 'true',
+      },
+      headers: {},
+    } as unknown as VercelRequest;
+
+    const res = {
+      setHeader: vi.fn(),
+      status: vi.fn((code: number) => {
+        statusCode = code;
+        return res;
+      }),
+      json: vi.fn((data: typeof responseData) => {
+        responseData = data;
+        return res;
+      }),
+      end: vi.fn(),
+    } as unknown as VercelResponse;
+
+    await handler(req, res);
+
+    expect(statusCode).toBe(200);
+    expect(responseData).toBeDefined();
+    expect(responseData!.total).toBeGreaterThan(0);
+    expect(responseData!.results.every((s) => s.temClubeCupons === true)).toBe(true);
+  });
+
   it('rejeita métodos HTTP não permitidos', async () => {
     let statusCode = 200;
 

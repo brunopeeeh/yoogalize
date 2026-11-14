@@ -2,12 +2,11 @@
 /**
  * tools/migrate-to-neon.mjs
  *
- * Cria o schema no Neon Postgres e carrega todas as lojas e horários de public/lojas.json.
+ * Cria o schema no Neon Postgres e carrega todas as lojas e horários de public/lojas.json
+ * em lotes de alto desempenho usando PostgreSQL json_to_recordset.
  *
  * Uso:
  *   node tools/migrate-to-neon.mjs [DATABASE_URL]
- *
- * Se DATABASE_URL não for informada via argumento, lê de process.env.DATABASE_URL ou process.env.POSTGRES_URL.
  */
 import fs from 'fs';
 import path from 'path';
@@ -72,6 +71,7 @@ async function main() {
       cidade_slug text NOT NULL,
       nome_slug text NOT NULL,
       tem_horario boolean NOT NULL DEFAULT false,
+      ativo boolean NOT NULL DEFAULT true,
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now()
     );
@@ -91,7 +91,7 @@ async function main() {
   `;
 
   // 2. View vw_lojas_json
-  console.log('👁️ 2/4 Criando views de compatibilidade (vw_lojas_json)...');
+  console.log('👁️ 2/4 Criando view vw_lojas_json...');
   await sql`
     CREATE OR REPLACE VIEW vw_lojas_json AS
     SELECT jsonb_build_object(
@@ -134,7 +134,8 @@ async function main() {
         ORDER BY l.cidade, l.nome_empresa
       )
     ) AS payload
-    FROM lojas l;
+    FROM lojas l
+    WHERE l.ativo = true;
   `;
 
   // 3. Lê dados de public/lojas.json
@@ -143,67 +144,110 @@ async function main() {
   const rawData = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
   const lojasList = rawData.result || [];
 
-  console.log(`💾 Inserindo ${lojasList.length} lojas no Neon...`);
+  console.log(`💾 Inserindo ${lojasList.length} lojas no Neon em lote de alta velocidade...`);
 
-  // Limpa para carga limpa idempotente
   await sql`TRUNCATE loja_horarios, lojas RESTART IDENTITY CASCADE;`;
 
-  let totalLojas = 0;
-  let totalHorarios = 0;
+  const lojasRecords = [];
+  const horariosRecords = [];
 
   for (const l of lojasList) {
     const nome = (l.nome_empresa || '').trim();
     const lat = parseFloat(l.Latitude);
     const lon = parseFloat(l.Longitude);
-    if (isNaN(lat) || isNaN(lon)) continue;
+    if (isNaN(lat) || isNaN(lon) || !nome) continue;
 
     const slug = `${slugify(nome)}-${lat}-${lon}`;
     const cidade = (l.cidade || '').trim();
     const horarios = Array.isArray(l.horario_funcionamento) ? l.horario_funcionamento : [];
     const temHorario = horarios.some((d) => Array.isArray(d.hours) && d.hours.length > 0);
 
-    const rows = await sql`
-      INSERT INTO lojas (
-        nome_empresa, modelo_negocio, tipo_atendimento, link_delivery, banner_url, tem_clube_cupons,
-        logradouro, numero, bairro, cidade, estado, cep, endereco_completo,
-        latitude, longitude, slug, cidade_slug, nome_slug, tem_horario
-      ) VALUES (
-        ${nome}, ${l.modelo_negocio || 'Outros'}, ${l.tipo_atendimento || null},
-        ${l['link delivery'] || null}, ${l.banner || null}, ${Boolean(l.tem_clube_cupons)},
-        ${l.logradouro || null}, ${l['número'] || l.numero || null}, ${l.bairro || null},
-        ${cidade}, ${l.estado || 'ES'}, ${l.cep || null}, ${l['endereco completo'] || null},
-        ${lat}, ${lon}, ${slug}, ${semAcento(cidade)}, ${semAcento(nome)}, ${temHorario}
-      )
-      RETURNING id;
-    `;
-
-    const lojaId = rows[0]?.id;
-    if (!lojaId) continue;
-    totalLojas++;
+    lojasRecords.push({
+      nome_empresa: nome,
+      modelo_negocio: (l.modelo_negocio || 'Outros').trim(),
+      tipo_atendimento: l.tipo_atendimento?.trim() || null,
+      link_delivery: l['link delivery']?.trim() || null,
+      banner_url: l.banner || null,
+      tem_clube_cupons: Boolean(l.tem_clube_cupons),
+      logradouro: l.logradouro?.trim() || null,
+      numero: (l['número'] || l.numero || '') ? String(l['número'] || l.numero).trim() : null,
+      bairro: l.bairro?.trim() || null,
+      cidade,
+      estado: l.estado?.trim() || 'ES',
+      cep: l.cep?.trim() || null,
+      endereco_completo: l['endereco completo']?.trim() || '',
+      latitude: lat,
+      longitude: lon,
+      slug,
+      cidade_slug: semAcento(cidade),
+      nome_slug: semAcento(nome),
+      tem_horario: temHorario,
+    });
 
     for (const d of horarios) {
       const dow = parseInt(d.day_of_week, 10);
       const dayName = d.day || '';
       for (const h of d.hours || []) {
         if (!h.start || !h.end || h.start === h.end) continue;
-        try {
-          await sql`
-            INSERT INTO loja_horarios (loja_id, day_of_week, day, start_time, end_time, tipo)
-            VALUES (${lojaId}, ${dow}, ${dayName}, ${h.start}::time, ${h.end}::time, ${h.type || null});
-          `;
-          totalHorarios++;
-        } catch {
-          // Ignora horários inválidos
-        }
+        horariosRecords.push({
+          slug,
+          day_of_week: dow,
+          day: dayName,
+          start_time: h.start,
+          end_time: h.end,
+          tipo: h.type || 'REGULAR',
+        });
       }
     }
+  }
+
+  const CHUNK_SIZE = 200;
+  for (let i = 0; i < lojasRecords.length; i += CHUNK_SIZE) {
+    const chunk = lojasRecords.slice(i, i + CHUNK_SIZE);
+    await sql`
+      INSERT INTO lojas (
+        nome_empresa, modelo_negocio, tipo_atendimento, link_delivery, banner_url,
+        tem_clube_cupons, logradouro, numero, bairro, cidade, estado, cep,
+        endereco_completo, latitude, longitude, slug, cidade_slug, nome_slug, tem_horario
+      )
+      SELECT
+        nome_empresa, modelo_negocio, tipo_atendimento, link_delivery, banner_url,
+        tem_clube_cupons, logradouro, numero, bairro, cidade, estado, cep,
+        endereco_completo, latitude, longitude, slug, cidade_slug, nome_slug, tem_horario
+      FROM json_to_recordset(${JSON.stringify(chunk)}::json) AS x(
+        nome_empresa text, modelo_negocio text, tipo_atendimento text, link_delivery text, banner_url text,
+        tem_clube_cupons boolean, logradouro text, numero text, bairro text, cidade text, estado char(2), cep text,
+        endereco_completo text, latitude double precision, longitude double precision, slug text, cidade_slug text, nome_slug text, tem_horario boolean
+      )
+      ON CONFLICT (slug) DO NOTHING;
+    `;
+  }
+
+  const H_CHUNK_SIZE = 500;
+  for (let i = 0; i < horariosRecords.length; i += H_CHUNK_SIZE) {
+    const chunk = horariosRecords.slice(i, i + H_CHUNK_SIZE);
+    await sql`
+      INSERT INTO loja_horarios (loja_id, day_of_week, day, start_time, end_time, tipo)
+      SELECT
+        l.id,
+        h.day_of_week,
+        h.day,
+        h.start_time::time,
+        h.end_time::time,
+        h.tipo
+      FROM json_to_recordset(${JSON.stringify(chunk)}::json) AS h(
+        slug text, day_of_week smallint, day text, start_time text, end_time text, tipo text
+      )
+      JOIN lojas l ON l.slug = h.slug;
+    `;
   }
 
   // 4. Validação
   console.log('✅ 4/4 Verificando carga...');
   const countResult = await sql`SELECT count(*) as total FROM lojas;`;
+  const horResult = await sql`SELECT count(*) as total FROM loja_horarios;`;
   console.log(`\n🎉 Migração concluída com sucesso!`);
-  console.log(`   Total de lojas no banco: ${countResult[0]?.total} (horários: ${totalHorarios})`);
+  console.log(`   Total de lojas no banco: ${countResult[0]?.total} (horários: ${horResult[0]?.total})`);
   console.log(`   O endpoint /api/lojas e o front já estão configurados para consumir o Neon!`);
 }
 

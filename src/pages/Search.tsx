@@ -201,6 +201,7 @@ const Search = () => {
         categoria: selectedCategory,
         tipo: selectedServiceType,
         abertas: String(openNow),
+        clube: String(onlyClubeCupons),
       });
 
       if (debouncedSearch.trim()) {
@@ -211,7 +212,11 @@ const Search = () => {
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data.results)) {
-          setFilteredResults(sortEstablishmentsSmart(data.results));
+          let results = data.results;
+          if (onlyClubeCupons) {
+            results = results.filter((store: EstablishmentWithDistance) => store.temClubeCupons);
+          }
+          setFilteredResults(sortEstablishmentsSmart(results));
           setIsSearching(false);
           return;
         }

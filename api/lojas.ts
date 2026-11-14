@@ -340,6 +340,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       categoria,
       tipo,
       abertas,
+      clube,
       q,
     } = req.query;
 
@@ -350,6 +351,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const targetCategory = !categoria || categoria === 'all' ? null : key(String(categoria));
     const targetServiceType = !tipo || tipo === 'all' ? null : key(String(tipo));
     const onlyOpen = abertas === 'true';
+    const onlyClube = clube === 'true';
     const searchQuery = q ? key(String(q)) : null;
 
     let filtered: StoreWithDistance[] = stores;
@@ -371,6 +373,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (targetCategory && key(store.category) !== targetCategory) return false;
       if (targetServiceType && key(store.serviceType ?? '') !== targetServiceType) return false;
       if (onlyOpen && !isEstablishmentOpen(store.operatingHours)) return false;
+      if (onlyClube && !store.temClubeCupons) return false;
       if (searchQuery) {
         const nameMatch = key(store.name).includes(searchQuery);
         const catMatch = key(store.category).includes(searchQuery);
