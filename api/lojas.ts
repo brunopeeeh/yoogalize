@@ -1,6 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
 export type OperatingHour = {
   day_of_week: number;
@@ -219,10 +222,10 @@ let cachedServiceTypes: string[] = [];
 function findLojasJsonPath(): string | null {
   const candidates = [
     path.join(process.cwd(), 'public', 'lojas.json'),
-    path.join(__dirname, '..', 'public', 'lojas.json'),
-    path.join(__dirname, 'public', 'lojas.json'),
+    path.join(currentDir, '..', 'public', 'lojas.json'),
+    path.join(currentDir, 'public', 'lojas.json'),
     path.join(process.cwd(), 'lojas.json'),
-    path.join(__dirname, 'lojas.json'),
+    path.join(currentDir, 'lojas.json'),
   ];
   for (const c of candidates) {
     try {
