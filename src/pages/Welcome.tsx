@@ -498,14 +498,11 @@ const Welcome = () => {
             ======================================================== */}
         <header className="text-center space-y-3">
           <div className="flex justify-center">
-            <div className="relative inline-flex flex-col items-center group cursor-pointer select-none">
-              <img
-                src="/descubra-yooga.png"
-                alt="Mascote Descubra Yooga"
-                className="h-28 sm:h-32 w-auto origin-bottom animate-wave-gentle transition-transform duration-300 group-hover:scale-110 drop-shadow-md"
-              />
-              <div className="w-16 h-2.5 bg-black/20 dark:bg-white/20 rounded-full blur-[3px] mt-1 animate-shadow-pulse pointer-events-none" />
-            </div>
+            <img
+              src="/descubra-yooga.png"
+              alt="Mascote Descubra Yooga"
+              className="h-24 sm:h-28 w-auto select-none"
+            />
           </div>
           <h1 className="text-4xl sm:text-5xl font-black text-primary tracking-tight">
             Descubra Yooga
