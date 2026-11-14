@@ -31,7 +31,7 @@ args = ap.parse_args()
 
 # colunas de `lojas` (mesma ordem do \copy)
 COLS_LOJAS = [
-    "nome_empresa", "modelo_negocio", "tipo_atendimento", "link_delivery",
+    "nome_empresa", "modelo_negocio", "tipo_atendimento", "link_delivery", "banner_url", "tem_clube_cupons",
     "logradouro", "numero", "bairro", "cidade", "estado", "cep",
     "endereco_completo", "latitude", "longitude",
     "slug", "cidade_slug", "nome_slug", "tem_horario",
@@ -129,6 +129,8 @@ def main():
             (l.get("modelo_negocio") or "Outros").strip(),
             (l.get("tipo_atendimento") or None),
             (l.get("link delivery") or None),
+            (l.get("banner") or None),
+            1 if l.get("tem_clube_cupons") else 0,
             (l.get("logradouro") or None),
             (l.get("número") or l.get("numero") or None),
             (l.get("bairro") or None),

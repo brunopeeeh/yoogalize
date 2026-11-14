@@ -31,6 +31,8 @@ CREATE TABLE lojas (
                                                         -- (ver sql/marcadores-link-quebrado.sql)
     link_quebrado     boolean NOT NULL DEFAULT false,   -- slug aponta para OUTRA loja (auditoria da API)
     link_observacao   text,                             -- detalhe do link quebrado
+    banner_url        text,                             -- URL da capa/banner na CDN da Yooga
+    tem_clube_cupons  boolean NOT NULL DEFAULT false,   -- participa do Clube de Cupons da Yooga
 
     -- Endereco
     logradouro        text,
@@ -253,6 +255,8 @@ SELECT jsonb_build_object(
             'estado',            l.estado,
             'cep',               l.cep,
             'link delivery',     l.link_delivery,
+            'banner',            l.banner_url,
+            'tem_clube_cupons',  l.tem_clube_cupons,
             'endereco completo', l.endereco_completo,
             -- sempre os 7 dias, igual ao JSON original (dias sem faixa vem com [])
             'horario_funcionamento', (

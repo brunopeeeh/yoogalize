@@ -104,3 +104,14 @@ describe('cleanEstablishmentName — limpeza de códigos internos', () => {
     expect(cleanEstablishmentName('Adega 028 - 85645')).toBe('Adega 028');
   });
 });
+
+describe('normalizeEstablishments — clube de cupons', () => {
+  it('mapeia tem_clube_cupons booleano corretamente', () => {
+    const [comClube, semClube] = normalizeEstablishments([
+      loja({ tem_clube_cupons: true }),
+      loja({ tem_clube_cupons: false }),
+    ]);
+    expect(comClube.temClubeCupons).toBe(true);
+    expect(semClube.temClubeCupons).toBe(false);
+  });
+});

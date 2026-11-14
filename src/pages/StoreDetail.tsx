@@ -304,7 +304,7 @@ const StoreDetail = () => {
               <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
                 {cleanName}
               </h1>
-              {deliveryUrl && (
+              {store.temClubeCupons && (
                 <YoogaPartnerBadge variant="pill" />
               )}
             </div>
@@ -380,9 +380,9 @@ const StoreDetail = () => {
           </button>
 
           {/* ========================================================
-              SELOS E GARANTIA PARCEIRO VERIFICADO YOOGA (B2C & B2B)
+              SELOS E CLUBE DE CUPONS YOOGA
               ======================================================== */}
-          {deliveryUrl && (
+          {store.temClubeCupons && (
             <YoogaPartnerBadge variant="trust-card" />
           )}
 

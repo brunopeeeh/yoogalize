@@ -91,6 +91,7 @@ export const normalizeEstablishments = (lojas: LojaRaw[]): NormalizedEstablishme
       banner: l.banner ?? null,
       operatingHours: l.horario_funcionamento as OperatingHour[],
       serviceType: l.tipo_atendimento?.trim() ?? undefined,
+      temClubeCupons: Boolean(l.tem_clube_cupons),
     };
   });
 };

@@ -28,6 +28,7 @@ export interface Establishment {
   Latitude: number;
   Longitude: number;
   distance?: number;
+  tem_clube_cupons?: boolean;
 }
 
 export interface NominatimAddress {
@@ -71,4 +72,5 @@ export type NormalizedEstablishment = {
   banner?: string | null;
   operatingHours?: OperatingHour[];
   serviceType?: string;
+  temClubeCupons?: boolean;
 };

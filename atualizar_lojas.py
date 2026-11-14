@@ -55,6 +55,15 @@ st as (
   from yooga_delta_lake_cleaned.mysql_yooga_delivery.stores
   where not coalesce(is_merge_deletion_detected, false)
   qualify row_number() over (partition by installation_id order by updated_at desc) = 1
+),
+clube as (
+  select 
+    cast(installation_id as string) as installation_id,
+    1 as tem_clube_cupons
+  from yooga_delta_lake_curated.products.feature_clube_coupons_installations
+  where not coalesce(is_merge_deletion_detected, false)
+    and store_coupon_package_id is not null
+  group by 1
 )
 select
   ac.installation_id,
@@ -75,13 +84,15 @@ select
   st.longitude as store_lng,
   ig.lat as geo_lat,
   ig.lng as geo_lng,
-  ig.full_address as geo_full_address
+  ig.full_address as geo_full_address,
+  coalesce(clube.tem_clube_cupons, 0) as tem_clube_cupons
 from ac
 left join yooga_delta_lake_curated.customer_experience.company_detailed_metrics cdm on cdm.company_id = ac.company_id
 left join yooga_delta_lake_curated.consumers.installations i on i.installation_id = ac.installation_id
 left join yooga_delta_lake_curated.consumers.customers c on c.customer_id = i.customer_id
 left join st on st.installation_id = ac.installation_id
 left join yooga_delta_lake_curated.consumers.installation_geolocation ig on ig.installation_id = ac.installation_id
+left join clube on cast(clube.installation_id as string) = cast(ac.installation_id as string)
 """
 
 
@@ -423,6 +434,7 @@ def main():
                 "cep": cep,
                 "link delivery": l["link_delivery"] or None,
                 "banner": l["banner"] or None,
+                "tem_clube_cupons": bool(str(l.get("tem_clube_cupons")) in ("1", "True", "true")),
             }
             loja["horario_funcionamento"] = montar_horario(l["schedule_config"])
 

@@ -56,7 +56,7 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
                 {cleanName}
               </h3>
             </Link>
-            {store.linkDelivery && (
+            {store.temClubeCupons && (
               <YoogaPartnerBadge variant="compact" />
             )}
           </div>
@@ -177,7 +177,7 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
                 {cleanName}
               </h3>
             </Link>
-            {store.linkDelivery && (
+            {store.temClubeCupons && (
               <YoogaPartnerBadge variant="compact" />
             )}
           </div>

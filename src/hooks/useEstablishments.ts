@@ -28,6 +28,26 @@ export const fetchEstablishmentsData = async (): Promise<EstablishmentsData> => 
 
   cachedPromise = (async () => {
     try {
+      // 1. Tenta carregar da API oficial (/api/lojas, conectada ao banco de dados)
+      try {
+        const apiResponse = await fetch('/api/lojas');
+        if (apiResponse.ok) {
+          const apiJson = await apiResponse.json();
+          if (Array.isArray(apiJson.results) && apiJson.results.length > 0) {
+            cachedData = {
+              allEstablishments: apiJson.results,
+              dynamicCategories: apiJson.dynamicCategories || [],
+              dynamicCities: apiJson.dynamicCities || [],
+              dynamicServiceTypes: apiJson.dynamicServiceTypes || [],
+            };
+            return cachedData;
+          }
+        }
+      } catch {
+        // Silenciosamente faz fallback para /lojas.json
+      }
+
+      // 2. Fallback para public/lojas.json
       const response = await fetch('/lojas.json');
       if (!response.ok) {
         throw new Error('Failed to fetch lojas.json');

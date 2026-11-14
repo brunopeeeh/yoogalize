@@ -50,14 +50,18 @@ describe("StoreCard component", () => {
     expect(openMock.mock.calls[0][0]).toContain(encodeURIComponent("Vibowls Açaí"));
   });
 
-  it("deve exibir o badge compacto de parceiro Yooga quando houver link de delivery", () => {
+  it("deve exibir o badge compacto de Clube de Cupons quando temClubeCupons for true", () => {
+    const storeWithClube = {
+      ...mockStore,
+      temClubeCupons: true,
+    };
     render(
       <MemoryRouter>
-        <StoreCard store={mockStore} isFavorite={false} onToggleFavorite={vi.fn()} />
+        <StoreCard store={storeWithClube} isFavorite={false} onToggleFavorite={vi.fn()} />
       </MemoryRouter>
     );
 
-    const badges = screen.getAllByLabelText("Parceiro Verificado Yooga");
+    const badges = screen.getAllByLabelText("Clube de Cupons");
     expect(badges.length).toBeGreaterThan(0);
   });
 

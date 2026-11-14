@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { neon } from '@neondatabase/serverless';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -25,6 +26,7 @@ export type LojaRaw = {
   banner?: string | null;
   tipo_atendimento?: string | null;
   horario_funcionamento?: OperatingHour[];
+  tem_clube_cupons?: boolean | null;
 };
 
 export type NormalizedEstablishment = {
@@ -40,6 +42,7 @@ export type NormalizedEstablishment = {
   banner?: string | null;
   operatingHours?: OperatingHour[];
   serviceType?: string;
+  temClubeCupons?: boolean;
 };
 
 export type StoreWithDistance = NormalizedEstablishment & {
@@ -108,6 +111,7 @@ export const normalizeEstablishments = (lojas: LojaRaw[]): NormalizedEstablishme
       banner: l.banner ?? null,
       operatingHours: l.horario_funcionamento as OperatingHour[],
       serviceType: l.tipo_atendimento?.trim() ?? undefined,
+      temClubeCupons: Boolean(l.tem_clube_cupons),
     };
   });
 };
@@ -240,19 +244,40 @@ function findLojasJsonPath(): string | null {
   return null;
 }
 
+async function loadStoresFromDb(): Promise<LojaRaw[] | null> {
+  const dbUrl = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+  if (!dbUrl) return null;
+
+  try {
+    const sql = neon(dbUrl);
+    const rows = await sql`SELECT payload FROM vw_lojas_json LIMIT 1;`;
+    if (rows && rows.length > 0 && rows[0]?.payload?.result) {
+      return rows[0].payload.result as LojaRaw[];
+    }
+  } catch (err) {
+    console.warn('Falha ao consultar banco PostgreSQL (Neon):', err);
+  }
+  return null;
+}
+
 export async function loadStores(req?: VercelRequest): Promise<NormalizedEstablishment[]> {
   if (cachedStores) return cachedStores;
 
-  let rawList: LojaRaw[] = [];
-  const localPath = findLojasJsonPath();
+  // 1. Tenta carregar do PostgreSQL (Neon) se POSTGRES_URL / DATABASE_URL estiver configurada
+  const dbRaw = await loadStoresFromDb();
+  let rawList: LojaRaw[] = dbRaw || [];
 
-  if (localPath) {
-    try {
-      const rawContent = fs.readFileSync(localPath, 'utf-8');
-      const parsed = JSON.parse(rawContent);
-      rawList = parsed.result || [];
-    } catch (err) {
-      console.warn('Falha ao ler lojas.json do disco:', err);
+  // 2. Se o banco não retornou dados, faz fallback para lojas.json do disco ou HTTP
+  if (rawList.length === 0) {
+    const localPath = findLojasJsonPath();
+    if (localPath) {
+      try {
+        const rawContent = fs.readFileSync(localPath, 'utf-8');
+        const parsed = JSON.parse(rawContent);
+        rawList = parsed.result || [];
+      } catch (err) {
+        console.warn('Falha ao ler lojas.json do disco:', err);
+      }
     }
   }
 

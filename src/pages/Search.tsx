@@ -47,6 +47,7 @@ type SearchState = {
   selectedCity?: string;
   radiusKm?: number;
   openNow?: boolean;
+  onlyClubeCupons?: boolean;
   searchTerm?: string;
   viewMode?: "list" | "map";
   filteredResults?: EstablishmentWithDistance[];
@@ -121,6 +122,9 @@ const Search = () => {
   const [openNow, setOpenNow] = useState<boolean>(
     incomingLocation ? false : savedState?.openNow || false
   );
+  const [onlyClubeCupons, setOnlyClubeCupons] = useState<boolean>(
+    incomingLocation ? false : savedState?.onlyClubeCupons || false
+  );
 
   // Estados de UI
   const [searchTerm, setSearchTerm] = useState<string>(
@@ -159,8 +163,9 @@ const Search = () => {
     if (selectedCity !== "all") count++;
     if (radiusKm !== 5) count++;
     if (openNow) count++;
+    if (onlyClubeCupons) count++;
     return count;
-  }, [selectedCategory, selectedServiceType, selectedCity, radiusKm, openNow]);
+  }, [selectedCategory, selectedServiceType, selectedCity, radiusKm, openNow, onlyClubeCupons]);
 
   const handleToggleFavorite = (id: string) => {
     if (favoriteIds.includes(id)) {
@@ -235,6 +240,8 @@ const Search = () => {
         if (tipoAlvo && key(establishment.serviceType ?? "") !== tipoAlvo) return false;
         // "Abertas Agora": exibe apenas lojas que estao comprovadamente abertas
         if (openNow && !isEstablishmentOpen(establishment.operatingHours)) return false;
+        // "Clube de Cupons": exibe apenas lojas que possuem clube de cupons
+        if (onlyClubeCupons && !establishment.temClubeCupons) return false;
         if (searchTarget) {
           const matchName = key(establishment.name).includes(searchTarget);
           const matchCategory = key(establishment.category).includes(searchTarget);
@@ -254,6 +261,7 @@ const Search = () => {
     selectedCity,
     radiusKm,
     openNow,
+    onlyClubeCupons,
     debouncedSearch,
   ]);
 
@@ -285,6 +293,7 @@ const Search = () => {
         selectedCity,
         radiusKm,
         openNow,
+        onlyClubeCupons,
         searchTerm,
         viewMode,
         filteredResults,
@@ -299,6 +308,7 @@ const Search = () => {
     selectedCity,
     radiusKm,
     openNow,
+    onlyClubeCupons,
     searchTerm,
     viewMode,
     filteredResults,
@@ -401,6 +411,7 @@ const Search = () => {
     setSelectedCity("all");
     setRadiusKm(5);
     setOpenNow(false);
+    setOnlyClubeCupons(false);
     setSearchTerm("");
     toast.info("Filtros limpos!");
   };
@@ -573,6 +584,8 @@ const Search = () => {
                 setRadiusKm={setRadiusKm}
                 openNow={openNow}
                 setOpenNow={setOpenNow}
+                onlyClubeCupons={onlyClubeCupons}
+                setOnlyClubeCupons={setOnlyClubeCupons}
                 onClearFilters={handleClearFilters}
               />
             </Card>
@@ -641,6 +654,8 @@ const Search = () => {
                         setRadiusKm={setRadiusKm}
                         openNow={openNow}
                         setOpenNow={setOpenNow}
+                        onlyClubeCupons={onlyClubeCupons}
+                        setOnlyClubeCupons={setOnlyClubeCupons}
                         onClearFilters={handleClearFilters}
                       />
                     </div>
@@ -716,6 +731,19 @@ const Search = () => {
                 <span className={`h-2 w-2 rounded-full ${openNow ? "bg-white" : "bg-emerald-500"}`} />
                 <span>Abertas agora</span>
                 {openNow && <X className="h-3 w-3" />}
+              </button>
+
+              {/* Toggle rápido de Clube de Cupons */}
+              <button
+                type="button"
+                onClick={() => setOnlyClubeCupons(!onlyClubeCupons)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0 ${onlyClubeCupons
+                    ? "bg-amber-600 text-white shadow-sm ring-1 ring-amber-600"
+                    : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300/60 dark:border-amber-700/60"
+                  }`}
+              >
+                <span>🎟️ Clube de Cupons</span>
+                {onlyClubeCupons && <X className="h-3 w-3" />}
               </button>
 
               {/* Toggle rápido de Delivery */}

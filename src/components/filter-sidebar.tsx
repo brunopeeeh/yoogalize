@@ -21,6 +21,8 @@ type FilterSidebarProps = {
   setRadiusKm: (radius: number) => void;
   openNow: boolean;
   setOpenNow: (open: boolean) => void;
+  onlyClubeCupons?: boolean;
+  setOnlyClubeCupons?: (only: boolean) => void;
   onSearchClick?: () => void;
   onClearFilters?: () => void;
 };
@@ -40,6 +42,8 @@ export const FilterSidebar = ({
   setRadiusKm,
   openNow,
   setOpenNow,
+  onlyClubeCupons = false,
+  setOnlyClubeCupons,
   onSearchClick,
   onClearFilters,
 }: FilterSidebarProps) => {
@@ -130,6 +134,21 @@ export const FilterSidebar = ({
               disabled={isLoadingData}
             />
           </div>
+
+          {setOnlyClubeCupons && (
+            <div className="mt-4 flex items-center justify-between">
+              <Label htmlFor="clube-cupons-filter" className="font-semibold flex items-center gap-1.5 cursor-pointer">
+                <span>🎟️</span>
+                <span>Clube de Cupons</span>
+              </Label>
+              <Switch
+                id="clube-cupons-filter"
+                checked={onlyClubeCupons}
+                onCheckedChange={setOnlyClubeCupons}
+                disabled={isLoadingData}
+              />
+            </div>
+          )}
         </div>
 
         <div className="mt-auto pt-4 space-y-2">
