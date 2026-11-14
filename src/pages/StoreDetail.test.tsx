@@ -51,6 +51,8 @@ describe('StoreDetail page', () => {
     expect(screen.getByText(/Avenida Dante Michelini/)).toBeInTheDocument();
     expect(screen.getByText(/Ver cardápio e pedir/i)).toBeInTheDocument();
     expect(screen.getByText(/Bora comer aqui\?/i)).toBeInTheDocument();
+    expect(screen.getAllByText("Parceiro Verificado Yooga").length).toBeGreaterThan(0);
+    expect(screen.getByText("0% comissão")).toBeInTheDocument();
     expect(screen.getByText(/Ver semana/i)).toBeInTheDocument();
   });
 

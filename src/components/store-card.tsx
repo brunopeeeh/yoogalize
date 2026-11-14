@@ -10,6 +10,8 @@ import { getStoreInitials, getCategoryVisual } from "@/lib/store-presentation";
 import { NormalizedEstablishment } from "@/lib/types";
 import { WhatsAppIcon } from "@/components/icons";
 import { shareToWhatsApp } from "@/lib/share";
+import { YoogaPartnerBadge } from "@/components/yooga-partner-badge";
+import { buildYoogaDeliveryUrl } from "@/lib/yooga";
 
 export type StoreCardProps = {
   store: NormalizedEstablishment & { distance?: number };
@@ -39,11 +41,16 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
 
         {/* Informações centrais */}
         <div className="flex-1 min-w-0">
-          <Link to={`/loja/${store.id}`} className="block">
-            <h3 className="font-semibold text-base text-foreground truncate group-hover:text-primary transition-colors">
-              {cleanName}
-            </h3>
-          </Link>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Link to={`/loja/${store.id}`} className="block">
+              <h3 className="font-semibold text-base text-foreground truncate group-hover:text-primary transition-colors">
+                {cleanName}
+              </h3>
+            </Link>
+            {store.linkDelivery && (
+              <YoogaPartnerBadge variant="compact" />
+            )}
+          </div>
 
           <p className="text-xs text-muted-foreground mt-0.5 truncate">
             {store.category}
@@ -141,11 +148,16 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
 
         {/* Conteúdo do Card */}
         <div className="flex flex-1 flex-col p-4 pt-8">
-          <Link to={`/loja/${store.id}`} className="block">
-            <h3 className="font-bold text-lg text-foreground truncate hover:text-primary transition-colors">
-              {cleanName}
-            </h3>
-          </Link>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link to={`/loja/${store.id}`} className="block">
+              <h3 className="font-bold text-lg text-foreground truncate hover:text-primary transition-colors">
+                {cleanName}
+              </h3>
+            </Link>
+            {store.linkDelivery && (
+              <YoogaPartnerBadge variant="compact" />
+            )}
+          </div>
 
           <p className="text-xs text-muted-foreground mt-1 truncate">
             {store.category}
@@ -188,7 +200,10 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
                 className="flex-1 text-xs font-semibold"
               >
                 <a
-                  href={`https://delivery.yooga.app/${store.linkDelivery}`}
+                  href={buildYoogaDeliveryUrl(store.linkDelivery, {
+                    medium: "card_button",
+                    content: store.id,
+                  })!}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-1"

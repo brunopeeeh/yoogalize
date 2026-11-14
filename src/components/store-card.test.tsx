@@ -49,4 +49,15 @@ describe("StoreCard component", () => {
     expect(openMock.mock.calls[0][0]).toContain("https://api.whatsapp.com/send?text=");
     expect(openMock.mock.calls[0][0]).toContain(encodeURIComponent("Vibowls Açaí"));
   });
+
+  it("deve exibir o badge compacto de parceiro Yooga quando houver link de delivery", () => {
+    render(
+      <MemoryRouter>
+        <StoreCard store={mockStore} isFavorite={false} onToggleFavorite={vi.fn()} />
+      </MemoryRouter>
+    );
+
+    const badges = screen.getAllByLabelText("Parceiro Verificado Yooga");
+    expect(badges.length).toBeGreaterThan(0);
+  });
 });
