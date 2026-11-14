@@ -259,6 +259,14 @@ const Search = () => {
 
   // Efeitos
   useEffect(() => {
+    // Redireciona para / apenas se nao houver nenhuma localizacao definida
+    if (!effectiveLocation) {
+      toast.error("Localização do usuário não encontrada. Redirecionando...");
+      navigate("/");
+    }
+  }, [effectiveLocation, navigate]);
+
+  useEffect(() => {
     // Quando chega uma nova localizacao vinda da tela inicial (Welcome),
     // limpamos o state do historico do navegador para que F5 e Voltar
     // da tela de detalhes leiam exclusivamente do sessionStorage.
@@ -267,17 +275,9 @@ const Search = () => {
     }
   }, [incomingLocation, location.pathname, navigate]);
 
+  // Salva o estado no sessionStorage sempre que a localizacao ou filtros mudarem
   useEffect(() => {
-    // Redireciona para / apenas se nao houver localizacao nem da navegacao nem da sessao
-    if (!incomingLocation && !savedState?.effectiveLocation) {
-      toast.error("Localização do usuário não encontrada. Redirecionando...");
-      navigate("/");
-    }
-  }, [incomingLocation, savedState, navigate]);
-
-  // Save state to session storage whenever it changes
-  useEffect(() => {
-    if (hasSearched) {
+    if (effectiveLocation) {
       const searchState: SearchState = {
         effectiveLocation,
         selectedCategory,
