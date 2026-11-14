@@ -81,54 +81,51 @@ export default {
             height: "0",
           },
         },
-        float: {
+        "wave-gentle": {
           "0%, 100%": {
-            transform: "translateY(0px) rotate(0deg)",
+            transform: "translateY(0) rotate(0deg)",
           },
-          "50%": {
-            transform: "translateY(-12px) rotate(1.5deg)",
+          "15%": {
+            transform: "translateY(-3px) rotate(-6deg)",
+          },
+          "30%": {
+            transform: "translateY(-5px) rotate(6deg)",
+          },
+          "45%": {
+            transform: "translateY(-3px) rotate(-5deg)",
+          },
+          "60%": {
+            transform: "translateY(-4px) rotate(4deg)",
+          },
+          "75%, 90%": {
+            transform: "translateY(0) rotate(0deg)",
           },
         },
         "float-slow": {
           "0%, 100%": {
-            transform: "translateY(0px) rotate(0deg)",
-          },
-          "25%": {
-            transform: "translateY(-6px) rotate(-1.5deg)",
+            transform: "translateY(0px)",
           },
           "50%": {
-            transform: "translateY(-14px) rotate(0deg)",
-          },
-          "75%": {
-            transform: "translateY(-6px) rotate(1.5deg)",
-          },
-        },
-        wiggle: {
-          "0%, 100%": {
-            transform: "rotate(-3deg)",
-          },
-          "50%": {
-            transform: "rotate(3deg)",
+            transform: "translateY(-6px)",
           },
         },
         "shadow-pulse": {
-          "0%, 100%": {
+          "0%, 75%, 100%": {
             transform: "scale(1)",
-            opacity: "0.28",
+            opacity: "0.25",
           },
-          "50%": {
-            transform: "scale(0.72)",
-            opacity: "0.14",
+          "30%, 60%": {
+            transform: "scale(0.85)",
+            opacity: "0.15",
           },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        float: "float 3.5s ease-in-out infinite",
-        "float-slow": "float-slow 4.5s ease-in-out infinite",
-        wiggle: "wiggle 1s ease-in-out infinite",
-        "shadow-pulse": "shadow-pulse 3.5s ease-in-out infinite",
+        "wave-gentle": "wave-gentle 5s ease-in-out infinite",
+        "float-slow": "float-slow 6s ease-in-out infinite",
+        "shadow-pulse": "shadow-pulse 5s ease-in-out infinite",
       },
     },
   },

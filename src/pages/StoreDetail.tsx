@@ -30,6 +30,8 @@ import { NormalizedEstablishment } from "@/lib/types";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { WhatsAppIcon } from "@/components/icons";
 import { shareToWhatsApp, buildWhatsAppInvite } from "@/lib/share";
+import { YoogaPartnerBadge } from "@/components/yooga-partner-badge";
+import { buildYoogaDeliveryUrl } from "@/lib/yooga";
 
 const StoreMiniMap = lazy(() => import("@/components/store-mini-map"));
 
@@ -219,9 +221,10 @@ const StoreDetail = () => {
 
   const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`;
   const wazeUrl = `https://waze.com/ul?ll=${store.latitude},${store.longitude}&navigate=yes`;
-  const deliveryUrl = store.linkDelivery
-    ? `https://delivery.yooga.app/${store.linkDelivery}`
-    : null;
+  const deliveryUrl = buildYoogaDeliveryUrl(store.linkDelivery, {
+    medium: "detail_cta",
+    content: store.id,
+  });
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-12">
@@ -283,9 +286,14 @@ const StoreDetail = () => {
         <div className="px-5 sm:px-2 pt-14 space-y-5">
           {/* Identidade da Loja */}
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-              {cleanName}
-            </h1>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+                {cleanName}
+              </h1>
+              {deliveryUrl && (
+                <YoogaPartnerBadge variant="pill" />
+              )}
+            </div>
 
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 flex flex-wrap items-center gap-1.5 font-medium">
               <span>{store.category}</span>
@@ -356,6 +364,13 @@ const StoreDetail = () => {
             <span>Bora comer aqui?</span>
             <span className="text-xs font-normal opacity-90">(WhatsApp)</span>
           </button>
+
+          {/* ========================================================
+              SELOS E GARANTIA PARCEIRO VERIFICADO YOOGA (B2C & B2B)
+              ======================================================== */}
+          {deliveryUrl && (
+            <YoogaPartnerBadge variant="trust-card" />
+          )}
 
           {/* ========================================================
               BARRA DE AÇÕES RÁPIDAS (Mockup 3 - Item 3)

@@ -28,7 +28,8 @@ describe("share utility (Bora comer aqui?)", () => {
     // Código interno 150275 deve ter sido removido
     expect(invite).toContain("*Vibowls Açaí* • _Açaiteria_");
     expect(invite).toContain("📍 Rua Celso Calmon, 267 - Praia do Canto, Vitória - ES");
-    expect(invite).toContain("🛵 *Cardápio & Pedidos:* https://delivery.yooga.app/vibowls-acai");
+    expect(invite).toContain("🛵 *Cardápio & Pedidos:* https://delivery.yooga.app/vibowls-acai?utm_source=descubra-yooga");
+    expect(invite).toContain("utm_medium=whatsapp_invite");
     expect(invite).toContain("👀 *Ver no Descubra Yooga:* http://localhost:8080/loja/vibowls-acai");
   });
 
@@ -39,7 +40,7 @@ describe("share utility (Bora comer aqui?)", () => {
     };
 
     const invite = buildWhatsAppInvite(storeWithHttp);
-    expect(invite).toContain("🛵 *Cardápio & Pedidos:* https://delivery.custom.app/loja");
+    expect(invite).toContain("🛵 *Cardápio & Pedidos:* https://delivery.custom.app/loja?utm_source=descubra-yooga");
   });
 
   it("não deve incluir linha de delivery se a loja não tiver link", () => {

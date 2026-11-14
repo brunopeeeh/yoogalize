@@ -502,7 +502,7 @@ const Welcome = () => {
               <img
                 src="/descubra-yooga.png"
                 alt="Mascote Descubra Yooga"
-                className="h-24 sm:h-28 w-auto animate-float transition-transform duration-300 group-hover:scale-110 drop-shadow-md"
+                className="h-28 sm:h-32 w-auto origin-bottom animate-wave-gentle transition-transform duration-300 group-hover:scale-110 drop-shadow-md"
               />
               <div className="w-16 h-2.5 bg-black/20 dark:bg-white/20 rounded-full blur-[3px] mt-1 animate-shadow-pulse pointer-events-none" />
             </div>

@@ -768,7 +768,7 @@ const Search = () => {
                   <img
                     src="/descubra-yooga.png"
                     alt="Mascote Descubra Yooga"
-                    className="h-32 sm:h-36 w-auto animate-float transition-transform duration-300 group-hover:scale-110 drop-shadow-md"
+                    className="h-32 sm:h-36 w-auto origin-bottom animate-wave-gentle transition-transform duration-300 group-hover:scale-110 drop-shadow-md"
                   />
                   <div className="w-20 h-3 bg-black/20 dark:bg-white/20 rounded-full blur-[3px] mt-1 animate-shadow-pulse pointer-events-none" />
                 </div>
