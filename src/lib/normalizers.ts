@@ -10,13 +10,21 @@ const slug = (value: string): string =>
     .replace(/(^-|-$)/g, "");
 
 /**
+ * Remove codigos internos ou IDs numericos que a Yooga anexa ao nome da empresa,
+ * por exemplo: "Vibowls Acai - 150275" -> "Vibowls Acai".
+ */
+export const cleanEstablishmentName = (name: string): string => {
+  if (!name) return "";
+  return name.replace(/\s*-\s*\d{3,}\s*$/, "").trim();
+};
+
+/**
  * Chave de comparacao tolerante a acento e pontuacao: "Estação Beer" -> "estacao beer".
  * Remove tambem o installation_id que a fonte anexa ao nome ("Loja - 148139"),
  * senao a comparacao com o slug falharia.
  */
 const key = (value: string): string =>
-  value
-    .replace(/\s*-\s*\d{3,}\s*$/, "")
+  cleanEstablishmentName(value)
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
@@ -71,7 +79,7 @@ export const normalizeEstablishments = (lojas: LojaRaw[]): NormalizedEstablishme
 
     return {
       id: `${slug(l.nome_empresa)}-${l.Latitude}-${l.Longitude}`,
-      name: l.nome_empresa,
+      name: cleanEstablishmentName(l.nome_empresa),
       category: l.modelo_negocio.trim(),
       address: l["endereco completo"],
       city: l.cidade.trim(),

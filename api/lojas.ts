@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { normalizeEstablishments } from '../src/lib/normalizers';
 import { calculateDistance } from '../src/lib/distance';
-import { isEstablishmentClosed } from '../src/lib/utils';
+import { isEstablishmentOpen } from '../src/lib/utils';
 import type { Establishment as LojaRaw, NormalizedEstablishment } from '../src/lib/types';
 
 export type StoreWithDistance = NormalizedEstablishment & {
@@ -102,7 +102,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
       if (targetCity && key(store.city) !== targetCity) return false;
       if (targetCategory && key(store.category) !== targetCategory) return false;
       if (targetServiceType && key(store.serviceType ?? '') !== targetServiceType) return false;
-      if (onlyOpen && isEstablishmentClosed(store.operatingHours)) return false;
+      if (onlyOpen && !isEstablishmentOpen(store.operatingHours)) return false;
       if (searchQuery) {
         const nameMatch = key(store.name).includes(searchQuery);
         const catMatch = key(store.category).includes(searchQuery);

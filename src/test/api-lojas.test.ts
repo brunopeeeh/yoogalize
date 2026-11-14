@@ -79,6 +79,45 @@ describe('/api/lojas serverless endpoint', () => {
     expect(responseData!.total).toBeGreaterThan(0);
   });
 
+  it('filtra estritamente lojas abertas quando abertas=true (excluindo sem horário)', () => {
+    let statusCode = 200;
+    let responseData: { total: number; results: Array<{ operatingHours?: Array<{ hours?: Array<{ start: string; end: string }> }> }> } | null = null;
+
+    const req = {
+      method: 'GET',
+      query: {
+        lat: '-20.33',
+        lon: '-40.29',
+        raio: '10',
+        abertas: 'true',
+      },
+      headers: {},
+    } as unknown as VercelRequest;
+
+    const res = {
+      setHeader: vi.fn(),
+      status: vi.fn((code: number) => {
+        statusCode = code;
+        return res;
+      }),
+      json: vi.fn((data: typeof responseData) => {
+        responseData = data;
+        return res;
+      }),
+      end: vi.fn(),
+    } as unknown as VercelResponse;
+
+    handler(req, res);
+
+    expect(statusCode).toBe(200);
+    expect(responseData).toBeDefined();
+    // Todas as lojas retornadas devem ter horários cadastrados (não podem ser desconhecidos)
+    responseData!.results.forEach((store) => {
+      expect(store.operatingHours).toBeDefined();
+      expect(store.operatingHours!.length).toBeGreaterThan(0);
+    });
+  });
+
   it('rejeita métodos HTTP não permitidos', () => {
     let statusCode = 200;
 

@@ -32,10 +32,19 @@ const Favorites = () => {
     }
   };
 
+  const handleBack = () => {
+    if (window.history.length > 2) {
+      navigate(-1);
+    } else {
+      const savedSearchState = sessionStorage.getItem('searchState');
+      navigate(savedSearchState ? '/busca' : '/');
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <header className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+        <Button variant="ghost" size="icon" onClick={handleBack} aria-label="Voltar">
           <ArrowLeft />
         </Button>
         <h1 className="text-2xl font-bold">Meus Favoritos</h1>

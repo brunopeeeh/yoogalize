@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeEstablishments } from './normalizers';
+import { normalizeEstablishments, cleanEstablishmentName } from './normalizers';
 import { Establishment as LojaRaw } from './types';
 
 const loja = (over: Partial<LojaRaw>): LojaRaw => ({
@@ -81,5 +81,21 @@ describe('normalizeEstablishments — id estável', () => {
       loja({ nome_empresa: 'Deck\'s Gastro Beer - 148104', Latitude: -20.0830558, Longitude: -41.1201904 }),
     ]);
     expect(r.id).toBe('deck-s-gastro-beer-148104--20.0830558--41.1201904');
+    expect(r.name).toBe('Deck\'s Gastro Beer');
+  });
+});
+
+describe('cleanEstablishmentName — limpeza de códigos internos', () => {
+  it('remove sufixo numérico de instalação/cliente', () => {
+    expect(cleanEstablishmentName('Vibowls Açaí - 150275')).toBe('Vibowls Açaí');
+    expect(cleanEstablishmentName('Ki-mania Lanchonete E Açaíteria - 155827')).toBe('Ki-mania Lanchonete E Açaíteria');
+  });
+
+  it('preserva nomes sem código interno', () => {
+    expect(cleanEstablishmentName('Café Bamboo')).toBe('Café Bamboo');
+  });
+
+  it('preserva números que fazem parte legítima do nome', () => {
+    expect(cleanEstablishmentName('Adega 028 - 85645')).toBe('Adega 028');
   });
 });

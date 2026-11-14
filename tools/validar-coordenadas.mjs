@@ -71,9 +71,10 @@ const limpa = (s) => String(s ?? "").replace(/\s+/g, " ").replace(/,\s*,/g, ",")
 /** So aceita resultado dentro do ES (evita "Rua X" homonima em outro estado). */
 const dentroDoES = (lat, lon) => lat > -21.4 && lat < -17.8 && lon > -41.9 && lon < -39.6;
 
-// invalida entradas fora do ES (geocode homonimo em outro estado)
+// invalida entradas de geocode DIRETO fora do ES (rua homonima em outro estado).
+// Entradas de reverse ("reverse|lat,lon" = {road,suburb,city}) nao tem lat/lon e nao sao tocadas.
 for (const [k, v] of Object.entries(cache)) {
-  if (v && !dentroDoES(v.lat, v.lon)) cache[k] = null;
+  if (v && typeof v.lat === "number" && !dentroDoES(v.lat, v.lon)) cache[k] = null;
 }
 
 async function geocode1(query) {
@@ -100,7 +101,7 @@ async function geocode1(query) {
 async function reverseGeocode(lat, lon) {
   if (typeof lat !== "number" || typeof lon !== "number") return null;
   const key = `reverse|${lat},${lon}`;
-  if (key in cache) return cache[key];
+  if (key in cache && cache[key] !== null) return cache[key];
   await sleep(1100);
   try {
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=18&addressdetails=1`;
@@ -155,9 +156,9 @@ async function geocode(endereco, partes = {}) {
     [partes.logradouro].filter(Boolean).join(", "),
   ].map(limpa).filter(Boolean);
 
-  for (const v of variantes) {
-    const r = await geocode1(v);
-    if (r) return r;
+  for (let vi = 0; vi < variantes.length; vi++) {
+    const r = await geocode1(variantes[vi]);
+    if (r) return { ...r, _via: vi };
   }
   return null;
 }
@@ -328,11 +329,14 @@ if (pendentes.length) {
       r.motivo += ` | reverso do ponto API = "${revApi.road ?? "?"}, ${revApi.suburb ?? "?"}" bate com o endereco da API`;
       continue;
     }
-    if (r.geocode_json) {
+    // so aceita o geocode como nova coordenada se ele veio de uma consulta
+    // COM numero/CEP (variantes 0-1). Variantes frouxas (so o nome da rua)
+    // caem em ruas homonimas e nao sao evidencia suficiente.
+    if (r.geocode_json && r.geocode_json._via <= 1) {
       r.decisao = "adotar_geocode";
       r.lat = r.geocode_json.lat;
       r.lon = r.geocode_json.lon;
-      r.motivo += ` | usa o geocode do endereco cadastrado (ponto do JSON esta em "${revJson?.suburb ?? "?"}")`;
+      r.motivo += ` | usa o geocode do endereco cadastrado (consulta com numero/CEP; ponto do JSON esta em "${revJson?.suburb ?? "?"}")`;
     }
   }
 }

@@ -103,25 +103,28 @@ const StoreDetail = () => {
   };
 
   const handleShare = async () => {
-    const shareData = {
-      title: store?.name || "Yoogalize",
-      text: `Confira ${store?.name || "esta loja"} no Yoogalize!`,
-      url: window.location.href,
-    };
+    const shareUrl = window.location.href;
+    const isMobile = typeof navigator !== "undefined" && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
 
-    if (navigator.share) {
+    if (isMobile && navigator.share) {
       try {
-        await navigator.share(shareData);
+        await navigator.share({
+          title: store?.name || "Yoogalize",
+          text: `Confira ${store?.name || "esta loja"} no Yoogalize!`,
+          url: shareUrl,
+        });
         return;
       } catch (err) {
-        if ((err as Error).name !== "AbortError") {
-          console.warn("Falha no Web Share:", err);
+        if ((err as Error).name === "AbortError") {
+          return;
         }
       }
     }
 
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(shareUrl);
       toast.success("Link copiado para a área de transferência!");
     } catch {
       toast.error("Não foi possível copiar o link.");

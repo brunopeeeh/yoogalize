@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { calculateDistance, formatDistance } from "@/lib/distance";
 import { ResultCardSkeleton } from "@/components/result-card-skeleton";
 import { OpeningHoursStatus } from "@/components/opening-hours-status";
-import { isEstablishmentClosed } from "@/lib/utils";
+import { isEstablishmentOpen } from "@/lib/utils";
 import { formatAddress, getCity } from "@/lib/address";
 import { getFavoriteIds, addFavoriteId, removeFavoriteId } from "@/lib/favorites";
 import { NominatimSuggestion, NominatimAddress, NormalizedEstablishment } from "@/lib/types";
@@ -64,7 +64,7 @@ const Search = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // O estado salvo era lido em CADA render. Agora e lido uma unica vez.
+  // 1. O estado salvo da sessao (sessionStorage) e a fonte de verdade para F5 e Voltar
   const [savedState] = useState<SearchState | null>(() => {
     const raw = sessionStorage.getItem("searchState");
     if (!raw) return null;
@@ -76,7 +76,7 @@ const Search = () => {
     }
   });
 
-  const initialLocation = location.state?.userLocation as UserLocation | undefined;
+  const incomingLocation = location.state?.userLocation as UserLocation | undefined;
 
   const {
     allEstablishments,
@@ -86,38 +86,50 @@ const Search = () => {
     isLoadingData
   } = useEstablishments();
 
+  // Se veio da tela inicial com um novo endereco, ele tem precedencia imediata.
+  // Caso contrario, recupera o endereco salvo no sessionStorage.
   const [effectiveLocation, setEffectiveLocation] = useState<UserLocation | undefined>(
-    initialLocation || savedState?.effectiveLocation
+    incomingLocation || savedState?.effectiveLocation
   );
 
-  // Estados de Filtro
+  // Estados de Filtro: se veio da tela inicial, inicia 'all', senao herda da sessao
   const [selectedCategory, setSelectedCategory] = useState<string>(
-    savedState?.selectedCategory || "all"
+    incomingLocation ? "all" : savedState?.selectedCategory || "all"
   );
   const [selectedServiceType, setSelectedServiceType] = useState<string>(
-    savedState?.selectedServiceType || "all"
+    incomingLocation ? "all" : savedState?.selectedServiceType || "all"
   );
-  // A cidade NAO e herdada da localizacao detectada: em regioes nao atendidas
-  // (ou quando o geocoder devolve um bairro) o filtro zerava os resultados.
   const [selectedCity, setSelectedCity] = useState<string>(
-    savedState?.selectedCity || "all"
+    incomingLocation ? "all" : savedState?.selectedCity || "all"
   );
-  const [radiusKm, setRadiusKm] = useState<number>(savedState?.radiusKm || 5);
-  const [openNow, setOpenNow] = useState<boolean>(savedState?.openNow || false);
+  const [radiusKm, setRadiusKm] = useState<number>(
+    incomingLocation ? 5 : savedState?.radiusKm || 5
+  );
+  const [openNow, setOpenNow] = useState<boolean>(
+    incomingLocation ? false : savedState?.openNow || false
+  );
 
   // Estados de UI
-  const [searchTerm, setSearchTerm] = useState<string>(savedState?.searchTerm || "");
-  const [debouncedSearch, setDebouncedSearch] = useState<string>(savedState?.searchTerm || "");
+  const [searchTerm, setSearchTerm] = useState<string>(
+    incomingLocation ? "" : savedState?.searchTerm || ""
+  );
+  const [debouncedSearch, setDebouncedSearch] = useState<string>(
+    incomingLocation ? "" : savedState?.searchTerm || ""
+  );
   const [viewMode, setViewMode] = useState<"list" | "map">(savedState?.viewMode || "list");
   const [isSearching, setIsSearching] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
-  const [editedAddress, setEditedAddress] = useState(effectiveLocation?.address || "");
+  const [editedAddress, setEditedAddress] = useState(
+    incomingLocation?.address || savedState?.effectiveLocation?.address || ""
+  );
   const [filteredResults, setFilteredResults] = useState<EstablishmentWithDistance[]>(
-    savedState?.filteredResults || []
+    incomingLocation ? [] : savedState?.filteredResults || []
   );
   const [suggestions, setSuggestions] = useState<NominatimSuggestion[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
-  const [hasSearched, setHasSearched] = useState<boolean>(savedState?.hasSearched || false);
+  const [hasSearched, setHasSearched] = useState<boolean>(
+    incomingLocation ? false : savedState?.hasSearched || false
+  );
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => getFavoriteIds());
 
   useEffect(() => {
@@ -198,9 +210,8 @@ const Search = () => {
         if (cidadeAlvo && key(establishment.city) !== cidadeAlvo) return false;
         if (segmentoAlvo && key(establishment.category) !== segmentoAlvo) return false;
         if (tipoAlvo && key(establishment.serviceType ?? "") !== tipoAlvo) return false;
-        // "Abertas Agora": remove apenas quem esta COM CERTEZA fechado.
-        // Loja sem horario informado nao pode ser descartada.
-        if (openNow && isEstablishmentClosed(establishment.operatingHours)) return false;
+        // "Abertas Agora": exibe apenas lojas que estao comprovadamente abertas
+        if (openNow && !isEstablishmentOpen(establishment.operatingHours)) return false;
         if (searchTarget) {
           const matchName = key(establishment.name).includes(searchTarget);
           const matchCategory = key(establishment.category).includes(searchTarget);
@@ -226,19 +237,21 @@ const Search = () => {
 
   // Efeitos
   useEffect(() => {
-    // Clear saved state if this is a new search from the welcome page
-    if (initialLocation) {
-      sessionStorage.removeItem('searchState');
+    // Quando chega uma nova localizacao vinda da tela inicial (Welcome),
+    // limpamos o state do historico do navegador para que F5 e Voltar
+    // da tela de detalhes leiam exclusivamente do sessionStorage.
+    if (incomingLocation) {
+      navigate(location.pathname, { replace: true, state: null });
     }
-  }, [initialLocation]);
+  }, [incomingLocation, location.pathname, navigate]);
 
   useEffect(() => {
-    // Only redirect if we have no location from navigation AND no saved location.
-    if (!initialLocation && !savedState?.effectiveLocation) {
+    // Redireciona para / apenas se nao houver localizacao nem da navegacao nem da sessao
+    if (!incomingLocation && !savedState?.effectiveLocation) {
       toast.error("Localização do usuário não encontrada. Redirecionando...");
       navigate("/");
     }
-  }, [initialLocation, savedState, navigate]);
+  }, [incomingLocation, savedState, navigate]);
 
   // Save state to session storage whenever it changes
   useEffect(() => {
