@@ -59,7 +59,12 @@ const Favorites = () => {
           {favoriteStores.map((item) => (
             <Card key={item.id} className="p-4 flex flex-col">
               <div className="flex justify-between items-start">
-                <h3 className="font-bold pr-2">{item.name}</h3>
+                <h3
+                  className="font-bold pr-2 cursor-pointer hover:text-primary transition-colors hover:underline"
+                  onClick={() => navigate(`/loja/${item.id}`, { state: { store: item } })}
+                >
+                  {item.name}
+                </h3>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -74,7 +79,14 @@ const Favorites = () => {
               <div className="flex-grow mt-2">
                 <OpeningHoursStatus operatingHours={item.operatingHours} />
               </div>
-              <div className="flex justify-between items-center mt-4">
+              <div className="flex justify-between items-center mt-4 pt-3 border-t border-border/50">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/loja/${item.id}`, { state: { store: item } })}
+                >
+                  Detalhes
+                </Button>
                 {item.linkDelivery ? (
                   <Button asChild size="sm">
                     <a
@@ -82,7 +94,7 @@ const Favorites = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <BookMarked className="mr-2 h-4 w-4" /> Cardápio
+                      <BookMarked className="mr-1.5 h-3.5 w-3.5" /> Cardápio
                     </a>
                   </Button>
                 ) : (

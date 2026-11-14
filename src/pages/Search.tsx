@@ -457,7 +457,12 @@ const Search = () => {
                     {filteredResults.slice(0, visibleCount).map(item => (
                     <Card key={item.id} className="p-4 flex flex-col">
                         <div className="flex justify-between items-start">
-                          <h3 className="font-bold pr-2">{item.name}</h3>
+                          <h3
+                            className="font-bold pr-2 cursor-pointer hover:text-primary transition-colors hover:underline"
+                            onClick={() => navigate(`/loja/${item.id}`, { state: { store: item } })}
+                          >
+                            {item.name}
+                          </h3>
                           <Button variant="ghost" size="icon" className="flex-shrink-0 h-8 w-8" onClick={() => handleToggleFavorite(item.id)}>
                             <Heart className={`w-5 h-5 ${favoriteIds.includes(item.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
                           </Button>
@@ -469,15 +474,24 @@ const Search = () => {
                         <div className="flex-grow mt-2">
                           <OpeningHoursStatus operatingHours={item.operatingHours} />
                         </div>
-                        <div className="flex justify-between items-center mt-4">
-                            <p className="text-sm font-bold">{formatDistance(item.distance)} de distância</p>
-                            {item.linkDelivery && (
-                                <Button asChild size="sm">
-                                    <a href={`https://delivery.yooga.app/${item.linkDelivery}`} target="_blank" rel="noopener noreferrer">
-                                        <BookMarked className="mr-2 h-4 w-4" /> Cardápio
-                                    </a>
-                                </Button>
-                            )}
+                        <div className="flex justify-between items-center mt-4 pt-3 border-t border-border/50">
+                            <p className="text-sm font-bold text-muted-foreground">{formatDistance(item.distance)}</p>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(`/loja/${item.id}`, { state: { store: item } })}
+                              >
+                                Detalhes
+                              </Button>
+                              {item.linkDelivery && (
+                                  <Button asChild size="sm">
+                                      <a href={`https://delivery.yooga.app/${item.linkDelivery}`} target="_blank" rel="noopener noreferrer">
+                                          <BookMarked className="mr-1.5 h-3.5 w-3.5" /> Cardápio
+                                      </a>
+                                  </Button>
+                              )}
+                            </div>
                         </div>
                     </Card>
                     ))}

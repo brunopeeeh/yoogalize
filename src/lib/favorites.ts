@@ -6,6 +6,9 @@ const FAVORITES_KEY = 'yoggalize_favorites';
  */
 export const getFavoriteIds = (): string[] => {
   try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return [];
+    }
     const item = window.localStorage.getItem(FAVORITES_KEY);
     return item ? JSON.parse(item) : [];
   } catch (error) {
@@ -20,6 +23,9 @@ export const getFavoriteIds = (): string[] => {
  */
 const saveFavoriteIds = (ids: string[]) => {
   try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return;
+    }
     window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(ids));
   } catch (error) {
     console.error("Erro ao salvar favoritos no localStorage:", error);

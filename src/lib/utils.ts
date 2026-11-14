@@ -10,7 +10,7 @@ export function cn(...inputs: ClassValue[]) {
  * Obtém informações da hora atual no fuso de Brasília (America/Sao_Paulo).
  * @returns Objeto com o dia da semana e os minutos totais desde o início da semana.
  */
-function getBrasiliaTimeInfo(): { dayOfWeek: number; minutesIntoWeek: number } {
+export function getBrasiliaTimeInfo(): { dayOfWeek: number; minutesIntoWeek: number } {
   const now = new Date();
   const timeZone = "America/Sao_Paulo";
 
