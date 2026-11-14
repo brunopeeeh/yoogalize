@@ -44,7 +44,7 @@ export const StoreMap = ({
       const map = L.map(containerRef.current, {
         center: defaultCenter,
         zoom: 13,
-        scrollWheelZoom: true,
+        scrollWheelZoom: false,
       });
 
       mapRef.current = map;

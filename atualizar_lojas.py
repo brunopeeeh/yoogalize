@@ -231,10 +231,36 @@ def geocode_endereco(loja, geocoder, com_bairro=True):
     return geocoder.geocode(", ".join(p for p in partes if p), require_street_level=True)
 
 
-def escolher_coordenadas(loja, geocoder, anteriores):
+def detectar_defaults(lojas):
+    """Coordenadas compartilhadas por muitas lojas nao sao geolocalizacao real.
+
+    O sistema Yooga grava um ponto default quando o lojista nunca configurou a
+    localizacao, e o geocoder pode cair no centroid da cidade. Detectadas pela
+    repeticao exata da coordenada entre instalacoes distintas.
+    """
+    conta = Counter()
+    for l in lojas:
+        for c in (to_coords(l["geo_lat"], l["geo_lng"]), to_coords(l["store_lat"], l["store_lng"])):
+            if c:
+                conta[(round(c[0], 7), round(c[1], 7))] += 1
+    return {c for c, n in conta.items() if n >= DEFAULT_MIN_LOJAS}
+
+
+def escolher_coordenadas(loja, geocoder, anteriores, defaults=()):
     """Retorna (lat, lng, origem) ou None."""
     geo = to_coords(loja["geo_lat"], loja["geo_lng"])
     store = to_coords(loja["store_lat"], loja["store_lng"])
+
+    # Ponto default compartilhado nao serve como coordenada real: fica de lado
+    # e so volta como ultimo recurso, se nenhuma outra fonte existir.
+    fallback_default = None
+    if geo and (round(geo[0], 7), round(geo[1], 7)) in defaults:
+        fallback_default = fallback_default or geo
+        geo = None
+    if store and (round(store[0], 7), round(store[1], 7)) in defaults:
+        fallback_default = fallback_default or store
+        store = None
+
     fontes = [c for c in (geo, store) if c]
 
     # A coordenada anterior só é reaproveitada se alguma fonte a confirmar
@@ -273,6 +299,10 @@ def escolher_coordenadas(loja, geocoder, anteriores):
         por_cep = geocoder.geocode(f"{cep[:5]}-{cep[5:]}, Brasil")
         if por_cep:
             return (*por_cep, "nominatim-cep")
+
+    # Ultimo recurso: melhor o ponto default do que descartar a loja do catalogo.
+    if fallback_default:
+        return (*fallback_default, "default-yooga")
     return None
 
 

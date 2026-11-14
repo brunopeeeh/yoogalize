@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Navigation } from "lucide-react";
+import { MapPin, Navigation, Search, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { formatAddress, getCity } from "@/lib/address";
 import { prefetchEstablishments } from "@/hooks/useEstablishments";
 import { NominatimAddress } from "@/lib/types";
 
-// Tipos locais para este componente
+// Tipos locais para sugestões
 type SuggestionAddress = {
   road?: string;
   city?: string;
@@ -27,7 +27,6 @@ type Suggestion = {
   address: SuggestionAddress;
 };
 
-// Contexto do Mapbox usado para montar o endereco
 type MapboxContext = {
   id?: string;
   text?: string;
@@ -42,12 +41,47 @@ type MapboxFeature = {
   context?: MapboxContext[];
 };
 
+// Limites aproximados do Espírito Santo para validação defensiva (Bug 3)
+const isInsideES = (lat: number, lon: number): boolean => {
+  return lat >= -21.4 && lat <= -17.8 && lon >= -41.9 && lon <= -39.5;
+};
+
+// Sugestões rápidas de bairros da Grande Vitória (Mockup 4 - Item 3)
+const QUICK_SUGGESTIONS = [
+  {
+    name: "Praia do Canto, Vitória – ES",
+    city: "Vitória",
+    lat: -20.3013,
+    lon: -40.2954,
+  },
+  {
+    name: "Jardim Camburi, Vitória – ES",
+    city: "Vitória",
+    lat: -20.2642,
+    lon: -40.2831,
+  },
+  {
+    name: "Praia da Costa, Vila Velha – ES",
+    city: "Vila Velha",
+    lat: -20.3444,
+    lon: -40.2882,
+  },
+  {
+    name: "Itapuã, Vila Velha – ES",
+    city: "Vila Velha",
+    lat: -20.3541,
+    lon: -40.2913,
+  },
+];
+
 const geocodeWithNominatim = async (
   query: string
 ): Promise<{ lat: number; lon: number; address: string; city: string } | null> => {
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&addressdetails=1&countrycodes=br`
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+        query
+      )}&format=json&limit=1&addressdetails=1&countrycodes=br`
     );
     if (!response.ok) return null;
     const data = await response.json();
@@ -91,7 +125,9 @@ const reverseGeocodeWithNominatim = async (
 const searchSuggestionsWithNominatim = async (query: string): Promise<Suggestion[]> => {
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1&countrycodes=br`
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+        query
+      )}&format=json&limit=5&addressdetails=1&countrycodes=br`
     );
     if (!response.ok) return [];
     const data = await response.json();
@@ -120,41 +156,27 @@ const searchSuggestionsWithNominatim = async (query: string): Promise<Suggestion
 
 const Welcome = () => {
   const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-
-  const isCEP = (text: string): boolean => {
-    return /^(\d{5}-\d{3}|\d{8})$/.test(text);
-  };
-
   const navigate = useNavigate();
+
   const [manualAddress, setManualAddress] = useState("");
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [currentCoords, setCurrentCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [currentCity, setCurrentCity] = useState<string>("");
+  const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Pré-carrega o catálogo de lojas em background assim que o usuário acessa a página inicial
+  // Pré-carrega o catálogo de estabelecimentos em segundo plano
   useEffect(() => {
     prefetchEstablishments();
   }, []);
 
-  const formatMapboxAddress = (result: MapboxFeature): string => {
-    const road = result.address?.road || result.properties?.address || "";
-    const neighborhood =
-      result.context?.find((c) => c.id?.startsWith("neighborhood"))?.text || "";
-    const city =
-      result.context?.find((c) => c.id?.startsWith("place"))?.text || "";
-    const state =
-      result.context?.find((c) => c.id?.startsWith("region"))?.text || "";
-    const postcode =
-      result.context?.find((c) => c.id?.startsWith("postcode"))?.text || "";
-
-    return [road, neighborhood, city, state, postcode, "Brasil"]
-      .filter(Boolean)
-      .join(", ");
+  const isCEP = (text: string): boolean => {
+    return /^(\d{5}-?\d{3})$/.test(text.trim());
   };
 
   const handleUseCurrentLocation = () => {
     setIsLoadingLocation(true);
+    setValidationError(null);
     setCurrentCoords(null);
     setSuggestions([]);
 
@@ -173,7 +195,7 @@ const Welcome = () => {
           let formatted = "";
           let city = "";
 
-          // 1. Tenta Mapbox se token estiver disponível
+          // 1. Tenta Mapbox se token estiver configurado
           if (MAPBOX_ACCESS_TOKEN) {
             try {
               const response = await fetch(
@@ -188,11 +210,11 @@ const Welcome = () => {
                 }
               }
             } catch (err) {
-              console.warn("Mapbox reverse geocode falhou, tentando fallback Nominatim:", err);
+              console.warn("Mapbox reverse geocode falhou:", err);
             }
           }
 
-          // 2. Fallback para Nominatim
+          // 2. Fallback Nominatim
           if (!formatted) {
             const nomResult = await reverseGeocodeWithNominatim(latitude, longitude);
             if (nomResult) {
@@ -201,20 +223,34 @@ const Welcome = () => {
             }
           }
 
-          if (formatted) {
-            setManualAddress(formatted);
-            setCurrentCity(city);
-            toast.success("Localização encontrada!");
-          } else {
-            const fallbackAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-            setManualAddress(fallbackAddress);
-            toast.warning("Não foi possível obter o nome do endereço, mas as coordenadas foram salvas.");
-          }
+          const finalAddress = formatted || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+          setManualAddress(finalAddress);
+          setCurrentCity(city);
+
+          // Navega diretamente com a localização detectada
+          const userLocation = {
+            lat: latitude,
+            lon: longitude,
+            address: finalAddress,
+            city,
+          };
+
+          toast.success("Localização encontrada com sucesso!");
+          navigate("/busca", { state: { userLocation } });
         } catch (error) {
           console.error("Erro no reverse geocoding:", error);
           const fallbackAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
           setManualAddress(fallbackAddress);
-          toast.warning("Não foi possível obter o nome do endereço, mas as coordenadas foram salvas.");
+          navigate("/busca", {
+            state: {
+              userLocation: {
+                lat: latitude,
+                lon: longitude,
+                address: fallbackAddress,
+                city: "",
+              },
+            },
+          });
         } finally {
           setIsLoadingLocation(false);
         }
@@ -222,7 +258,7 @@ const Welcome = () => {
       (error) => {
         let errorMessage = "Não foi possível obter sua localização.";
         if (error.code === error.PERMISSION_DENIED) {
-          errorMessage = "Você precisa permitir o acesso à localização.";
+          errorMessage = "Permissão de localização negada. Digite seu endereço abaixo.";
         } else if (error.code === error.POSITION_UNAVAILABLE) {
           errorMessage = "Localização indisponível no momento.";
         } else if (error.code === error.TIMEOUT) {
@@ -239,8 +275,9 @@ const Welcome = () => {
     );
   };
 
+  // Autocomplete com debounce
   useEffect(() => {
-    if (!manualAddress.trim()) {
+    if (!manualAddress.trim() || currentCoords) {
       setSuggestions([]);
       return;
     }
@@ -249,11 +286,12 @@ const Welcome = () => {
       try {
         let adaptedSuggestions: Suggestion[] = [];
 
-        // 1. Tenta Mapbox primeiro
         if (MAPBOX_ACCESS_TOKEN) {
           try {
             const response = await fetch(
-              `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(manualAddress)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=5`
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+                manualAddress
+              )}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=5`
             );
             if (response.ok) {
               const mapboxData = await response.json();
@@ -274,11 +312,10 @@ const Welcome = () => {
               }
             }
           } catch (err) {
-            console.warn("Mapbox autocomplete falhou, tentando fallback Nominatim:", err);
+            console.warn("Mapbox autocomplete falhou:", err);
           }
         }
 
-        // 2. Fallback para Nominatim
         if (adaptedSuggestions.length === 0) {
           adaptedSuggestions = await searchSuggestionsWithNominatim(manualAddress);
         }
@@ -288,12 +325,13 @@ const Welcome = () => {
         console.error("Erro ao buscar sugestões:", error);
         setSuggestions([]);
       }
-    }, 500);
+    }, 400);
 
     return () => clearTimeout(debounceTimer);
-  }, [manualAddress, MAPBOX_ACCESS_TOKEN]);
+  }, [manualAddress, currentCoords, MAPBOX_ACCESS_TOKEN]);
 
   const handleSelectSuggestion = (suggestion: Suggestion) => {
+    setValidationError(null);
     setManualAddress(suggestion.display_name);
     setCurrentCoords({
       lat: parseFloat(suggestion.lat),
@@ -303,109 +341,91 @@ const Welcome = () => {
     setSuggestions([]);
   };
 
+  const handleSelectQuickLocation = (loc: typeof QUICK_SUGGESTIONS[0]) => {
+    setValidationError(null);
+    setManualAddress(loc.name);
+    setCurrentCoords({
+      lat: loc.lat,
+      lon: loc.lon,
+    });
+    setCurrentCity(loc.city);
+    setSuggestions([]);
+  };
+
   const handleManualAddress = async () => {
-    const trimmedAddress = manualAddress.trim();
-    if (!trimmedAddress) {
-      toast.error("Por favor, digite um endereço ou CEP.");
+    const trimmed = manualAddress.trim();
+    if (!trimmed) {
+      setValidationError("Por favor, digite um endereço, bairro ou CEP.");
       return;
     }
 
     setIsLoadingLocation(true);
+    setValidationError(null);
 
     try {
       let lat: number;
       let lon: number;
       let finalAddress: string;
       let newCity: string;
-      const isInputCEP = isCEP(trimmedAddress);
 
       if (currentCoords) {
         lat = currentCoords.lat;
         lon = currentCoords.lon;
-        finalAddress = trimmedAddress;
+        finalAddress = trimmed;
         newCity = currentCity;
-      } else if (isInputCEP) {
-        const cepResponse = await fetch(`https://viacep.com.br/ws/${trimmedAddress.replace(/\D/g, "")}/json/`);
-        if (!cepResponse.ok) {
-          throw new Error("Erro ao buscar CEP na ViaCEP.");
-        }
+      } else if (isCEP(trimmed)) {
+        const cepRaw = trimmed.replace(/\D/g, "");
+        const cepResponse = await fetch(`https://viacep.com.br/ws/${cepRaw}/json/`);
+        if (!cepResponse.ok) throw new Error("Erro ao consultar CEP.");
         const cepData = await cepResponse.json();
 
         if (cepData.erro) {
-          throw new Error("CEP não encontrado ou inválido.");
+          throw new Error("CEP não encontrado. Verifique os dígitos e tente novamente.");
         }
 
-        const fullAddressFromCEP = `${cepData.logradouro}, ${cepData.bairro}, ${cepData.localidade} - ${cepData.uf}`;
+        finalAddress = `${cepData.logradouro}, ${cepData.bairro}, ${cepData.localidade} - ${cepData.uf}`;
         newCity = cepData.localidade;
-        finalAddress = fullAddressFromCEP;
 
-        let geoCoords: { lat: number; lon: number } | null = null;
-
-        // 1. Tenta Mapbox para o CEP
-        if (MAPBOX_ACCESS_TOKEN) {
-          try {
-            const mapboxResponse = await fetch(
-              `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(fullAddressFromCEP)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=1`
-            );
-            if (mapboxResponse.ok) {
-              const mapboxData = await mapboxResponse.json();
-              if (mapboxData?.features?.length > 0) {
-                const result = mapboxData.features[0] as MapboxFeature;
-                geoCoords = { lat: result.center[1], lon: result.center[0] };
-              }
-            }
-          } catch (err) {
-            console.warn("Mapbox CEP geocode falhou, tentando fallback Nominatim:", err);
-          }
+        const nomResult = await geocodeWithNominatim(finalAddress);
+        if (!nomResult) {
+          throw new Error("Não foi possível localizar o endereço correspondente a este CEP.");
         }
-
-        // 2. Fallback Nominatim para o CEP
-        if (!geoCoords) {
-          const nomResult = await geocodeWithNominatim(fullAddressFromCEP);
-          if (nomResult) {
-            geoCoords = { lat: nomResult.lat, lon: nomResult.lon };
-          }
-        }
-
-        if (!geoCoords) {
-          throw new Error("Não foi possível geocodificar o endereço do CEP.");
-        }
-
-        lat = geoCoords.lat;
-        lon = geoCoords.lon;
+        lat = nomResult.lat;
+        lon = nomResult.lon;
       } else {
+        // Geocodificação manual com tolerância defensiva
         let geoResult: { lat: number; lon: number; address: string; city: string } | null = null;
 
-        // 1. Tenta Mapbox
         if (MAPBOX_ACCESS_TOKEN) {
           try {
             const mapboxResponse = await fetch(
-              `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(trimmedAddress)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=1`
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+                trimmed
+              )}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=1`
             );
             if (mapboxResponse.ok) {
-              const mapboxData = await mapboxResponse.json();
-              if (mapboxData?.features?.length > 0) {
-                const result = mapboxData.features[0] as MapboxFeature;
+              const data = await mapboxResponse.json();
+              if (data?.features?.length > 0) {
+                const result = data.features[0] as MapboxFeature;
                 geoResult = {
                   lat: result.center[1],
                   lon: result.center[0],
-                  address: formatMapboxAddress(result),
+                  address: result.place_name,
                   city: result.context?.find((c) => c.id?.startsWith("place"))?.text || "",
                 };
               }
             }
           } catch (err) {
-            console.warn("Mapbox busca endereço falhou, tentando fallback Nominatim:", err);
+            console.warn("Mapbox geocode falhou:", err);
           }
         }
 
-        // 2. Fallback Nominatim
         if (!geoResult) {
-          geoResult = await geocodeWithNominatim(trimmedAddress);
+          geoResult = await geocodeWithNominatim(trimmed);
         }
 
         if (!geoResult) {
-          throw new Error("Endereço não encontrado.");
+          throw new Error("Não encontramos esse endereço. Tente rua + número + cidade, ou um CEP.");
         }
 
         lat = geoResult.lat;
@@ -414,125 +434,188 @@ const Welcome = () => {
         newCity = geoResult.city;
       }
 
-      const userLocation = { lat, lon, address: finalAddress, city: newCity };
+      // Validação defensiva de área atendida (Bug 3)
+      if (!isInsideES(lat, lon)) {
+        setValidationError(
+          "O endereço digitado fica fora do Espírito Santo. Atendemos a Grande Vitória e municípios do ES."
+        );
+        setIsLoadingLocation(false);
+        return;
+      }
 
+      const userLocation = { lat, lon, address: finalAddress, city: newCity };
       toast.success("Localização confirmada! 📍");
       navigate("/busca", { state: { userLocation } });
-    } catch (error: unknown) {
-      console.error("Erro no geocoding:", error);
-      const message =
+    } catch (error) {
+      console.error("Erro na busca de endereço:", error);
+      const msg =
         error instanceof Error
           ? error.message
-          : "Não foi possível encontrar esta localização. Tente ser mais específico.";
-      toast.error(message);
+          : "Não encontramos esse endereço. Tente rua + número + cidade, ou um CEP.";
+      setValidationError(msg);
     } finally {
       setIsLoadingLocation(false);
     }
   };
 
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setManualAddress(e.target.value);
-    if (currentCoords) {
-      setCurrentCoords(null);
-      setCurrentCity("");
-    }
+  const handleClearInput = () => {
+    setManualAddress("");
+    setCurrentCoords(null);
+    setCurrentCity("");
+    setSuggestions([]);
+    setValidationError(null);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen bg-gradient-to-b from-background via-secondary/15 to-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6 py-8">
+        {/* ========================================================
+            HEADER / LOGO (Mockup 4)
+            ======================================================== */}
         <header className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-primary">Yoogalize</h1>
-          <p className="text-muted-foreground text-lg">
-            Descubra os melhores lugares perto de você
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-4xl">🍔</span>
+            <h1 className="text-4xl sm:text-5xl font-black text-primary tracking-tight">
+              Yoogalize
+            </h1>
+          </div>
+          <p className="text-muted-foreground text-sm sm:text-base font-medium">
+            Onde comer e beber perto de você
           </p>
         </header>
 
-        <Card className="p-8 space-y-6 shadow-lg">
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-2">
-              <MapPin className="w-8 h-8 text-primary" />
-            </div>
-            <h2 className="text-2xl font-semibold text-foreground">
-              Olá! Bem-vindo! 👋
-            </h2>
-            <p className="text-muted-foreground">
-              Para encontrar os melhores lugares pertinho de você, 
-              precisamos saber onde você está.
-            </p>
-          </div>
-
-          <div className="space-y-3">
+        {/* ========================================================
+            CARD PRINCIPAL DE ENTRADA
+            ======================================================== */}
+        <Card className="p-6 sm:p-8 space-y-6 shadow-xl border bg-card rounded-3xl">
+          {/* CTA Principal de Localização (Item 1 no Mockup 4) */}
+          <div>
             <Button
               onClick={handleUseCurrentLocation}
               disabled={isLoadingLocation}
-              className="w-full h-14 text-base font-semibold shadow-md hover:shadow-lg transition-all"
+              className="w-full h-13 text-sm sm:text-base font-bold shadow-md rounded-2xl bg-[#2ba4d8] hover:bg-[#238bb8] text-white flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
               size="lg"
             >
-              <Navigation className="mr-2 h-5 w-5" />
-              {isLoadingLocation && !manualAddress ? "Detectando..." : "Usar Minha Localização Atual"}
+              <Navigation className="h-4 w-4 shrink-0" />
+              <span>
+                {isLoadingLocation && !manualAddress
+                  ? "Detectando localização..."
+                  : "Usar minha localização"}
+              </span>
             </Button>
           </div>
 
+          {/* Divisor Visual */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-border"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-card text-muted-foreground font-medium">
-                ou, se preferir
+            <div className="relative flex justify-center text-xs">
+              <span className="px-3 bg-card text-muted-foreground font-medium">
+                ou digite um endereço ou CEP
               </span>
             </div>
           </div>
 
-          <div className="space-y-3 relative">
-            <label htmlFor="manual-address" className="text-sm font-medium text-foreground block">
-              Digite seu endereço
-            </label>
-            <Input
-              id="manual-address"
-              type="text"
-              placeholder="Ex: Rua Augusta, 1234 - São Paulo ou CEP 01305-000"
-              value={manualAddress}
-              onChange={handleAddressChange}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleManualAddress();
-                }
-              }}
-              className="h-12 text-base"
-              autoComplete="off"
-            />
-            {suggestions.length > 0 && (
-              <ul className="absolute top-full mt-1 w-full bg-card border rounded-md shadow-lg z-20 max-h-60 overflow-y-auto">
-                {suggestions.map((s) => (
-                  <li 
-                    key={s.place_id} 
-                    className="p-3 text-sm cursor-pointer hover:bg-accent"
-                    onClick={() => handleSelectSuggestion(s)} >
-                    <div className="font-medium">{s.display_name}</div>
-                    {formatAddress(s.address) && formatAddress(s.address) !== s.display_name && (
-                      <div className="text-xs text-muted-foreground">{formatAddress(s.address)}</div>
-                    )}
-                  </li>
-                ))}
-              </ul>
+          {/* Campo de Entrada de Endereço */}
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="manual-address"
+                type="text"
+                placeholder="Ex: Praia do Canto, Vitória ou CEP..."
+                value={manualAddress}
+                onChange={(e) => {
+                  setManualAddress(e.target.value);
+                  if (currentCoords) {
+                    setCurrentCoords(null);
+                    setCurrentCity("");
+                  }
+                  if (validationError) setValidationError(null);
+                }}
+                onKeyDown={(e) => e.key === "Enter" && handleManualAddress()}
+                className="pl-10 pr-9 h-12 text-sm rounded-2xl bg-muted/40 border focus-visible:ring-primary"
+                autoComplete="off"
+              />
+              {manualAddress && (
+                <button
+                  type="button"
+                  onClick={handleClearInput}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 rounded-full"
+                  aria-label="Limpar campo"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+
+              {/* Lista flutuante de sugestões de autocomplete */}
+              {suggestions.length > 0 && (
+                <ul className="absolute top-full mt-2 w-full bg-popover border rounded-2xl shadow-xl z-20 max-h-56 overflow-y-auto divide-y divide-border/60">
+                  {suggestions.map((s) => (
+                    <li
+                      key={s.place_id}
+                      className="p-3 text-xs cursor-pointer hover:bg-accent transition-colors flex items-start gap-2"
+                      onClick={() => handleSelectSuggestion(s)}
+                    >
+                      <MapPin className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-foreground">{s.display_name}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Alerta de Validação Defensiva (Item 2 no Mockup 4 - Bug 3) */}
+            {validationError && (
+              <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-xs text-red-700 dark:text-red-300 flex items-start gap-2 animate-in fade-in-50 duration-200">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold">Endereço não encontrado</p>
+                  <p className="mt-0.5 font-medium">{validationError}</p>
+                </div>
+              </div>
             )}
+
+            {/* Sugestões Rápidas de Bairros (Item 3 no Mockup 4 - UX 10) */}
+            {!manualAddress && (
+              <div className="space-y-2 pt-1">
+                <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground px-1">
+                  Sugestões
+                </p>
+                <div className="space-y-1.5">
+                  {QUICK_SUGGESTIONS.map((loc) => (
+                    <button
+                      key={loc.name}
+                      type="button"
+                      onClick={() => handleSelectQuickLocation(loc)}
+                      className="w-full flex items-center gap-2 p-2.5 rounded-xl border border-border/70 hover:border-primary/50 hover:bg-muted/60 text-left transition-all text-xs font-semibold text-foreground"
+                    >
+                      <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <span>{loc.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Botão Confirmar Endereço */}
             <Button
               onClick={handleManualAddress}
-              variant="outline"
               disabled={!manualAddress.trim() || isLoadingLocation}
-              className="w-full h-12 text-base font-medium"
+              className="w-full h-12 text-sm sm:text-base font-semibold rounded-2xl"
               size="lg"
             >
-              {isLoadingLocation && manualAddress ? "Confirmando..." : "Confirmar Localização"}
+              {isLoadingLocation && manualAddress ? "Confirmando..." : "Confirmar endereço"}
             </Button>
           </div>
         </Card>
 
-        <p className="text-center text-sm text-muted-foreground">
-          🔒 Sua privacidade é importante! Usamos sua localização apenas 
-          para encontrar os melhores lugares perto de você.
+        {/* Rodapé Informativo (Item 4 no Mockup 4) */}
+        <p className="text-center text-xs font-medium text-muted-foreground">
+          Atendemos hoje: Grande Vitória e região – ES
         </p>
       </div>
     </div>
