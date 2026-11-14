@@ -742,9 +742,9 @@ const Search = () => {
               <button
                 type="button"
                 onClick={() => setOnlyClubeCupons(!onlyClubeCupons)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0 ${onlyClubeCupons
-                    ? "bg-amber-600 text-white shadow-sm ring-1 ring-amber-600"
-                    : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300/60 dark:border-amber-700/60"
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${onlyClubeCupons
+                    ? "bg-pink-600 text-white shadow-sm ring-1 ring-pink-600"
+                    : "bg-pink-50 hover:bg-pink-100 text-pink-700 dark:bg-pink-950/40 dark:hover:bg-pink-900/50 dark:text-pink-300 border border-pink-200 dark:border-pink-800/60"
                   }`}
               >
                 <span>🎟️ Clube de Cupons</span>
