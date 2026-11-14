@@ -292,6 +292,9 @@ for (const c of candidatos) {
     delta_km: +c.km.toFixed(2),
     endereco_json: endJson,
     endereco_api: c.api?.fullAddress ?? null,
+    logradouro_json: c.json.logradouro,
+    bairro_json: c.json.bairro,
+    geocode_json: gJson,
   });
 
   process.stdout.write(`\r  ${i}/${candidatos.length}  ${decisao.decisao.padEnd(12)} ${c.json.nome_empresa.slice(0, 44).padEnd(44)}   `);
@@ -299,6 +302,40 @@ for (const c of candidatos) {
 }
 salvarCache();
 console.log("\n");
+
+// ---------- 2a passada: desempate por geocoding reverso ----------
+// O geocode direto falha quando existem ruas homonimas. O reverso responde
+// "que endereco existe no ponto" — se o ponto do JSON esta na rua/bairro do
+// endereco cadastrado, o JSON esta certo mesmo com a API divergindo.
+const pendentes = resultado.filter((x) => x.decisao === "revisar");
+if (pendentes.length) {
+  console.log(`Desempatando ${pendentes.length} casos por geocoding reverso...\n`);
+  for (const r of pendentes) {
+    const revJson = await reverseGeocode(r.lat_json, r.lon_json);
+    if (casaCom(revJson, { logradouro: r.logradouro_json, bairro: r.bairro_json })) {
+      r.decisao = "manter";
+      r.motivo += ` | reverso do ponto JSON = "${revJson.road ?? "?"}, ${revJson.suburb ?? "?"}" bate com o endereco cadastrado`;
+      continue;
+    }
+    const endApi = r.endereco_api ? parseEnderecoApi(r.endereco_api) : null;
+    const revApi = endApi ? await reverseGeocode(r.lat_api, r.lon_api) : null;
+    if (endApi && casaCom(revApi, endApi)) {
+      r.decisao = "adotar_api";
+      r.lat = r.lat_api;
+      r.lon = r.lon_api;
+      r.endereco = r.endereco_api;
+      r.endereco_estruturado = endApi;
+      r.motivo += ` | reverso do ponto API = "${revApi.road ?? "?"}, ${revApi.suburb ?? "?"}" bate com o endereco da API`;
+      continue;
+    }
+    if (r.geocode_json) {
+      r.decisao = "adotar_geocode";
+      r.lat = r.geocode_json.lat;
+      r.lon = r.geocode_json.lon;
+      r.motivo += ` | usa o geocode do endereco cadastrado (ponto do JSON esta em "${revJson?.suburb ?? "?"}")`;
+    }
+  }
+}
 
 // ---------- resumo ----------
 const conta = resultado.reduce((acc, r) => { acc[r.decisao] = (acc[r.decisao] ?? 0) + 1; return acc; }, {});
@@ -332,3 +369,32 @@ writeFileSync(outPath, JSON.stringify({
   lojas: resultado,
 }, null, 2), "utf8");
 console.log(`\nPatch gravado em ${outPath}`);
+
+// ---------- aplicacao (--apply) ----------
+if (args.includes("--apply")) {
+  const alteraveis = resultado.filter((r) => r.decisao === "adotar_api" || r.decisao === "adotar_geocode");
+  let alteradas = 0;
+  for (const r of alteraveis) {
+    const loja = lojas.find((l) => l["link delivery"] === r.slug && norm(l.nome_empresa) === norm(r.loja));
+    if (!loja) { console.error(`  ! loja nao encontrada: ${r.loja} [${r.slug}]`); continue; }
+    loja.Latitude = +r.lat.toFixed(7);
+    loja.Longitude = +r.lon.toFixed(7);
+    if (r.decisao === "adotar_api" && r.endereco_estruturado) {
+      const e = r.endereco_estruturado;
+      if (e.logradouro) loja.logradouro = e.logradouro;
+      if (e.numero) loja["número"] = e.numero;
+      if (e.bairro) loja.bairro = e.bairro;
+      if (e.cidade) loja.cidade = e.cidade;
+      if (e.cep) loja.cep = e.cep;
+      loja["endereco completo"] = `${e.logradouro ?? loja.logradouro}, ${e.numero ?? loja["número"] ?? ""} - ${e.bairro ?? loja.bairro ?? ""}, ${e.cidade ?? loja.cidade} - ${e.uf ?? "ES"}, ${e.cep ?? loja.cep ?? ""}`
+        .replace(/,\s*,/g, ",").replace(/,\s*$/, "");
+    }
+    alteradas++;
+    console.log(`  aplicado: ${r.loja} -> ${loja.Latitude}, ${loja.Longitude} (${r.decisao})`);
+  }
+  writeFileSync(inputPath, JSON.stringify(raw, null, 1), "utf8");
+  console.log(`\n${alteradas} lojas corrigidas em ${inputPath}`);
+  if (alteraveis.length !== alteradas) {
+    console.error(`  ATENCAO: ${alteraveis.length - alteradas} entradas do patch nao encontradas no JSON.`);
+  }
+}

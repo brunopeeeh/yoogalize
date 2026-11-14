@@ -1,11 +1,10 @@
 {
-  "gerado_em": "2026-11-14T13:30:46.818Z",
+  "gerado_em": "2026-11-14T15:32:43.722Z",
   "tolerancia_km": 1.5,
   "min_km": 5,
   "resumo": {
-    "manter": 35,
-    "revisar": 6,
-    "adotar_api": 4
+    "manter": 41,
+    "adotar_geocode": 4
   },
   "lojas": [
     {
@@ -20,7 +19,10 @@
       "lon_api": -40.2950811,
       "delta_km": 101.82,
       "endereco_json": "Sit Bom Jardim, 0 - Aracui / Zona Rural, Castelo - ES, 29360-000",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Sit Bom Jardim",
+      "bairro_json": "Aracui / Zona Rural",
+      "geocode_json": null
     },
     {
       "decisao": "manter",
@@ -34,7 +36,13 @@
       "lon_api": -40.2950811,
       "delta_km": 47.71,
       "endereco_json": "Rua Antônio Germano Da Silva, 604 - Itapebussu, Guarapari - ES, 29210-170",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Antônio Germano Da Silva",
+      "bairro_json": "Itapebussu",
+      "geocode_json": {
+        "lat": -20.6650182,
+        "lon": -40.5054818
+      }
     },
     {
       "decisao": "manter",
@@ -48,7 +56,13 @@
       "lon_api": -40.2950811,
       "delta_km": 46.21,
       "endereco_json": "Rua Antônio Germano Da Silva, 604 - Itapebussu, Guarapari - ES, 29210-170",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Antônio Germano Da Silva",
+      "bairro_json": "Itapebussu",
+      "geocode_json": {
+        "lat": -20.6650182,
+        "lon": -40.5054818
+      }
     },
     {
       "decisao": "manter",
@@ -62,7 +76,13 @@
       "lon_api": -40.2950811,
       "delta_km": 45.52,
       "endereco_json": "Avenida Munir Abud, 8 - Praia Do Morro, Guarapari - ES, 29216-045",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Avenida Munir Abud",
+      "bairro_json": "Praia Do Morro",
+      "geocode_json": {
+        "lat": -20.6491934,
+        "lon": -40.487838
+      }
     },
     {
       "decisao": "manter",
@@ -76,7 +96,10 @@
       "lon_api": -40.2950811,
       "delta_km": 100.01,
       "endereco_json": "R Rubens Range, 88 - Ilmenita, Marataízes - ES, 29345-000",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "R Rubens Range",
+      "bairro_json": "Ilmenita",
+      "geocode_json": null
     },
     {
       "decisao": "manter",
@@ -90,7 +113,13 @@
       "lon_api": -40.2950811,
       "delta_km": 6.93,
       "endereco_json": "Avenida Alpheu Ribeiro, 846 - Carapina Grande, Serra - ES, 29160-065",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Avenida Alpheu Ribeiro",
+      "bairro_json": "Carapina Grande",
+      "geocode_json": {
+        "lat": -20.2245917,
+        "lon": -40.2782542
+      }
     },
     {
       "decisao": "manter",
@@ -104,11 +133,17 @@
       "lon_api": -40.2950811,
       "delta_km": 5.79,
       "endereco_json": "Rua São Pedro, 29 - Glória, Vila Velha - ES, 29122-350",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua São Pedro",
+      "bairro_json": "Glória",
+      "geocode_json": {
+        "lat": -20.3361498,
+        "lon": -40.303543
+      }
     },
     {
-      "decisao": "revisar",
-      "motivo": "slug compartilhado (API pertence a outra loja) e coordenada do JSON incoerente com o proprio endereco",
+      "decisao": "adotar_geocode",
+      "motivo": "slug compartilhado (API pertence a outra loja) e coordenada do JSON incoerente com o proprio endereco | usa o geocode do endereco cadastrado (ponto do JSON esta em \"?\")",
       "loja": "Black Rock",
       "slug": "yooga",
       "cidade_json": "Vila Velha",
@@ -118,7 +153,15 @@
       "lon_api": -40.2950811,
       "delta_km": 10.53,
       "endereco_json": "Avenida Luiz Manoel Vellozo, S/N - Praia De Itaparica, Vila Velha - ES, 29102-207",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Avenida Luiz Manoel Vellozo",
+      "bairro_json": "Praia De Itaparica",
+      "geocode_json": {
+        "lat": -20.2803967,
+        "lon": -40.2956293
+      },
+      "lat": -20.2803967,
+      "lon": -40.2956293
     },
     {
       "decisao": "manter",
@@ -132,7 +175,13 @@
       "lon_api": -40.2950811,
       "delta_km": 9.7,
       "endereco_json": "Rua Chico Mendes, 780 - Praia Das Gaivotas, Vila Velha - ES, 29102-576",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Chico Mendes",
+      "bairro_json": "Praia Das Gaivotas",
+      "geocode_json": {
+        "lat": -20.370669,
+        "lon": -40.3106719
+      }
     },
     {
       "decisao": "manter",
@@ -146,11 +195,17 @@
       "lon_api": -40.2950811,
       "delta_km": 8.12,
       "endereco_json": "Rua Ivan Neiva Neves, 611 - Residencial Coqueiral, Vila Velha - ES, 29102-850",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Ivan Neiva Neves",
+      "bairro_json": "Residencial Coqueiral",
+      "geocode_json": {
+        "lat": -20.3571842,
+        "lon": -40.3042631
+      }
     },
     {
-      "decisao": "revisar",
-      "motivo": "slug compartilhado (API pertence a outra loja) e coordenada do JSON incoerente com o proprio endereco",
+      "decisao": "adotar_geocode",
+      "motivo": "slug compartilhado (API pertence a outra loja) e coordenada do JSON incoerente com o proprio endereco | usa o geocode do endereco cadastrado (ponto do JSON esta em \"?\")",
       "loja": "Jv Vargas - 149822",
       "slug": "yooga",
       "cidade_json": "Vila Velha",
@@ -160,7 +215,15 @@
       "lon_api": -40.2950811,
       "delta_km": 6.89,
       "endereco_json": "Rua São Paulo, 2049 - Praia Da Costa, Vila Velha - ES, 29101-308",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua São Paulo",
+      "bairro_json": "Praia Da Costa",
+      "geocode_json": {
+        "lat": -20.3850449,
+        "lon": -40.3159501
+      },
+      "lat": -20.3850449,
+      "lon": -40.3159501
     },
     {
       "decisao": "manter",
@@ -174,7 +237,13 @@
       "lon_api": -40.2950811,
       "delta_km": 8.05,
       "endereco_json": "Rua Deolindo Perim, 2418 - Itapuã, Vila Velha - ES, 29101-811",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Deolindo Perim",
+      "bairro_json": "Itapuã",
+      "geocode_json": {
+        "lat": -20.3573353,
+        "lon": -40.2931159
+      }
     },
     {
       "decisao": "manter",
@@ -188,11 +257,17 @@
       "lon_api": -40.2950811,
       "delta_km": 7.37,
       "endereco_json": "Avenida Nossa Senhora Da Penha, 0 - Ibes, Vila Velha - ES, 29108-330",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Avenida Nossa Senhora Da Penha",
+      "bairro_json": "Ibes",
+      "geocode_json": {
+        "lat": -20.348532,
+        "lon": -40.3165747
+      }
     },
     {
-      "decisao": "revisar",
-      "motivo": "slug compartilhado (API pertence a outra loja) e coordenada do JSON incoerente com o proprio endereco",
+      "decisao": "adotar_geocode",
+      "motivo": "slug compartilhado (API pertence a outra loja) e coordenada do JSON incoerente com o proprio endereco | usa o geocode do endereco cadastrado (ponto do JSON esta em \"?\")",
       "loja": "Sweetcakes & Coffe By Atelie Do Bolo",
       "slug": "yooga",
       "cidade_json": "Vila Velha",
@@ -202,7 +277,15 @@
       "lon_api": -40.2950811,
       "delta_km": 6.93,
       "endereco_json": "Rua Santa Terezinha, 444 - Glória, Vila Velha - ES, 29122-041",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Santa Terezinha",
+      "bairro_json": "Glória",
+      "geocode_json": {
+        "lat": -20.3366541,
+        "lon": -40.3083498
+      },
+      "lat": -20.3366541,
+      "lon": -40.3083498
     },
     {
       "decisao": "manter",
@@ -216,7 +299,13 @@
       "lon_api": -40.2950811,
       "delta_km": 10.91,
       "endereco_json": "Rua Itaboraí, 158 - Praia De Itaparica, Vila Velha - ES, 29102-195",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Itaboraí",
+      "bairro_json": "Praia De Itaparica",
+      "geocode_json": {
+        "lat": -20.3821192,
+        "lon": -40.3106252
+      }
     },
     {
       "decisao": "manter",
@@ -230,7 +319,13 @@
       "lon_api": -40.2907954,
       "delta_km": 10.52,
       "endereco_json": "Rua Costa Brandão, 336 - São Benedito, Cariacica - ES, 29145-340",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Costa Brandão",
+      "bairro_json": "São Benedito",
+      "geocode_json": {
+        "lat": -20.3584773,
+        "lon": -40.3828035
+      }
     },
     {
       "decisao": "manter",
@@ -244,47 +339,50 @@
       "lon_api": -40.2902298,
       "delta_km": 10.53,
       "endereco_json": "Avenida Campo Grande, 33 - Campo Grande, Cariacica - ES, 29146-300",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Avenida Campo Grande",
+      "bairro_json": "Campo Grande",
+      "geocode_json": {
+        "lat": -20.3438843,
+        "lon": -40.387027
+      }
     },
     {
-      "decisao": "adotar_api",
-      "motivo": "JSON incoerente (4788 m) e API coerente (252 m)",
+      "decisao": "manter",
+      "motivo": "endereco do JSON geocodifica a 252 m da coordenada do JSON",
       "loja": "Empório Gourmet",
       "slug": "emporiogourmet",
-      "lat": -20.31354532,
-      "lon": -40.36799154,
-      "endereco": "Av. Vale do Rio Doce, 56 - Porto de Santana, Cariacica - ES, 29152-280, Brasil",
-      "endereco_estruturado": {
-        "logradouro": "Av. Vale do Rio Doce",
-        "numero": "",
-        "bairro": "56 - Porto de Santana",
-        "cidade": "Cariacica",
-        "uf": "ES",
-        "cep": "29152-280",
-        "pais": "Brasil"
-      },
       "cidade_json": "Cariacica",
-      "lat_json": -20.363097,
-      "lon_json": -40.37605,
+      "lat_json": -20.31354532,
+      "lon_json": -40.36799154,
       "lat_api": -20.31354532,
       "lon_api": -40.36799154,
       "delta_km": 5.58,
-      "endereco_json": "Rua Pedro Nolasco, 58 - Alto Boa Vista, Cariacica - ES, 29152-280",
-      "endereco_api": "Av. Vale do Rio Doce, 56 - Porto de Santana, Cariacica - ES, 29152-280, Brasil"
+      "endereco_json": "Av. Vale do Rio Doce, 56 - Porto de Santana, Cariacica - ES, 29152-280",
+      "endereco_api": "Av. Vale do Rio Doce, 56 - Porto de Santana, Cariacica - ES, 29152-280, Brasil",
+      "logradouro_json": "Av. Vale do Rio Doce",
+      "bairro_json": "Porto de Santana",
+      "geocode_json": {
+        "lat": -20.3156964,
+        "lon": -40.3672365
+      }
     },
     {
-      "decisao": "revisar",
-      "motivo": "JSON incoerente (5260 m) e API sem endereco coerente",
+      "decisao": "manter",
+      "motivo": "endereco do JSON nao geocodificou no OSM: sem evidencia para alterar a coordenada",
       "loja": "Na Brasa Burguer",
       "slug": "na-brasa-burguer",
       "cidade_json": "Cariacica",
-      "lat_json": -20.355172,
-      "lon_json": -40.381217,
+      "lat_json": -20.29753202,
+      "lon_json": -40.3645698,
       "lat_api": -20.29753202,
       "lon_api": -40.3645698,
       "delta_km": 6.65,
-      "endereco_json": "Rua Principal, 2 - Porto De Santana, Cariacica - ES, 29153-100",
-      "endereco_api": "R. Santa Rosa De Lima, 34 - Del Porto, Cariacica - ES, 29154-470, Brasil"
+      "endereco_json": "R. Santa Rosa De Lima, 34 - Del Porto, Cariacica - ES, 29154-470",
+      "endereco_api": "R. Santa Rosa De Lima, 34 - Del Porto, Cariacica - ES, 29154-470, Brasil",
+      "logradouro_json": "R. Santa Rosa De Lima",
+      "bairro_json": "Del Porto",
+      "geocode_json": null
     },
     {
       "decisao": "manter",
@@ -298,7 +396,13 @@
       "lon_api": -40.43077066,
       "delta_km": 6.32,
       "endereco_json": "Avenida Espírito Santo, 297 - Bela Aurora, Cariacica - ES, 29141-560",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Avenida Espírito Santo",
+      "bairro_json": "Bela Aurora",
+      "geocode_json": {
+        "lat": -20.35399,
+        "lon": -40.369923
+      }
     },
     {
       "decisao": "manter",
@@ -312,33 +416,30 @@
       "lon_api": -39.1493339,
       "delta_km": 389.31,
       "endereco_json": "Rua Da Estaçao, 35 - Caraiva, Serra - ES, 45810-000",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Da Estaçao",
+      "bairro_json": "Caraiva",
+      "geocode_json": null
     },
     {
-      "decisao": "adotar_api",
-      "motivo": "JSON incoerente (? m) e API coerente (342 m)",
+      "decisao": "manter",
+      "motivo": "endereco do JSON geocodifica a 342 m da coordenada do JSON",
       "loja": "Alves Peixaria",
       "slug": "alves-peixaria",
-      "lat": -20.1380618,
-      "lon": -40.2449346,
-      "endereco": "Av. Belo Horizonte, 52 - Serra Dourada II, Serra - ES, 29171-235, Brasil",
-      "endereco_estruturado": {
-        "logradouro": "Av. Belo Horizonte",
-        "numero": "",
-        "bairro": "52 - Serra Dourada II",
-        "cidade": "Serra",
-        "uf": "ES",
-        "cep": "29171-235",
-        "pais": "Brasil"
-      },
       "cidade_json": "Serra",
-      "lat_json": -20.183067,
-      "lon_json": -40.202983,
+      "lat_json": -20.1380618,
+      "lon_json": -40.2449346,
       "lat_api": -20.1380618,
       "lon_api": -40.2449346,
       "delta_km": 6.66,
-      "endereco_json": "R Presidente Medici, 22 - Vila Nova De Colares, Serra - ES, 29172-831",
-      "endereco_api": "Av. Belo Horizonte, 52 - Serra Dourada II, Serra - ES, 29171-235, Brasil"
+      "endereco_json": "Av. Belo Horizonte, 52 - Serra Dourada II, Serra - ES, 29171-235",
+      "endereco_api": "Av. Belo Horizonte, 52 - Serra Dourada II, Serra - ES, 29171-235, Brasil",
+      "logradouro_json": "Av. Belo Horizonte",
+      "bairro_json": "Serra Dourada II",
+      "geocode_json": {
+        "lat": -20.1411319,
+        "lon": -40.2447144
+      }
     },
     {
       "decisao": "manter",
@@ -352,21 +453,30 @@
       "lon_api": -40.308299,
       "delta_km": 7.13,
       "endereco_json": "Rua Itapina, 47 - Mata Da Serra, Serra - ES, 29168-150",
-      "endereco_api": "R. Cassiano Castelo, 66 - Serra Centro, Serra - ES, 29178-685, Brasil"
+      "endereco_api": "R. Cassiano Castelo, 66 - Serra Centro, Serra - ES, 29178-685, Brasil",
+      "logradouro_json": "Rua Itapina",
+      "bairro_json": "Mata Da Serra",
+      "geocode_json": {
+        "lat": -20.1597321,
+        "lon": -40.2490511
+      }
     },
     {
-      "decisao": "revisar",
-      "motivo": "JSON incoerente (13856 m) e API sem endereco coerente",
+      "decisao": "manter",
+      "motivo": "endereco do JSON nao geocodificou no OSM: sem evidencia para alterar a coordenada",
       "loja": "Açaí Ice Fruit",
       "slug": "acai-ice-fruit",
       "cidade_json": "Serra",
-      "lat_json": -20.124683,
-      "lon_json": -40.315895,
+      "lat_json": -20.1383853,
+      "lon_json": -40.1836873,
       "lat_api": -20.1383853,
       "lon_api": -40.1836873,
       "delta_km": 13.91,
-      "endereco_json": "Rua Nossa Senhora Da Conceição, 1009 - Jardim Das Laranjeiras, Serra - ES, 29175-583",
-      "endereco_api": "Av. Abido Saad, 2007 - Jardim Atlântico, Serra - ES, 29175-269, Brasil"
+      "endereco_json": "Av. Abido Saad, 2007 - Jardim Atlântico, Serra - ES, 29175-269",
+      "endereco_api": "Av. Abido Saad, 2007 - Jardim Atlântico, Serra - ES, 29175-269, Brasil",
+      "logradouro_json": "Av. Abido Saad",
+      "bairro_json": "Jardim Atlântico",
+      "geocode_json": null
     },
     {
       "decisao": "manter",
@@ -380,7 +490,13 @@
       "lon_api": -40.2546314,
       "delta_km": 5.63,
       "endereco_json": "Avenida Monte Líbano, 13 - Colina De Laranjeiras, Serra - ES, 29167-085",
-      "endereco_api": "Av. São Paulo, 32 - Serra Dourada III, Serra - ES, 29171-402, Brasil"
+      "endereco_api": "Av. São Paulo, 32 - Serra Dourada III, Serra - ES, 29171-402, Brasil",
+      "logradouro_json": "Avenida Monte Líbano",
+      "bairro_json": "Colina De Laranjeiras",
+      "geocode_json": {
+        "lat": -20.1873257,
+        "lon": -40.2580816
+      }
     },
     {
       "decisao": "manter",
@@ -394,33 +510,33 @@
       "lon_api": -40.2907954,
       "delta_km": 22.33,
       "endereco_json": "Rua Guacyra, 1021 - Jardim Atlântico, Serra - ES, 29175-256",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Guacyra",
+      "bairro_json": "Jardim Atlântico",
+      "geocode_json": {
+        "lat": -20.1391367,
+        "lon": -40.1928036
+      }
     },
     {
-      "decisao": "adotar_api",
-      "motivo": "JSON incoerente (8424 m) e API coerente (60 m)",
+      "decisao": "manter",
+      "motivo": "endereco do JSON geocodifica a 60 m da coordenada do JSON",
       "loja": "Espetos Monerat",
       "slug": "thiagomoneratcom",
-      "lat": -20.1911278,
-      "lon": -40.26768762,
-      "endereco": "R. João Evangelista de Souza, 2 - Taquara I, Serra - ES, 29167-174, Brasil",
-      "endereco_estruturado": {
-        "logradouro": "R. João Evangelista de Souza",
-        "numero": "",
-        "bairro": "2 - Taquara I",
-        "cidade": "Serra",
-        "uf": "ES",
-        "cep": "29167-174",
-        "pais": "Brasil"
-      },
       "cidade_json": "Serra",
-      "lat_json": -20.124681,
-      "lon_json": -40.306965,
+      "lat_json": -20.1911278,
+      "lon_json": -40.26768762,
       "lat_api": -20.1911278,
       "lon_api": -40.26768762,
       "delta_km": 8.46,
-      "endereco_json": "Rua João Evangelista De Souza, 3 - Colina De Laranjeiras, Serra - ES, 29167-174",
-      "endereco_api": "R. João Evangelista de Souza, 2 - Taquara I, Serra - ES, 29167-174, Brasil"
+      "endereco_json": "R. João Evangelista de Souza, 2 - Taquara I, Serra - ES, 29167-174",
+      "endereco_api": "R. João Evangelista de Souza, 2 - Taquara I, Serra - ES, 29167-174, Brasil",
+      "logradouro_json": "R. João Evangelista de Souza",
+      "bairro_json": "Taquara I",
+      "geocode_json": {
+        "lat": -20.1906867,
+        "lon": -40.2673625
+      }
     },
     {
       "decisao": "manter",
@@ -434,7 +550,13 @@
       "lon_api": -40.2907954,
       "delta_km": 14.45,
       "endereco_json": "Avenida Vitória, 431 - Marcílio De Noronha, Viana - ES, 29135-368",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Avenida Vitória",
+      "bairro_json": "Marcílio De Noronha",
+      "geocode_json": {
+        "lat": -20.3461019,
+        "lon": -40.4247534
+      }
     },
     {
       "decisao": "manter",
@@ -448,7 +570,13 @@
       "lon_api": -40.2832249,
       "delta_km": 7.91,
       "endereco_json": "Avenida Marechal Humberto De Alencar Castelo Branco, 248 - Cobilândia, Vila Velha - ES, 29111-500",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Avenida Marechal Humberto De Alencar Castelo Branco",
+      "bairro_json": "Cobilândia",
+      "geocode_json": {
+        "lat": -20.3545276,
+        "lon": -40.3589365
+      }
     },
     {
       "decisao": "manter",
@@ -462,7 +590,13 @@
       "lon_api": -40.334288,
       "delta_km": 5.32,
       "endereco_json": "Avenida Ministro Salgado Filho, 1567 - Soteco, Vila Velha - ES, 29106-010",
-      "endereco_api": "Av. Gaivotas, 168 - Pontal das Garças, Vila Velha - ES, 29103-387, Brasil"
+      "endereco_api": "Av. Gaivotas, 168 - Pontal das Garças, Vila Velha - ES, 29103-387, Brasil",
+      "logradouro_json": "Avenida Ministro Salgado Filho",
+      "bairro_json": "Soteco",
+      "geocode_json": {
+        "lat": -20.3464818,
+        "lon": -40.3071242
+      }
     },
     {
       "decisao": "manter",
@@ -476,7 +610,13 @@
       "lon_api": -40.3157447,
       "delta_km": 16.67,
       "endereco_json": "Avenida Marmelo, 20 - Balneário Ponta Da Fruta, Vila Velha - ES, 29128-530",
-      "endereco_api": "Av. Sérgio Cardoso, 820 - Ilha dos Bentos, Vila Velha - ES, 29104-305, Brasil"
+      "endereco_api": "Av. Sérgio Cardoso, 820 - Ilha dos Bentos, Vila Velha - ES, 29104-305, Brasil",
+      "logradouro_json": "Avenida Marmelo",
+      "bairro_json": "Balneário Ponta Da Fruta",
+      "geocode_json": {
+        "lat": -20.5088908,
+        "lon": -40.3696064
+      }
     },
     {
       "decisao": "manter",
@@ -490,7 +630,10 @@
       "lon_api": -43.2433696,
       "delta_km": 423.49,
       "endereco_json": "Avenida Antônio Gil Vellozo, 1000 - Praia Da Costa, Vila Velha - ES, 29101-027",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Avenida Antônio Gil Vellozo",
+      "bairro_json": "Praia Da Costa",
+      "geocode_json": null
     },
     {
       "decisao": "manter",
@@ -504,7 +647,10 @@
       "lon_api": -51.92528,
       "delta_km": 1394.33,
       "endereco_json": "Neutro, 5000 - Jockey De Itaparica, Vila Velha - ES, 29120-280",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Neutro",
+      "bairro_json": "Jockey De Itaparica",
+      "geocode_json": null
     },
     {
       "decisao": "manter",
@@ -518,7 +664,13 @@
       "lon_api": -40.2902298,
       "delta_km": 6.09,
       "endereco_json": "Rua Crisântemo, 32 - Vila Nova, Vila Velha - ES, 29105-015",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Crisântemo",
+      "bairro_json": "Vila Nova",
+      "geocode_json": {
+        "lat": -20.3633609,
+        "lon": -40.315283
+      }
     },
     {
       "decisao": "manter",
@@ -532,11 +684,17 @@
       "lon_api": -40.4272751,
       "delta_km": 14.58,
       "endereco_json": "Avenida Califórnia, 118 - Barramares, Vila Velha - ES, 29124-376",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Avenida Califórnia",
+      "bairro_json": "Barramares",
+      "geocode_json": {
+        "lat": -20.4376713,
+        "lon": -40.3467225
+      }
     },
     {
-      "decisao": "revisar",
-      "motivo": "JSON incoerente (102565 m) e API sem endereco coerente",
+      "decisao": "adotar_geocode",
+      "motivo": "JSON incoerente (102565 m) e API sem endereco coerente | usa o geocode do endereco cadastrado (ponto do JSON esta em \"?\")",
       "loja": "Luigi - Ibes",
       "slug": "luigi-ibes",
       "cidade_json": "Vila Velha",
@@ -546,7 +704,15 @@
       "lon_api": -40.269091,
       "delta_km": 58.96,
       "endereco_json": "Avenida Jones Dos Santos Neves, 0 - Ibes, Vila Velha - ES, 29108-640",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Avenida Jones Dos Santos Neves",
+      "bairro_json": "Ibes",
+      "geocode_json": {
+        "lat": -20.8480138,
+        "lon": -41.1454777
+      },
+      "lat": -20.8480138,
+      "lon": -41.1454777
     },
     {
       "decisao": "manter",
@@ -560,7 +726,13 @@
       "lon_api": -40.2907954,
       "delta_km": 5.08,
       "endereco_json": "Rodovia Do Sol, 530 - Praia De Itaparica, Vila Velha - ES, 29102-020",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rodovia Do Sol",
+      "bairro_json": "Praia De Itaparica",
+      "geocode_json": {
+        "lat": -20.3658312,
+        "lon": -40.301149
+      }
     },
     {
       "decisao": "manter",
@@ -574,7 +746,10 @@
       "lon_api": -40.43584913,
       "delta_km": 9.08,
       "endereco_json": "Rua Da Madeira, 151 - Alvorada, Vila Velha - ES, 29117-290",
-      "endereco_api": "R. Das, Hortências, 45 - Canaã, Viana - ES, 29135-000, Brasil"
+      "endereco_api": "R. Das, Hortências, 45 - Canaã, Viana - ES, 29135-000, Brasil",
+      "logradouro_json": "Rua Da Madeira",
+      "bairro_json": "Alvorada",
+      "geocode_json": null
     },
     {
       "decisao": "manter",
@@ -588,7 +763,13 @@
       "lon_api": -40.2898266,
       "delta_km": 7.79,
       "endereco_json": "Rua Dylio Penedo, 447 - Jockey De Itaparica, Vila Velha - ES, 29103-848",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Dylio Penedo",
+      "bairro_json": "Jockey De Itaparica",
+      "geocode_json": {
+        "lat": -20.3825109,
+        "lon": -40.3151756
+      }
     },
     {
       "decisao": "manter",
@@ -602,7 +783,13 @@
       "lon_api": -40.4202431,
       "delta_km": 6.87,
       "endereco_json": "Avenida Serra Pelada, 260 - Rio Marinho, Vila Velha - ES, 29112-462",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Avenida Serra Pelada",
+      "bairro_json": "Rio Marinho",
+      "geocode_json": {
+        "lat": -20.3623782,
+        "lon": -40.3559363
+      }
     },
     {
       "decisao": "manter",
@@ -616,7 +803,13 @@
       "lon_api": -41.53447926,
       "delta_km": 134.08,
       "endereco_json": "R. Padre José De Anchieta, 121 - Parque Moscoso, Vitória - ES, 29500-000",
-      "endereco_api": "R. Padre Anchieta, 135 - Conceicao, Alegre - ES, 29500-000, Brasil"
+      "endereco_api": "R. Padre Anchieta, 135 - Conceicao, Alegre - ES, 29500-000, Brasil",
+      "logradouro_json": "R. Padre José De Anchieta",
+      "bairro_json": "Parque Moscoso",
+      "geocode_json": {
+        "lat": -20.3184006,
+        "lon": -40.3420801
+      }
     },
     {
       "decisao": "manter",
@@ -630,7 +823,13 @@
       "lon_api": -34.837204,
       "delta_km": 1570.52,
       "endereco_json": "Av Presidente Castelo Branco, 172 - República, Vitória - ES, 29070-220",
-      "endereco_api": "Av. Min. José Américo de Almeida, 384 - Miramar, João Pessoa - PB, 58040-300, Brasil"
+      "endereco_api": "Av. Min. José Américo de Almeida, 384 - Miramar, João Pessoa - PB, 58040-300, Brasil",
+      "logradouro_json": "Av Presidente Castelo Branco",
+      "bairro_json": "República",
+      "geocode_json": {
+        "lat": -20.2686213,
+        "lon": -40.2953658
+      }
     },
     {
       "decisao": "manter",
@@ -644,7 +843,13 @@
       "lon_api": -35.7111448,
       "delta_km": 1279.31,
       "endereco_json": "Rua Izidro Benezath, 48 - Enseada do Suá, Vitória - ES - , Vitória - ES, 29050-300",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Izidro Benezath, 48 - Enseada do Suá, Vitória - ES",
+      "bairro_json": null,
+      "geocode_json": {
+        "lat": -20.3167646,
+        "lon": -40.2902457
+      }
     },
     {
       "decisao": "manter",
@@ -658,33 +863,30 @@
       "lon_api": -40.29278004,
       "delta_km": 5.98,
       "endereco_json": "Rua Conceição Do Castelo, 374 - Jardim Carapina, Vitória - ES, 29161-766",
-      "endereco_api": null
+      "endereco_api": null,
+      "logradouro_json": "Rua Conceição Do Castelo",
+      "bairro_json": "Jardim Carapina",
+      "geocode_json": null
     },
     {
-      "decisao": "adotar_api",
-      "motivo": "JSON incoerente (? m) e API coerente (63 m)",
+      "decisao": "manter",
+      "motivo": "endereco do JSON geocodifica a 63 m da coordenada do JSON",
       "loja": "Praiou Culinária Capixaba",
       "slug": "praiou-culinaria-capixaba",
-      "lat": -20.3120425,
-      "lon": -40.2915839,
-      "endereco": "R. José Alexandre Buaiz, 160 - Enseada do Suá, Vitória - ES, 29050-545, Brasil",
-      "endereco_estruturado": {
-        "logradouro": "R. José Alexandre Buaiz",
-        "numero": "",
-        "bairro": "160 - Enseada do Suá",
-        "cidade": "Vitória",
-        "uf": "ES",
-        "cep": "29050-545",
-        "pais": "Brasil"
-      },
       "cidade_json": "Vitória",
-      "lat_json": -19.378374,
-      "lon_json": -40.061948,
+      "lat_json": -20.3120425,
+      "lon_json": -40.2915839,
       "lat_api": -20.3120425,
       "lon_api": -40.2915839,
       "delta_km": 106.68,
-      "endereco_json": "Rua Nova Venecia, 48 - Jose Rodrigues Maciel, Vitória - ES, 29902-555",
-      "endereco_api": "R. José Alexandre Buaiz, 160 - Enseada do Suá, Vitória - ES, 29050-545, Brasil"
+      "endereco_json": "R. José Alexandre Buaiz, 160 - Enseada do Suá, Vitória - ES, 29050-545",
+      "endereco_api": "R. José Alexandre Buaiz, 160 - Enseada do Suá, Vitória - ES, 29050-545, Brasil",
+      "logradouro_json": "R. José Alexandre Buaiz",
+      "bairro_json": "Enseada do Suá",
+      "geocode_json": {
+        "lat": -20.3120972,
+        "lon": -40.2921873
+      }
     }
   ]
 }

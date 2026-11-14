@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { formatAddress } from "@/lib/address";
+import { formatAddress, getCity } from "@/lib/address";
+import { prefetchEstablishments } from "@/hooks/useEstablishments";
+import { NominatimAddress } from "@/lib/types";
 
 // Tipos locais para este componente
 type SuggestionAddress = {
@@ -43,6 +45,82 @@ type MapboxFeature = {
   context?: MapboxContext[];
 };
 
+const geocodeWithNominatim = async (
+  query: string
+): Promise<{ lat: number; lon: number; address: string; city: string } | null> => {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&addressdetails=1&countrycodes=br`
+    );
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (!data || data.length === 0) return null;
+    const item = data[0];
+    const addr = item.address as NominatimAddress;
+    return {
+      lat: parseFloat(item.lat),
+      lon: parseFloat(item.lon),
+      address: formatAddress(addr) || item.display_name,
+      city: getCity(addr),
+    };
+  } catch (err) {
+    console.warn("Falha no geocode com Nominatim:", err);
+    return null;
+  }
+};
+
+const reverseGeocodeWithNominatim = async (
+  lat: number,
+  lon: number
+): Promise<{ address: string; city: string } | null> => {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`
+    );
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (!data || !data.address) return null;
+    const addr = data.address as NominatimAddress;
+    return {
+      address: formatAddress(addr) || data.display_name,
+      city: getCity(addr),
+    };
+  } catch (err) {
+    console.warn("Falha no reverse geocode com Nominatim:", err);
+    return null;
+  }
+};
+
+const searchSuggestionsWithNominatim = async (query: string): Promise<Suggestion[]> => {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&addressdetails=1&countrycodes=br`
+    );
+    if (!response.ok) return [];
+    const data = await response.json();
+    if (!Array.isArray(data)) return [];
+    return data.map((item) => {
+      const addr = item.address as NominatimAddress;
+      return {
+        place_id: String(item.place_id),
+        display_name: formatAddress(addr) || item.display_name,
+        lat: String(item.lat),
+        lon: String(item.lon),
+        address: {
+          road: addr?.road || "",
+          city: getCity(addr),
+          state: addr?.state || "",
+          postcode: addr?.postcode || "",
+          country: "Brasil",
+        },
+      };
+    });
+  } catch (err) {
+    console.warn("Falha na busca de sugestões do Nominatim:", err);
+    return [];
+  }
+};
+
 const Welcome = () => {
   const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
@@ -56,6 +134,11 @@ const Welcome = () => {
   const [currentCoords, setCurrentCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [currentCity, setCurrentCity] = useState<string>("");
+
+  // Pré-carrega o catálogo de lojas em background assim que o usuário acessa a página inicial
+  useEffect(() => {
+    prefetchEstablishments();
+  }, []);
 
   const formatMapboxAddress = (result: MapboxFeature): string => {
     const road = result.address?.road || result.properties?.address || "";
@@ -90,31 +173,50 @@ const Welcome = () => {
         setCurrentCoords({ lat: latitude, lon: longitude });
 
         try {
-          const response = await fetch(
-            `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_ACCESS_TOKEN}&language=pt&limit=1`
-          );
+          let formatted = "";
+          let city = "";
 
-          if (!response.ok) {
-            throw new Error("Erro na geocodificação reversa do Mapbox.");
+          // 1. Tenta Mapbox se token estiver disponível
+          if (MAPBOX_ACCESS_TOKEN) {
+            try {
+              const response = await fetch(
+                `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_ACCESS_TOKEN}&language=pt&limit=1`
+              );
+              if (response.ok) {
+                const data = await response.json();
+                if (data?.features?.length > 0) {
+                  const result = data.features[0] as MapboxFeature;
+                  formatted = result.place_name;
+                  city = result.context?.find((c) => c.id?.startsWith("place"))?.text || "";
+                }
+              }
+            } catch (err) {
+              console.warn("Mapbox reverse geocode falhou, tentando fallback Nominatim:", err);
+            }
           }
-          
-          const data = await response.json();
 
-          if (data && data.features && data.features.length > 0) {
-            const result = data.features[0] as MapboxFeature;
-            const formatted = result.place_name; // O place_name do Mapbox já é o endereço formatado
-            const city =
-              result.context?.find((c) => c.id?.startsWith("place"))?.text || "";
+          // 2. Fallback para Nominatim
+          if (!formatted) {
+            const nomResult = await reverseGeocodeWithNominatim(latitude, longitude);
+            if (nomResult) {
+              formatted = nomResult.address;
+              city = nomResult.city;
+            }
+          }
+
+          if (formatted) {
             setManualAddress(formatted);
             setCurrentCity(city);
             toast.success("Localização encontrada!");
           } else {
-            throw new Error("Endereço não encontrado para estas coordenadas.");
+            const fallbackAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+            setManualAddress(fallbackAddress);
+            toast.warning("Não foi possível obter o nome do endereço, mas as coordenadas foram salvas.");
           }
         } catch (error) {
           console.error("Erro no reverse geocoding:", error);
-          const formattedAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-          setManualAddress(formattedAddress);
+          const fallbackAddress = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+          setManualAddress(fallbackAddress);
           toast.warning("Não foi possível obter o nome do endereço, mas as coordenadas foram salvas.");
         } finally {
           setIsLoadingLocation(false);
@@ -148,32 +250,42 @@ const Welcome = () => {
 
     const debounceTimer = setTimeout(async () => {
       try {
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(manualAddress)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=5`
-        );
-        if (!response.ok) {
-          throw new Error("Erro ao buscar sugestões no Mapbox.");
-        }
-        const mapboxData = await response.json();
+        let adaptedSuggestions: Suggestion[] = [];
 
-        if (!mapboxData || !mapboxData.features || mapboxData.features.length === 0) {
-          setSuggestions([]);
-          return;
+        // 1. Tenta Mapbox primeiro
+        if (MAPBOX_ACCESS_TOKEN) {
+          try {
+            const response = await fetch(
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(manualAddress)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=5`
+            );
+            if (response.ok) {
+              const mapboxData = await response.json();
+              if (mapboxData?.features?.length > 0) {
+                adaptedSuggestions = mapboxData.features.map((feature: MapboxFeature) => ({
+                  place_id: feature.id,
+                  display_name: feature.place_name,
+                  lat: feature.center[1].toString(),
+                  lon: feature.center[0].toString(),
+                  address: {
+                    road: feature.address?.road || feature.properties?.address || "",
+                    city: feature.context?.place?.name || "",
+                    state: feature.context?.region?.name || "",
+                    postcode: feature.context?.postcode?.name || "",
+                    country: "Brasil",
+                  },
+                }));
+              }
+            }
+          } catch (err) {
+            console.warn("Mapbox autocomplete falhou, tentando fallback Nominatim:", err);
+          }
         }
 
-        const adaptedSuggestions: Suggestion[] = mapboxData.features.map((feature: MapboxFeature) => ({
-          place_id: feature.id,
-          display_name: feature.place_name,
-          lat: feature.center[1].toString(), // latitude
-          lon: feature.center[0].toString(), // longitude
-          address: {
-            road: feature.address?.road || feature.properties?.address || '',
-            city: feature.context?.place?.name || '',
-            state: feature.context?.region?.name || '',
-            postcode: feature.context?.postcode?.name || '',
-            country: 'Brasil',
-          },
-        }));
+        // 2. Fallback para Nominatim
+        if (adaptedSuggestions.length === 0) {
+          adaptedSuggestions = await searchSuggestionsWithNominatim(manualAddress);
+        }
+
         setSuggestions(adaptedSuggestions);
       } catch (error) {
         console.error("Erro ao buscar sugestões:", error);
@@ -204,7 +316,10 @@ const Welcome = () => {
     setIsLoadingLocation(true);
 
     try {
-      let lat, lon, finalAddress, newCity;
+      let lat: number;
+      let lon: number;
+      let finalAddress: string;
+      let newCity: string;
       const isInputCEP = isCEP(trimmedAddress);
 
       if (currentCoords) {
@@ -213,7 +328,7 @@ const Welcome = () => {
         finalAddress = trimmedAddress;
         newCity = currentCity;
       } else if (isInputCEP) {
-        const cepResponse = await fetch(`https://viacep.com.br/ws/${trimmedAddress.replace(/\D/g, '')}/json/`);
+        const cepResponse = await fetch(`https://viacep.com.br/ws/${trimmedAddress.replace(/\D/g, "")}/json/`);
         if (!cepResponse.ok) {
           throw new Error("Erro ao buscar CEP na ViaCEP.");
         }
@@ -224,58 +339,100 @@ const Welcome = () => {
         }
 
         const fullAddressFromCEP = `${cepData.logradouro}, ${cepData.bairro}, ${cepData.localidade} - ${cepData.uf}`;
-        
-        const mapboxResponse = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(fullAddressFromCEP)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=1`);
-        if (!mapboxResponse.ok) {
-          throw new Error("Erro ao geocodificar endereço do CEP no Mapbox.");
-        }
-        const mapboxData = await mapboxResponse.json();
+        newCity = cepData.localidade;
+        finalAddress = fullAddressFromCEP;
 
-        if (!mapboxData || !mapboxData.features || mapboxData.features.length === 0) {
+        let geoCoords: { lat: number; lon: number } | null = null;
+
+        // 1. Tenta Mapbox para o CEP
+        if (MAPBOX_ACCESS_TOKEN) {
+          try {
+            const mapboxResponse = await fetch(
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(fullAddressFromCEP)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=1`
+            );
+            if (mapboxResponse.ok) {
+              const mapboxData = await mapboxResponse.json();
+              if (mapboxData?.features?.length > 0) {
+                const result = mapboxData.features[0] as MapboxFeature;
+                geoCoords = { lat: result.center[1], lon: result.center[0] };
+              }
+            }
+          } catch (err) {
+            console.warn("Mapbox CEP geocode falhou, tentando fallback Nominatim:", err);
+          }
+        }
+
+        // 2. Fallback Nominatim para o CEP
+        if (!geoCoords) {
+          const nomResult = await geocodeWithNominatim(fullAddressFromCEP);
+          if (nomResult) {
+            geoCoords = { lat: nomResult.lat, lon: nomResult.lon };
+          }
+        }
+
+        if (!geoCoords) {
           throw new Error("Não foi possível geocodificar o endereço do CEP.");
         }
 
-        const result = mapboxData.features[0] as MapboxFeature;
-        lat = result.center[1];
-        lon = result.center[0];
-        finalAddress = fullAddressFromCEP;
-        newCity = cepData.localidade;
-
+        lat = geoCoords.lat;
+        lon = geoCoords.lon;
       } else {
-        const mapboxResponse = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(trimmedAddress)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=1`
-        );
-        if (!mapboxResponse.ok) {
-          throw new Error("Erro ao buscar endereço no Mapbox.");
-        }
-        const mapboxData = await mapboxResponse.json();
+        let geoResult: { lat: number; lon: number; address: string; city: string } | null = null;
 
-        if (!mapboxData || !mapboxData.features || mapboxData.features.length === 0) {
+        // 1. Tenta Mapbox
+        if (MAPBOX_ACCESS_TOKEN) {
+          try {
+            const mapboxResponse = await fetch(
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(trimmedAddress)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&country=BR&language=pt&limit=1`
+            );
+            if (mapboxResponse.ok) {
+              const mapboxData = await mapboxResponse.json();
+              if (mapboxData?.features?.length > 0) {
+                const result = mapboxData.features[0] as MapboxFeature;
+                geoResult = {
+                  lat: result.center[1],
+                  lon: result.center[0],
+                  address: formatMapboxAddress(result),
+                  city: result.context?.find((c) => c.id?.startsWith("place"))?.text || "",
+                };
+              }
+            }
+          } catch (err) {
+            console.warn("Mapbox busca endereço falhou, tentando fallback Nominatim:", err);
+          }
+        }
+
+        // 2. Fallback Nominatim
+        if (!geoResult) {
+          geoResult = await geocodeWithNominatim(trimmedAddress);
+        }
+
+        if (!geoResult) {
           throw new Error("Endereço não encontrado.");
         }
 
-        const result = mapboxData.features[0] as MapboxFeature;
-        lat = result.center[1];
-        lon = result.center[0];
-
-        finalAddress = formatMapboxAddress(result);
-        newCity =
-          result.context?.find((c) => c.id?.startsWith("place"))?.text || "";
+        lat = geoResult.lat;
+        lon = geoResult.lon;
+        finalAddress = geoResult.address;
+        newCity = geoResult.city;
       }
 
-      const userLocation = { lat: lat, lon: lon, address: finalAddress, city: newCity };
+      const userLocation = { lat, lon, address: finalAddress, city: newCity };
 
       toast.success("Localização confirmada! 📍");
       navigate("/busca", { state: { userLocation } });
     } catch (error: unknown) {
       console.error("Erro no geocoding:", error);
-      const message = error instanceof Error ? error.message : "Não foi possível encontrar esta localização. Tente ser mais específico.";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Não foi possível encontrar esta localização. Tente ser mais específico.";
       toast.error(message);
     } finally {
       setIsLoadingLocation(false);
     }
   };
-  
+
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setManualAddress(e.target.value);
     if (currentCoords) {
@@ -341,7 +498,7 @@ const Welcome = () => {
               placeholder="Ex: Rua Augusta, 1234 - São Paulo ou CEP 01305-000"
               value={manualAddress}
               onChange={handleAddressChange}
-              onKeyPress={(e) => {
+              onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleManualAddress();
                 }
