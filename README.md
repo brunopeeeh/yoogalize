@@ -1,164 +1,93 @@
-# Yoogalize Painel
+# Yoogalize
 
-![Yoogalize Logo](public/yoogalize.png) <!-- Se tiver um logo, ajuste o caminho -->
+![Yoogalize](public/yoogalize.png)
 
-Um painel administrativo e aplicativo de busca para o Yoogalize, focado em ajudar usuários a descobrir os melhores estabelecimentos próximos e fornecer ferramentas de gerenciamento.
+Busca de estabelecimentos clientes da Yooga no Espírito Santo. O usuário informa a localização (GPS, endereço ou CEP) e o app lista as lojas próximas ordenadas por distância, com filtros de cidade, segmento, tipo de atendimento, raio e "abertas agora".
 
-## 🚀 Visão Geral
+Produção: https://yoogalize.vercel.app
 
-Este projeto é a interface principal para o Yoogalize, permitindo que os usuários:
-- Encontrem estabelecimentos próximos usando sua localização atual ou um endereço/CEP.
-- Visualizem detalhes dos estabelecimentos.
-- (Adicione outras funcionalidades chave aqui, ex: gerenciem favoritos, etc.)
+## Funcionalidades
 
-## ✨ Funcionalidades
+- Localização por GPS, endereço ou CEP
+- Lista de lojas ordenada por distância, com raio configurável
+- Filtros de cidade, segmento, tipo de atendimento e "abertas agora"
+- Status de funcionamento em tempo real (aberto / fechado / horário não informado)
+- Botão de cardápio para lojas que vendem pelo delivery Yooga (lojas "Somente Presencial" não exibem)
+- Favoritos salvos no navegador (`localStorage`)
 
-- Busca de estabelecimentos por localização (geolocalização ou entrada manual).
-- Sugestões de endereço com base na digitação (Mapbox Geocoding).
-- (Liste outras funcionalidades importantes aqui, ex: visualização de horários de funcionamento, cards de resultados, etc.)
+## Tecnologias
 
-## 🛠️ Tecnologias Utilizadas
+| Camada | Tecnologia |
+|---|---|
+| Framework | React 18 + TypeScript |
+| Build | Vite 5 (SWC) |
+| Estilo | Tailwind CSS + shadcn/ui (Radix) |
+| Roteamento | React Router DOM |
+| Geocodificação | Mapbox Geocoding API, Nominatim (OpenStreetMap) e ViaCEP |
+| Notificações | Sonner |
+| Testes | Vitest + Testing Library |
 
-Este projeto foi desenvolvido com as seguintes tecnologias:
+O app é estático: os dados vêm de `public/lojas.json`.
 
--   **Frontend:**
-    -   [React](https://react.dev/) (Biblioteca JavaScript para construção de interfaces de usuário)
-    -   [TypeScript](https://www.typescriptlang.org/) (Superset tipado de JavaScript)
-    -   [Vite](https://vitejs.dev/) (Ferramenta de build rápido)
-    -   [Tailwind CSS](https://tailwindcss.com/) (Framework CSS utilitário)
-    -   [Shadcn/ui](https://ui.shadcn.com/) (Componentes de UI construídos com Tailwind CSS e Radix UI)
-    -   [React Router DOM](https://reactrouter.com/en/main) (Para roteamento na aplicação)
-    -   [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/api/) (Para geocodificação e mapas)
-    -   [Sonner](https://sonner.emilkowal.ski/) (Para notificações toast)
--   **Ferramentas de Desenvolvimento:**
-    -   [ESLint](https://eslint.org/) (Para análise estática de código)
-    -   [Prettier](https://prettier.io/) (Para formatação de código)
-    -   [Vitest](https://vitest.dev/) (Framework de testes)
+## Rodando localmente
 
-## ⚙️ Pré-requisitos
-
-Antes de começar, certifique-se de ter as seguintes ferramentas instaladas:
-
--   [Node.js](https://nodejs.org/en/) (versão 18 ou superior)
--   [npm](https://www.npmjs.com/) (gerenciador de pacotes do Node.js) ou [Bun](https://bun.sh/) (se estiver usando Bun)
-
-## 🚀 Como Configurar e Rodar o Projeto
-
-Siga os passos abaixo para configurar e executar o projeto em sua máquina local.
-
-### 1. Clonar o Repositório
+Pré-requisito: Node.js 18+. O projeto usa **npm** (`package-lock.json`).
 
 ```bash
-git clone https://github.com/seu-usuario/yoggalize_painel.git # Substitua pelo seu repositório
-cd yoggalize_painel
-```
-
-### 2. Instalar Dependências
-
-Usando npm:
-```bash
+git clone https://github.com/brunopeeeh/yoogalize.git
+cd yoogalize
 npm install
-```
-Ou usando Bun:
-```bash
-bun install
-```
-
-### 3. Configurar Variáveis de Ambiente
-
-Crie um arquivo `.env` na raiz do projeto, baseado no `.env.example`, e preencha com suas chaves:
-
-```
-VITE_MAPBOX_ACCESS_TOKEN=sua_chave_de_acesso_mapbox
-# Adicione outras variáveis de ambiente aqui, se houver
-```
-**Importante:** Não compartilhe seu arquivo `.env` publicamente.
-
-### 4. Rodar o Servidor de Desenvolvimento
-
-Usando npm:
-```bash
+cp .env.example .env   # preencha VITE_MAPBOX_ACCESS_TOKEN
 npm run dev
 ```
-Ou usando Bun:
+
+O app sobe em `http://localhost:8080`.
+
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | Servidor de desenvolvimento (porta 8080) |
+| `npm run build` | Build de produção em `dist/` |
+| `npm run preview` | Serve o build localmente |
+| `npm run lint` | ESLint |
+| `npm test` | Vitest em modo watch |
+| `npx vitest run` | Vitest uma vez (CI) |
+
+## Dados das lojas
+
+`public/lojas.json` é gerado a partir do Databricks da Yooga (clientes ativos do ES):
+
 ```bash
-bun dev
+databricks auth login --profile yooga   # uma vez
+python atualizar_lojas.py
 ```
 
-O aplicativo estará disponível em `http://localhost:5173` (ou outra porta, conforme indicado no terminal).
+O script busca clientes, endereço, link do delivery e horários, escolhe a melhor coordenada de cada loja (com geocode pelo Nominatim quando as fontes divergem) e mantém um cache em `geocode_cache.json` (fora do git). Requer Python 3 com `requests`.
 
-### 5. Construir para Produção
+Ferramentas de auditoria em `tools/`:
 
-Usando npm:
-```bash
-npm run build
-```
-Ou usando Bun:
-```bash
-bun build
-```
-Os arquivos de produção serão gerados na pasta `dist/`.
+| Arquivo | Para quê |
+|---|---|
+| `tools/audit-stores.mjs` | Compara o `lojas.json` com a API pública de delivery da Yooga |
+| `tools/validar-coordenadas.mjs` | Decide qual coordenada é a correta quando JSON e API divergem; grava `reports/patch-coordenadas.json` |
+| `tools/data-quality.mjs` | Indicadores de qualidade do `lojas.json` |
+| `tools/load-lojas.py` | Carrega o `lojas.json` no PostgreSQL |
 
-## 🧪 Testes
+## Banco de dados (Raspberry Pi)
 
-Para rodar os testes do projeto:
+Há uma cópia do catálogo em PostgreSQL 17 no Raspberry Pi (`bruno_db`), com distância, "abertas agora" e filtros resolvidos em SQL. O front ainda não consome esse banco. Schema, funções e instruções de carga estão em [`sql/README.md`](sql/README.md).
 
-Usando npm:
-```bash
-npm test
-```
-Ou usando Bun:
-```bash
-bun test
-```
-
-## 📁 Estrutura do Projeto
+## Estrutura
 
 ```
 .
-├── public/                 # Arquivos estáticos (imagens, favicon)
-├── src/                    # Código fonte da aplicação
-│   ├── App.tsx             # Componente principal da aplicação
-│   ├── main.tsx            # Ponto de entrada da aplicação
-│   ├── assets/             # Ativos como imagens, ícones (se houver)
-│   ├── components/         # Componentes reutilizáveis
-│   │   ├── ui/             # Componentes de UI do Shadcn/ui
-│   │   └── ...             # Outros componentes específicos da aplicação
-│   ├── data/               # Dados mockados ou configurações (ex: estabelecimentos.ts)
-│   ├── hooks/              # Hooks React personalizados
-│   ├── lib/                # Funções utilitárias e lógicas de negócio
-│   ├── pages/              # Páginas/Rotas da aplicação
-│   └── styles/             # Arquivos de estilo globais (index.css, App.css)
-├── .env.example            # Exemplo de variáveis de ambiente
-├── .gitignore              # Arquivos e pastas a serem ignorados pelo Git
-├── package.json            # Metadados do projeto e dependências
-├── tsconfig.json           # Configurações do TypeScript
-├── postcss.config.js       # Configurações do PostCSS
-├── tailwind.config.ts      # Configurações do Tailwind CSS
-├── vite.config.ts          # Configurações do Vite
-└── ...                     # Outros arquivos de configuração
+├── public/              # Estáticos (lojas.json, imagens, manifest)
+├── src/
+│   ├── components/      # Componentes da aplicação e ui/ (shadcn)
+│   ├── hooks/           # Hooks (useEstablishments etc.)
+│   ├── lib/             # Distância, normalização, horários, favoritos
+│   └── pages/           # Welcome, Search, Favorites, NotFound
+├── sql/                 # Schema e patches do Postgres
+├── tools/               # Auditoria e carga de dados
+├── reports/             # Saídas das auditorias
+└── atualizar_lojas.py   # Gera public/lojas.json a partir do Databricks
 ```
-
-## 🤝 Como Contribuir
-
-Agradecemos o seu interesse em contribuir! Siga estas diretrizes:
-
-1.  Faça um fork do repositório.
-2.  Crie uma nova branch para sua feature (`git checkout -b feature/minha-nova-feature`).
-3.  Faça suas alterações e certifique-se de que os testes passem.
-4.  Commit suas mudanças (`git commit -m 'feat: Adiciona nova feature X'`).
-5.  Envie para a branch original (`git push origin feature/minha-nova-feature`).
-6.  Abra um Pull Request descrevendo suas alterações.
-
-### Padrões de Código
-
--   Utilizamos ESLint e Prettier para manter a consistência do código. Certifique-se de rodar `npm run lint` e `npm run format` antes de commitar.
--   Siga as convenções de nomenclatura e estrutura de arquivos existentes.
-
-## 📄 Licença
-
-Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes. <!-- Se você tiver um arquivo LICENSE -->
-
-## 📞 Contato
-
-Se tiver alguma dúvida ou sugestão, sinta-se à vontade para entrar em contato.

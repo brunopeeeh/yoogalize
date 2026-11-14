@@ -1,0 +1,83 @@
+{
+  "_meta": {
+    "gerado_em": "2026-11-14",
+    "fonte": "GET https://delivery2.yooga.com.br/v2/stores/{slug}",
+    "observacao": "A API responde 400 quando a loja nao existe mais. Todos os 11 slugs abaixo foram reconfirmados em variacoes (limpeza de sufixos/punctuation).",
+    "total_lojas_auditadas": 1285,
+    "total_no_json": 1369
+  },
+  "remover": {
+    "descricao": "Lojas que retornaram 400 (nao existem mais na Yooga). Remover do public/lojas.json.",
+    "quantidade": 11,
+    "lojas": [
+      { "nome_empresa": "Distribuidora Preço Bom",         "link_delivery": "distribuidora-preco-bom CANCELADO",       "cidade": "Vitória",   "motivo": "slug com marcador CANCELADO; 400 em todas as variantes" },
+      { "nome_empresa": "Estação Hamburguer - Guarapari",  "link_delivery": "estacao-hamburguer---guarapari- CANCELADO", "cidade": "Guarapari", "motivo": "slug com marcador CANCELADO; 400 em todas as variantes" },
+      { "nome_empresa": "Vila Bbq - Jardim Camburi - 458", "link_delivery": "vilabbqjc CANCELADO",                        "cidade": "Vitória",   "motivo": "slug com marcador CANCELADO; 400 em todas as variantes" },
+      { "nome_empresa": "Bola 7 Botequim - 150252",         "link_delivery": "bola-7-botequim YOOGA",                      "cidade": "Guarapari", "motivo": "slug com sufixo JOOGA; 400 em todas as variantes" },
+      { "nome_empresa": "Rei Do Expresso Café Bar - Loja Ii","link_delivery": "rei-do-expresso-cafe-bar@",                "cidade": "Vitória",   "motivo": "slug corrompido (@); 400 em todas as variantes" },
+      { "nome_empresa": "Hoje Tem Torta",                   "link_delivery": "hoje-tem-torta",                            "cidade": "Serra",     "motivo": "400 na API" },
+      { "nome_empresa": "Spettaria & Cia",                  "link_delivery": "spettaria-&-cia",                           "cidade": "Vitória",   "motivo": "slug corrompido (&); 400 em todas as variantes" },
+      { "nome_empresa": "Baubo Doceria",                    "link_delivery": "baubo-doceria&&&",                           "cidade": "Vila Velha","motivo": "slug corrompido (&&&); 400 em todas as variantes" },
+      { "nome_empresa": "Da Pri Pizzaria",                  "link_delivery": "da-pri-pizzaria YOOGA",                     "cidade": "Cariacica", "motivo": "slug com sufixo JOOGA; 400 em todas as variantes" },
+      { "nome_empresa": "Q'pizza Forno A Lenha",            "link_delivery": "qpizza-forno-a-lenha-@@",                     "cidade": "Vitória",   "motivo": "slug corrompido (@@); 400 em todas as variantes" },
+      { "nome_empresa": "Resenha Burger Na Parrilla",       "link_delivery": "resenha-d-leve-burger-&-espeto",              "cidade": "Aracruz",   "motivo": "slug corrompido (&); 400 em todas as variantes" }
+    ]
+  },
+  "corrigir_link": {
+    "descricao": "Lojas cujo 'link delivery' resolve para a LOJA ERRADA na API. Nao remover: descobrir o slug correto na fonte (Databricks stores.display_name por installation_id) ou zerá-lo.",
+    "quantidade": 39,
+    "grupos": [
+      {
+        "link_delivery": "yooga",
+        "quantidade": 21,
+        "resolve_para": "Yooga Tecnologia (api id=5, idi=45)",
+        "api_lat_lon": "-20.2847777 / -40.2950811",
+        "api_endereco": "(sem endereco)",
+        "gravidade": "CRITICA - leva o usuario ao cardapio do headquarters da propria Yooga",
+        "cidades": ["Vitória", "Vila Velha", "Serra", "Cariacica", "Guarapari", "Viana"]
+      },
+      {
+        "link_delivery": "copied",
+        "quantidade": 14,
+        "resolve_para": "GonGon Premium (api id=858, idi=1809)",
+        "api_lat_lon": "null / null",
+        "api_endereco": "(sem endereco)",
+        "gravidade": "CRITICA - todas apontam para a mesma loja GonGon Premium"
+      },
+      {
+        "link_delivery": "estacao-beer",
+        "quantidade": 2,
+        "resolve_para": "Estação Beer (api id=38071, idi=117543)",
+        "api_lat_lon": "null / null",
+        "api_endereco": "(sem endereco)",
+        "gravidade": "ALTA"
+      },
+      {
+        "link_delivery": "rk-conveniencia-e-distribuicao",
+        "quantidade": 2,
+        "resolve_para": "Rk Conveniencia E Distribuicao (api id=52187, idi=148139) - opened=1, tem endereco",
+        "api_lat_lon": "null / null",
+        "api_endereco": "Avenida Minas Gerais, 455 - comercio - Residencial Jacaraípe - Serra / ES",
+        "gravidade": "BAIXA - parece ser a loja correta, duplicada no JSON"
+      }
+    ]
+  },
+  "coordenadas": {
+    "descricao": "Comparacao entre as coordenadas do public/lojas.json (Databricks) e as da API de delivery.",
+    "api_sem_coordenada": 591,
+    "divergencias_reais": 346,
+    "faixas_metros": {
+      "ate_100m": 41,
+      "100m_500m": 138,
+      "500m_1km": 57,
+      "1km_5km": 65,
+      "acima_5km": 42
+    },
+    "alerta": "42 lojas com divergencia > 5 km. Casos extremos apontam para outro estado (ex.: 'Kibon - Maceió Ponta Da Terra' com 1279 km de diferença, 'Duas Irmãs' com 1570 km). Verificar se a coordenada do JSON ou da API é a correta.",
+    "observacao": "591 lojas NAO tem coordenada na API de delivery - nesses casos o JSON do Databricks é a melhor fonte disponivel."
+  },
+  "nao_verificar": {
+    "descricao": "Lojas sem 'link delivery' - nao ha como consultar a API. 84 lojas.",
+    "observacao": "Cruzar com tipo_atendimento == 'Somente Presencial' para confirmar que nao deveriam ter delivery."
+  }
+}

@@ -63,19 +63,37 @@ function formatMinutes(minutes: number): string {
   return `${h}:${m}`;
 }
 
+export type OpeningHoursStatus = "open" | "closed" | "unknown";
+
 export type OpeningHoursInfo = {
-  status: "open" | "closed";
+  status: OpeningHoursStatus;
   message: string;
 };
 
+/**
+ * A loja esta aberta AGORA?
+ * Retorna false quando o horario e desconhecido (nao informado) — nesses
+ * casos nao da para afirmar que esta fechada.
+ */
 export function isEstablishmentOpen(operatingHours?: OperatingHour[]): boolean {
   const { status } = getOpeningHoursInfo(operatingHours);
   return status === "open";
 }
 
+/**
+ * A loja esta COM CERTEZA fechada agora?
+ * Diferente de `!isEstablishmentOpen`, esta funcao responde false para lojas
+ * sem horario informado — elas nao devem ser removidas de uma busca por
+ * "Abertas Agora", apenas ignoradas pelo filtro.
+ */
+export function isEstablishmentClosed(operatingHours?: OperatingHour[]): boolean {
+  const { status } = getOpeningHoursInfo(operatingHours);
+  return status === "closed";
+}
+
 export function getOpeningHoursInfo(operatingHours?: OperatingHour[]): OpeningHoursInfo {
   if (!operatingHours || !Array.isArray(operatingHours) || operatingHours.length === 0) {
-    return { status: "closed", message: "Horário não informado" };
+    return { status: "unknown", message: "Horário não informado" };
   }
 
   const allSlots = operatingHours.flatMap((daySchedule) => {
@@ -86,6 +104,9 @@ export function getOpeningHoursInfo(operatingHours?: OperatingHour[]): OpeningHo
         const endMin = parseTime(hourRange.end);
 
         if (startMin === -1 || endMin === -1) return null;
+        // Faixa degenerada (start == end) e placeholder de "horario nao informado"
+        // na fonte. Sem isso a loja apareceria como "abre as 00:00".
+        if (startMin === endMin) return null;
 
         const startMinutesIntoWeek = daySchedule.day_of_week * 24 * 60 + startMin;
         let endMinutesIntoWeek = daySchedule.day_of_week * 24 * 60 + endMin;
@@ -99,7 +120,7 @@ export function getOpeningHoursInfo(operatingHours?: OperatingHour[]): OpeningHo
   });
 
   if (allSlots.length === 0) {
-    return { status: "closed", message: "Horário não informado" };
+    return { status: "unknown", message: "Horário não informado" };
   }
 
   const { dayOfWeek: currentDayIndex, minutesIntoWeek: nowMinutes } = getBrasiliaTimeInfo();

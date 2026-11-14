@@ -21,7 +21,7 @@ export const OpeningHoursStatus = ({ operatingHours }: OpeningHoursStatusProps) 
 
   const { status, message } = getOpeningHoursInfo(parsedOperatingHours);
 
-  if (message === 'Horário não informado') {
+  if (status === 'unknown') {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
         <Clock className="w-4 h-4" />

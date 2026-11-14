@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import { formatAddress } from "@/lib/address";
 
 // Tipos locais para este componente
 type SuggestionAddress = {
@@ -24,18 +25,22 @@ type Suggestion = {
   address: SuggestionAddress;
 };
 
-// Tipo mínimo para a feature do Mapbox, contendo apenas o que usamos
+// Contexto do Mapbox usado para montar o endereco
+type MapboxContext = {
+  id?: string;
+  text?: string;
+  place?: { name?: string };
+  region?: { name?: string };
+  postcode?: { name?: string };
+};
+
 type MapboxFeature = {
   id: string;
   place_name: string;
   center: [number, number];
   address?: { road?: string };
   properties?: { address?: string };
-  context?: {
-    place?: { name: string };
-    region?: { name: string };
-    postcode?: { name: string };
-  };
+  context?: MapboxContext[];
 };
 
 const Welcome = () => {
@@ -52,11 +57,20 @@ const Welcome = () => {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [currentCity, setCurrentCity] = useState<string>("");
 
-  const formatAddress = (addressObj: Suggestion['address']): string => {
-    if (!addressObj) return '';
-    const { road, city, state, postcode, country } = addressObj;
-    const addressParts = [road, city, state, postcode, country];
-    return addressParts.filter(Boolean).join(', ');
+  const formatMapboxAddress = (result: MapboxFeature): string => {
+    const road = result.address?.road || result.properties?.address || "";
+    const neighborhood =
+      result.context?.find((c) => c.id?.startsWith("neighborhood"))?.text || "";
+    const city =
+      result.context?.find((c) => c.id?.startsWith("place"))?.text || "";
+    const state =
+      result.context?.find((c) => c.id?.startsWith("region"))?.text || "";
+    const postcode =
+      result.context?.find((c) => c.id?.startsWith("postcode"))?.text || "";
+
+    return [road, neighborhood, city, state, postcode, "Brasil"]
+      .filter(Boolean)
+      .join(", ");
   };
 
   const handleUseCurrentLocation = () => {
@@ -87,9 +101,10 @@ const Welcome = () => {
           const data = await response.json();
 
           if (data && data.features && data.features.length > 0) {
-            const result = data.features[0];
+            const result = data.features[0] as MapboxFeature;
             const formatted = result.place_name; // O place_name do Mapbox já é o endereço formatado
-            const city = result.context?.find((c: any) => c.id.startsWith('place'))?.text || '';
+            const city =
+              result.context?.find((c) => c.id?.startsWith("place"))?.text || "";
             setManualAddress(formatted);
             setCurrentCity(city);
             toast.success("Localização encontrada!");
@@ -220,7 +235,7 @@ const Welcome = () => {
           throw new Error("Não foi possível geocodificar o endereço do CEP.");
         }
 
-        const result = mapboxData.features[0];
+        const result = mapboxData.features[0] as MapboxFeature;
         lat = result.center[1];
         lon = result.center[0];
         finalAddress = fullAddressFromCEP;
@@ -239,20 +254,13 @@ const Welcome = () => {
           throw new Error("Endereço não encontrado.");
         }
 
-        const result = mapboxData.features[0];
+        const result = mapboxData.features[0] as MapboxFeature;
         lat = result.center[1];
         lon = result.center[0];
-        
-        const road = result.address?.road || result.properties?.address || '';
-        const neighborhood = result.context?.neighborhood?.name || result.context?.place?.name || '';
-        const city = result.context?.place?.name || '';
-        const state = result.context?.region?.name || '';
-        const postcode = result.context?.postcode?.name || '';
-        const country = 'Brasil';
 
-        const addressParts = [road, neighborhood, city, state, postcode, country].filter(Boolean);
-        finalAddress = addressParts.join(', ');
-        newCity = city;
+        finalAddress = formatMapboxAddress(result);
+        newCity =
+          result.context?.find((c) => c.id?.startsWith("place"))?.text || "";
       }
 
       const userLocation = { lat: lat, lon: lon, address: finalAddress, city: newCity };

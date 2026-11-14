@@ -1,0 +1,19 @@
+{
+  "name": "Yoogalize",
+  "short_name": "Yoogalize",
+  "description": "Encontre restaurantes, bares e cafeterias próximos a você de forma rápida e fácil.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f766e",
+  "icons": [
+    {
+      "src": "/yoogalize.png",
+      "sizes": "500x500",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

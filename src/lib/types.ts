@@ -33,11 +33,16 @@ export interface NominatimAddress {
   city?: string;
   town?: string;
   village?: string;
+  municipality?: string;
   suburb?: string;
   city_district?: string;
+  district?: string;
+  county?: string;
   road?: string;
   quarter?: string;
   borough?: string;
+  neighbourhood?: string;
+  residential?: string;
   state?: string;
   postcode?: string;
   country?: string;

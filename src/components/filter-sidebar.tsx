@@ -105,7 +105,7 @@ export const FilterSidebar = ({
           <div className="mt-4">
             <h3 className="font-semibold mt-4 mb-2">Raio (km)</h3>
             <Slider
-              defaultValue={[radiusKm]}
+              value={[radiusKm]}
               max={25}
               min={1}
               step={0.5}

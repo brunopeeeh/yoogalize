@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MapPin, Edit2, BookMarked, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,8 @@ import { toast } from "sonner";
 import { calculateDistance, formatDistance } from "@/lib/distance";
 import { ResultCardSkeleton } from "@/components/result-card-skeleton";
 import { OpeningHoursStatus } from "@/components/opening-hours-status";
-import { isEstablishmentOpen } from "@/lib/utils";
+import { isEstablishmentClosed } from "@/lib/utils";
+import { formatAddress, getCity } from "@/lib/address";
 import { getFavoriteIds, addFavoriteId, removeFavoriteId } from "@/lib/favorites";
 import { NominatimSuggestion, NominatimAddress, NormalizedEstablishment } from "@/lib/types";
 import { useEstablishments } from "@/hooks/useEstablishments";
@@ -27,41 +28,68 @@ type EstablishmentWithDistance = NormalizedEstablishment & {
   distance: number;
 };
 
+type SearchState = {
+  effectiveLocation?: UserLocation;
+  selectedCategory?: string;
+  selectedServiceType?: string;
+  selectedCity?: string;
+  radiusKm?: number;
+  openNow?: boolean;
+  filteredResults?: EstablishmentWithDistance[];
+  hasSearched?: boolean;
+};
+
+/** Chave de comparacao tolerante a acento e pontuacao (cidade/segmento) */
+const key = (value: string): string =>
+  (value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
 const Search = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const getInitialState = () => {
-    const savedStateJSON = sessionStorage.getItem('searchState');
-    if (savedStateJSON) {
-      try {
-        return JSON.parse(savedStateJSON);
-      } catch (e) {
-        console.error("Failed to parse search state from session storage", e);
-        return null;
-      }
+  // O estado salvo era lido em CADA render. Agora e lido uma unica vez.
+  const [savedState] = useState<SearchState | null>(() => {
+    const raw = sessionStorage.getItem("searchState");
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as SearchState;
+    } catch (e) {
+      console.error("Failed to parse search state from session storage", e);
+      return null;
     }
-    return null;
-  };
+  });
 
-  const savedState = getInitialState();
-  
   const initialLocation = location.state?.userLocation as UserLocation | undefined;
 
-  const { 
-    allEstablishments, 
-    dynamicCategories, 
-    dynamicCities, 
-    dynamicServiceTypes, 
-    isLoadingData 
+  const {
+    allEstablishments,
+    dynamicCategories,
+    dynamicCities,
+    dynamicServiceTypes,
+    isLoadingData
   } = useEstablishments();
 
-  const [effectiveLocation, setEffectiveLocation] = useState<UserLocation | undefined>(initialLocation || savedState?.effectiveLocation);
+  const [effectiveLocation, setEffectiveLocation] = useState<UserLocation | undefined>(
+    initialLocation || savedState?.effectiveLocation
+  );
 
   // Estados de Filtro
-  const [selectedCategory, setSelectedCategory] = useState<string>(savedState?.selectedCategory || "all");
-  const [selectedServiceType, setSelectedServiceType] = useState<string>(savedState?.selectedServiceType || "all");
-  const [selectedCity, setSelectedCity] = useState<string>(initialLocation?.city || savedState?.selectedCity || "all");
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    savedState?.selectedCategory || "all"
+  );
+  const [selectedServiceType, setSelectedServiceType] = useState<string>(
+    savedState?.selectedServiceType || "all"
+  );
+  // A cidade NAO e herdada da localizacao detectada: em regioes nao atendidas
+  // (ou quando o geocoder devolve um bairro) o filtro zerava os resultados.
+  const [selectedCity, setSelectedCity] = useState<string>(
+    savedState?.selectedCity || "all"
+  );
   const [radiusKm, setRadiusKm] = useState<number>(savedState?.radiusKm || 5);
   const [openNow, setOpenNow] = useState<boolean>(savedState?.openNow || false);
 
@@ -69,7 +97,9 @@ const Search = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [editedAddress, setEditedAddress] = useState(effectiveLocation?.address || "");
-  const [filteredResults, setFilteredResults] = useState<EstablishmentWithDistance[]>(savedState?.filteredResults || []);
+  const [filteredResults, setFilteredResults] = useState<EstablishmentWithDistance[]>(
+    savedState?.filteredResults || []
+  );
   const [suggestions, setSuggestions] = useState<NominatimSuggestion[]>([]);
   const [visibleCount, setVisibleCount] = useState(10);
   const [hasSearched, setHasSearched] = useState<boolean>(savedState?.hasSearched || false);
@@ -87,12 +117,16 @@ const Search = () => {
     }
   };
 
-  const executeSearch = () => {
+  const executeSearch = useCallback(() => {
     if (!effectiveLocation || isLoadingData) return;
 
-    if (!hasSearched) setHasSearched(true);
+    setHasSearched(true);
     setIsSearching(true);
     setVisibleCount(10);
+
+    const cityAlvo = selectedCity === "all" ? null : key(selectedCity);
+    const segmentoAlvo = selectedCategory === "all" ? null : key(selectedCategory);
+    const tipoAlvo = selectedServiceType === "all" ? null : key(selectedServiceType);
 
     const results = allEstablishments
       .map(establishment => {
@@ -105,21 +139,29 @@ const Search = () => {
         return { ...establishment, distance };
       })
       .filter(establishment => {
-        const isInRadius = establishment.distance <= radiusKm;
-        const isCategoryMatch = selectedCategory === 'all' || establishment.category === selectedCategory;
-        const isCityMatch = selectedCity === 'all' || establishment.city === selectedCity;
-        const isOpenNow = !openNow || isEstablishmentOpen(establishment.operatingHours);
-        const isServiceTypeMatch =
-          selectedServiceType === 'all' ||
-          (establishment.description ?? '').trim() === selectedServiceType;
-
-        return isInRadius && isCategoryMatch && isCityMatch && isOpenNow && isServiceTypeMatch;
+        if (establishment.distance > radiusKm) return false;
+        if (cidadeAlvo && key(establishment.city) !== cidadeAlvo) return false;
+        if (segmentoAlvo && key(establishment.category) !== segmentoAlvo) return false;
+        if (tipoAlvo && key(establishment.serviceType ?? "") !== tipoAlvo) return false;
+        // "Abertas Agora": remove apenas quem esta COM CERTEZA fechado.
+        // Loja sem horario informado nao pode ser descartada.
+        if (openNow && isEstablishmentClosed(establishment.operatingHours)) return false;
+        return true;
       })
       .sort((a, b) => a.distance - b.distance);
 
     setFilteredResults(results);
     setIsSearching(false);
-  };
+  }, [
+    effectiveLocation,
+    isLoadingData,
+    allEstablishments,
+    selectedCategory,
+    selectedServiceType,
+    selectedCity,
+    radiusKm,
+    openNow,
+  ]);
 
   // Efeitos
   useEffect(() => {
@@ -140,7 +182,7 @@ const Search = () => {
   // Save state to session storage whenever it changes
   useEffect(() => {
     if (hasSearched) {
-      const searchState = {
+      const searchState: SearchState = {
         effectiveLocation,
         selectedCategory,
         selectedServiceType,
@@ -163,6 +205,13 @@ const Search = () => {
     hasSearched,
   ]);
 
+  // Reaplica a busca quando qualquer filtro ou a localizacao muda.
+  // Antes isso so acontecia ao mexer no switch "Abertas Agora", com uma
+  // closure desatualizada dos demais filtros.
+  useEffect(() => {
+    executeSearch();
+  }, [executeSearch]);
+
   useEffect(() => {
     if (!editedAddress || !isEditingLocation) {
       setSuggestions([]);
@@ -183,52 +232,39 @@ const Search = () => {
     return () => clearTimeout(debounceTimer);
   }, [editedAddress, isEditingLocation]);
 
-  useEffect(() => {
-    if (hasSearched) {
-      executeSearch();
-    }
-  }, [openNow]);
-
   const handleUpdateAddress = async (suggestion: NominatimSuggestion | null = null) => {
     const addressToSearch = suggestion ? suggestion.display_name : editedAddress;
     if (!addressToSearch.trim()) {
       toast.error("O endereço não pode estar vazio.");
       return;
     }
-  
+
     setIsSearching(true);
     setSuggestions([]);
-    
+
     try {
       let lat, lon, finalAddress, newCity;
 
       if (suggestion && suggestion.address) {
         lat = suggestion.lat;
         lon = suggestion.lon;
-        const { road, quarter, borough, city, town, village, suburb, city_district, state, postcode, country } = suggestion.address;
-        const addressParts = [road, quarter, borough, city, state, postcode, country].filter(Boolean);
-        finalAddress = addressParts.join(', ');
-        
-        const getCity = (addr: NominatimAddress) => addr.city || addr.town || addr.village || addr.suburb || addr.city_district || "";
+        finalAddress = formatAddress(suggestion.address);
         newCity = getCity(suggestion.address);
       } else {
         const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressToSearch)}&format=json&limit=1&addressdetails=1`);
         const data: NominatimSuggestion[] = await response.json();
         if (!data || data.length === 0) throw new Error("Endereço não encontrado");
-        
+
         const result = data[0];
         lat = result.lat;
         lon = result.lon;
 
         if (result.address) {
-            const { road, quarter, borough, city, town, village, suburb, city_district, state, postcode, country } = result.address;
-            const addressParts = [road, quarter, borough, city, state, postcode, country].filter(Boolean);
-            finalAddress = addressParts.join(', ');
-            const getCity = (addr: NominatimAddress) => addr.city || addr.town || addr.village || addr.suburb || addr.city_district || "";
+            finalAddress = formatAddress(result.address);
             newCity = getCity(result.address);
         } else {
             finalAddress = result.display_name;
-            newCity = "all"; // Fallback
+            newCity = "";
         }
       }
 
@@ -238,7 +274,8 @@ const Search = () => {
         address: finalAddress,
         city: newCity,
       });
-      setSelectedCity(newCity);
+      // A cidade detectada nao restringe o filtro: o raio ja define a area.
+      setSelectedCity("all");
       setEditedAddress(finalAddress);
       toast.success("Endereço atualizado!");
 
@@ -253,6 +290,7 @@ const Search = () => {
 
   const handleClearFilters = () => {
     setSelectedCategory("all");
+    setSelectedServiceType("all");
     setSelectedCity("all");
     setRadiusKm(5);
     setOpenNow(false);
@@ -277,10 +315,10 @@ const Search = () => {
               {suggestions.length > 0 && (
                 <ul className="absolute top-full mt-1 w-full bg-card border rounded-md shadow-lg z-10">
                   {suggestions.map((s) => (
-                    <li 
-                      key={s.place_id} 
+                    <li
+                      key={s.place_id}
                       className="p-2 text-sm cursor-pointer hover:bg-accent"
-                      onClick={() => handleUpdateAddress(s)} >
+                      onClick={() => handleUpdateAddress(s)}>
                       {s.display_name}
                     </li>
                   ))}
@@ -304,7 +342,7 @@ const Search = () => {
         <Button onClick={() => navigate("/")} className="flex-shrink-0">Início</Button>
         <Button onClick={() => navigate("/favoritos")} variant="outline" className="flex-shrink-0">Meus Favoritos</Button>
       </header>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="md:hidden mb-4">
           <Sheet>
