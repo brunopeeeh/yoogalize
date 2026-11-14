@@ -1,4 +1,4 @@
-import { NominatimAddress } from "@/lib/types";
+import { NominatimAddress } from "./types";
 
 /**
  * Helpers de endereco compartilhados entre a tela inicial (Welcome) e a de

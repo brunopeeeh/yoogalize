@@ -3,12 +3,12 @@ import handler, { loadStores } from '../../api/lojas';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 describe('/api/lojas serverless endpoint', () => {
-  it('carrega o catálogo de lojas com sucesso', () => {
-    const stores = loadStores();
+  it('carrega o catálogo de lojas com sucesso', async () => {
+    const stores = await loadStores();
     expect(stores.length).toBeGreaterThan(1000);
   });
 
-  it('filtra lojas próximas por coordenadas e raio', () => {
+  it('filtra lojas próximas por coordenadas e raio', async () => {
     let statusCode = 200;
     let responseData: { total: number; results: Array<{ distance?: number }> } | null = null;
 
@@ -35,7 +35,7 @@ describe('/api/lojas serverless endpoint', () => {
       end: vi.fn(),
     } as unknown as VercelResponse;
 
-    handler(req, res);
+    await handler(req, res);
 
     expect(statusCode).toBe(200);
     expect(responseData).toBeDefined();
@@ -48,7 +48,7 @@ describe('/api/lojas serverless endpoint', () => {
     });
   });
 
-  it('suporta busca textual por nome (parâmetro q)', () => {
+  it('suporta busca textual por nome (parâmetro q)', async () => {
     let statusCode = 200;
     let responseData: { total: number } | null = null;
 
@@ -73,13 +73,13 @@ describe('/api/lojas serverless endpoint', () => {
       end: vi.fn(),
     } as unknown as VercelResponse;
 
-    handler(req, res);
+    await handler(req, res);
 
     expect(statusCode).toBe(200);
     expect(responseData!.total).toBeGreaterThan(0);
   });
 
-  it('filtra estritamente lojas abertas quando abertas=true (excluindo sem horário)', () => {
+  it('filtra estritamente lojas abertas quando abertas=true (excluindo sem horário)', async () => {
     let statusCode = 200;
     let responseData: { total: number; results: Array<{ operatingHours?: Array<{ hours?: Array<{ start: string; end: string }> }> }> } | null = null;
 
@@ -107,7 +107,7 @@ describe('/api/lojas serverless endpoint', () => {
       end: vi.fn(),
     } as unknown as VercelResponse;
 
-    handler(req, res);
+    await handler(req, res);
 
     expect(statusCode).toBe(200);
     expect(responseData).toBeDefined();
@@ -118,7 +118,7 @@ describe('/api/lojas serverless endpoint', () => {
     });
   });
 
-  it('rejeita métodos HTTP não permitidos', () => {
+  it('rejeita métodos HTTP não permitidos', async () => {
     let statusCode = 200;
 
     const req = {
@@ -137,7 +137,7 @@ describe('/api/lojas serverless endpoint', () => {
       end: vi.fn(),
     } as unknown as VercelResponse;
 
-    handler(req, res);
+    await handler(req, res);
 
     expect(statusCode).toBe(405);
   });

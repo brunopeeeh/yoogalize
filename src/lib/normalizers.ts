@@ -1,5 +1,5 @@
 
-import { Establishment as LojaRaw, NormalizedEstablishment, OperatingHour } from "@/lib/types";
+import { Establishment as LojaRaw, NormalizedEstablishment, OperatingHour } from "./types";
 
 const slug = (value: string): string =>
   value

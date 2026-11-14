@@ -395,6 +395,9 @@ def main():
     municipios = municipios_es()
     geocoder = Geocoder(GEOCODE_CACHE_FILE)
     anteriores = carregar_coordenadas_anteriores(OUTPUT_FILE)
+    defaults = detectar_defaults(lojas)
+    if defaults:
+        print(f"   {len(defaults)} ponto(s) default detectado(s) (coordenada compartilhada por >= {DEFAULT_MIN_LOJAS} lojas).")
 
     resultado, sem_coordenadas, fora_do_es, origens = [], [], [], Counter()
     try:
@@ -422,7 +425,7 @@ def main():
             loja["horario_funcionamento"] = montar_horario(l["schedule_config"])
 
             print(f"  🔍 ({i}/{len(lojas)}) {loja['nome_empresa']}", end="\r")
-            coords = escolher_coordenadas({**l, **loja}, geocoder, anteriores)
+            coords = escolher_coordenadas({**l, **loja}, geocoder, anteriores, defaults)
             if not coords:
                 sem_coordenadas.append(loja["nome_empresa"])
                 continue

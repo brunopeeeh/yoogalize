@@ -1,4 +1,11 @@
 {
+  "functions": {
+    "api/lojas.ts": {
+      "includeFiles": "public/lojas.json",
+      "maxDuration": 15,
+      "memory": 1024
+    }
+  },
   "headers": [
     {
       "source": "/lojas.json",

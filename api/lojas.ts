@@ -23,13 +23,57 @@ const key = (value: string): string =>
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 
-export function loadStores(): NormalizedEstablishment[] {
+function findLojasJsonPath(): string | null {
+  const candidates = [
+    path.join(process.cwd(), 'public', 'lojas.json'),
+    path.join(__dirname, '..', 'public', 'lojas.json'),
+    path.join(__dirname, 'public', 'lojas.json'),
+    path.join(process.cwd(), 'lojas.json'),
+    path.join(__dirname, 'lojas.json'),
+  ];
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(c)) return c;
+    } catch {
+      // Ignora erro de acesso
+    }
+  }
+  return null;
+}
+
+export async function loadStores(req?: VercelRequest): Promise<NormalizedEstablishment[]> {
   if (cachedStores) return cachedStores;
 
-  const jsonPath = path.join(process.cwd(), 'public', 'lojas.json');
-  const rawContent = fs.readFileSync(jsonPath, 'utf-8');
-  const data: { result: LojaRaw[] } = JSON.parse(rawContent);
-  const normalized = normalizeEstablishments(data.result || []);
+  let rawList: LojaRaw[] = [];
+  const localPath = findLojasJsonPath();
+
+  if (localPath) {
+    try {
+      const rawContent = fs.readFileSync(localPath, 'utf-8');
+      const parsed = JSON.parse(rawContent);
+      rawList = parsed.result || [];
+    } catch (err) {
+      console.warn('Falha ao ler lojas.json do disco:', err);
+    }
+  }
+
+  // Fallback caso o arquivo físico não esteja no disco na AWS Lambda / Vercel:
+  if (rawList.length === 0 && req) {
+    try {
+      const protocol = req.headers['x-forwarded-proto'] || 'https';
+      const host = req.headers['x-forwarded-host'] || req.headers.host || 'yoogalize.vercel.app';
+      const url = `${protocol}://${host}/lojas.json`;
+      const response = await fetch(url);
+      if (response.ok) {
+        const json = await response.json();
+        rawList = json.result || [];
+      }
+    } catch (fetchErr) {
+      console.error('Falha no fallback HTTP para lojas.json:', fetchErr);
+    }
+  }
+
+  const normalized = normalizeEstablishments(rawList);
 
   cachedStores = normalized;
   cachedCategories = [...new Set(normalized.map((e) => e.category))].sort();
@@ -45,7 +89,7 @@ export function loadStores(): NormalizedEstablishment[] {
   return cachedStores;
 }
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader(
@@ -62,7 +106,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const stores = loadStores();
+    const stores = await loadStores(req);
 
     const {
       lat,

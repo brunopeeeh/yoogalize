@@ -46,6 +46,24 @@ const isInsideES = (lat: number, lon: number): boolean => {
   return lat >= -21.4 && lat <= -17.8 && lon >= -41.9 && lon <= -39.5;
 };
 
+// Controle de resiliência do Mapbox (evita spam de 401 caso token seja inválido/expirado)
+let isMapboxTokenInvalid = false;
+
+const canUseMapbox = (token?: string): boolean => {
+  if (!token || isMapboxTokenInvalid) return false;
+  const trimmed = token.trim();
+  // Tokens públicos legítimos do Mapbox iniciam com "pk." e possuem tamanho mínimo
+  if (!trimmed.startsWith("pk.") || trimmed.length < 25) return false;
+  return true;
+};
+
+const handleMapboxErrorStatus = (status: number) => {
+  if (status === 401 || status === 403) {
+    isMapboxTokenInvalid = true;
+    console.warn("Token Mapbox não autorizado ou inválido (401/403). Ativando fallback OpenStreetMap/Nominatim.");
+  }
+};
+
 // Sugestões rápidas de bairros da Grande Vitória (Mockup 4 - Item 3)
 const QUICK_SUGGESTIONS = [
   {
@@ -195,8 +213,8 @@ const Welcome = () => {
           let formatted = "";
           let city = "";
 
-          // 1. Tenta Mapbox se token estiver configurado
-          if (MAPBOX_ACCESS_TOKEN) {
+          // 1. Tenta Mapbox se token for válido e não tiver gerado erro de autorização
+          if (canUseMapbox(MAPBOX_ACCESS_TOKEN)) {
             try {
               const response = await fetch(
                 `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_ACCESS_TOKEN}&language=pt&limit=1`
@@ -208,6 +226,8 @@ const Welcome = () => {
                   formatted = result.place_name;
                   city = result.context?.find((c) => c.id?.startsWith("place"))?.text || "";
                 }
+              } else {
+                handleMapboxErrorStatus(response.status);
               }
             } catch (err) {
               console.warn("Mapbox reverse geocode falhou:", err);
@@ -286,7 +306,7 @@ const Welcome = () => {
       try {
         let adaptedSuggestions: Suggestion[] = [];
 
-        if (MAPBOX_ACCESS_TOKEN) {
+        if (canUseMapbox(MAPBOX_ACCESS_TOKEN)) {
           try {
             const response = await fetch(
               `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
@@ -310,6 +330,8 @@ const Welcome = () => {
                   },
                 }));
               }
+            } else {
+              handleMapboxErrorStatus(response.status);
             }
           } catch (err) {
             console.warn("Mapbox autocomplete falhou:", err);
@@ -396,7 +418,7 @@ const Welcome = () => {
         // Geocodificação manual com tolerância defensiva
         let geoResult: { lat: number; lon: number; address: string; city: string } | null = null;
 
-        if (MAPBOX_ACCESS_TOKEN) {
+        if (canUseMapbox(MAPBOX_ACCESS_TOKEN)) {
           try {
             const mapboxResponse = await fetch(
               `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
@@ -414,6 +436,8 @@ const Welcome = () => {
                   city: result.context?.find((c) => c.id?.startsWith("place"))?.text || "",
                 };
               }
+            } else {
+              handleMapboxErrorStatus(mapboxResponse.status);
             }
           } catch (err) {
             console.warn("Mapbox geocode falhou:", err);

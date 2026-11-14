@@ -33,6 +33,7 @@ geocode_cache.json
 reports/.audit-cache.json
 reports/audit-run.log
 reports/audit-piloto.json
+reports/patch-defaults.json
 
 # Scripts temporários de verificação
 .tmp-verify/
