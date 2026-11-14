@@ -37,11 +37,14 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-background">
           <div className="max-w-md w-full text-center space-y-4">
-            <img
-              src="/descubra-yooga-triste.png"
-              alt="Mascote Descubra Yooga triste"
-              className="h-28 w-auto mx-auto"
-            />
+            <div className="relative inline-flex flex-col items-center mx-auto select-none">
+              <img
+                src="/descubra-yooga-triste.png"
+                alt="Mascote Descubra Yooga triste"
+                className="h-28 w-auto animate-float-slow opacity-90 drop-shadow-sm"
+              />
+              <div className="w-14 h-2 bg-black/15 dark:bg-white/15 rounded-full blur-[2px] mt-1 animate-shadow-pulse pointer-events-none" />
+            </div>
             <h1 className="text-2xl font-semibold text-foreground">
               Algo deu errado
             </h1>

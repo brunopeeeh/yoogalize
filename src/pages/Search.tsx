@@ -764,7 +764,14 @@ const Search = () => {
 
             {!hasSearched ? (
               <div className="flex flex-col items-center justify-center text-center h-full p-8">
-                <img src="/descubra-yooga.png" alt="Mascote Descubra Yooga" className="h-32 w-auto mb-6" />
+                <div className="relative inline-flex flex-col items-center mb-6 group cursor-pointer select-none">
+                  <img
+                    src="/descubra-yooga.png"
+                    alt="Mascote Descubra Yooga"
+                    className="h-32 sm:h-36 w-auto animate-float transition-transform duration-300 group-hover:scale-110 drop-shadow-md"
+                  />
+                  <div className="w-20 h-3 bg-black/20 dark:bg-white/20 rounded-full blur-[3px] mt-1 animate-shadow-pulse pointer-events-none" />
+                </div>
                 <h2 className="text-2xl font-semibold mb-2">Bem-vindo ao Painel de Descoberta!</h2>
                 <p className="text-gray-500 max-w-md mx-auto mb-6">
                   Utilize os filtros na lateral ou a busca rápida para encontrar estabelecimentos perto de você.
@@ -780,7 +787,14 @@ const Search = () => {
               <>
                 {filteredResults.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center h-full p-8 border border-dashed rounded-2xl bg-card">
-                    <img src="/descubra-yooga-triste.png" alt="Mascote Descubra Yooga triste" className="h-32 w-auto mb-6" />
+                    <div className="relative inline-flex flex-col items-center mb-6 select-none">
+                      <img
+                        src="/descubra-yooga-triste.png"
+                        alt="Mascote Descubra Yooga triste"
+                        className="h-32 w-auto animate-float-slow opacity-90 drop-shadow-sm"
+                      />
+                      <div className="w-16 h-2.5 bg-black/15 dark:bg-white/15 rounded-full blur-[2px] mt-1 animate-shadow-pulse pointer-events-none" />
+                    </div>
                     <h2 className="text-2xl font-semibold mb-2">Nenhum resultado encontrado</h2>
                     <p className="text-gray-500 max-w-sm mx-auto mb-6 text-sm">
                       {searchTerm

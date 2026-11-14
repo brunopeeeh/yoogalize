@@ -496,13 +496,20 @@ const Welcome = () => {
         {/* ========================================================
             HEADER / LOGO (Mockup 4)
             ======================================================== */}
-        <header className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-4xl">🍔</span>
-            <h1 className="text-4xl sm:text-5xl font-black text-primary tracking-tight">
-              Descubra Yooga
-            </h1>
+        <header className="text-center space-y-3">
+          <div className="flex justify-center">
+            <div className="relative inline-flex flex-col items-center group cursor-pointer select-none">
+              <img
+                src="/descubra-yooga.png"
+                alt="Mascote Descubra Yooga"
+                className="h-24 sm:h-28 w-auto animate-float transition-transform duration-300 group-hover:scale-110 drop-shadow-md"
+              />
+              <div className="w-16 h-2.5 bg-black/20 dark:bg-white/20 rounded-full blur-[3px] mt-1 animate-shadow-pulse pointer-events-none" />
+            </div>
           </div>
+          <h1 className="text-4xl sm:text-5xl font-black text-primary tracking-tight">
+            Descubra Yooga
+          </h1>
           <p className="text-muted-foreground text-sm sm:text-base font-medium">
             Onde comer e beber perto de você
           </p>

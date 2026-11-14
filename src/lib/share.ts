@@ -1,6 +1,7 @@
 import { cleanEstablishmentName } from "@/lib/normalizers";
 import { getOpeningHoursInfo } from "@/lib/utils";
 import { OperatingHour } from "@/lib/types";
+import { buildYoogaDeliveryUrl } from "@/lib/yooga";
 
 export interface ShareableStore {
   id?: string;
@@ -33,11 +34,10 @@ export function buildWhatsAppInvite(
     statusLine = `🔴 *${hoursInfo.message}*`;
   }
 
-  const deliveryUrl = store.linkDelivery
-    ? store.linkDelivery.startsWith("http")
-      ? store.linkDelivery
-      : `https://delivery.yooga.app/${store.linkDelivery}`
-    : null;
+  const deliveryUrl = buildYoogaDeliveryUrl(store.linkDelivery, {
+    medium: "whatsapp_invite",
+    content: store.id,
+  });
 
   let storeUrl = options?.currentUrl;
   if (!storeUrl && typeof window !== "undefined") {
