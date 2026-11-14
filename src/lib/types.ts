@@ -22,6 +22,7 @@ export interface Establishment {
   estado: string;
   cep: string;
   "link delivery": string | null;
+  banner?: string | null;
   "endereco completo": string;
   horario_funcionamento: OperatingHour[];
   Latitude: number;
@@ -67,6 +68,7 @@ export type NormalizedEstablishment = {
   longitude: number;
   description?: string;
   linkDelivery?: string | null;
+  banner?: string | null;
   operatingHours?: OperatingHour[];
   serviceType?: string;
 };

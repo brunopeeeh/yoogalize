@@ -88,6 +88,7 @@ export const normalizeEstablishments = (lojas: LojaRaw[]): NormalizedEstablishme
       description: l.tipo_atendimento ?? undefined,
       linkDelivery:
         somentePresencial || linkCorrompido ? null : linkDelivery,
+      banner: l.banner ?? null,
       operatingHours: l.horario_funcionamento as OperatingHour[],
       serviceType: l.tipo_atendimento?.trim() ?? undefined,
     };

@@ -47,6 +47,11 @@ describe('normalizeEstablishments — link de delivery corrompido', () => {
     expect(outra?.linkDelivery).toBeNull();
   });
 
+  it('preserva o banner da loja quando presente', () => {
+    const [r] = normalizeEstablishments([loja({ banner: 'https://cdn-production.yooga.com.br/banner.png' })]);
+    expect(r.banner).toBe('https://cdn-production.yooga.com.br/banner.png');
+  });
+
   it('mantém o cardápio mesmo com o installation_id anexado ao nome', () => {
     const lojas = [
       loja({

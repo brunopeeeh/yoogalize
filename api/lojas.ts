@@ -22,6 +22,7 @@ export type LojaRaw = {
   cidade: string;
   "endereco completo": string;
   "link delivery"?: string | null;
+  banner?: string | null;
   tipo_atendimento?: string | null;
   horario_funcionamento?: OperatingHour[];
 };
@@ -36,6 +37,7 @@ export type NormalizedEstablishment = {
   longitude: number;
   description?: string;
   linkDelivery?: string | null;
+  banner?: string | null;
   operatingHours?: OperatingHour[];
   serviceType?: string;
 };
@@ -103,6 +105,7 @@ export const normalizeEstablishments = (lojas: LojaRaw[]): NormalizedEstablishme
       longitude: l.Longitude,
       description: l.tipo_atendimento ?? undefined,
       linkDelivery: somentePresencial || linkCorrompido ? null : linkDelivery,
+      banner: l.banner ?? null,
       operatingHours: l.horario_funcionamento as OperatingHour[],
       serviceType: l.tipo_atendimento?.trim() ?? undefined,
     };

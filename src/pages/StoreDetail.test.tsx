@@ -14,6 +14,7 @@ const mockStore: NormalizedEstablishment = {
   longitude: -40.29,
   serviceType: 'Presencial e Delivery',
   linkDelivery: 'restaurante-capixaba',
+  banner: 'https://cdn-production.yooga.com.br/capa.png',
   operatingHours: [
     {
       day_of_week: 1,
@@ -53,6 +54,9 @@ describe('StoreDetail page', () => {
     expect(screen.getByText(/Bora comer aqui\?/i)).toBeInTheDocument();
     expect(screen.getAllByText("Parceiro Verificado Yooga").length).toBeGreaterThan(0);
     expect(screen.getByText("0% comissão")).toBeInTheDocument();
+    const bannerImg = screen.getByAltText(/Banner de Restaurante Capixaba/i);
+    expect(bannerImg).toBeInTheDocument();
+    expect(bannerImg).toHaveAttribute('src', 'https://cdn-production.yooga.com.br/capa.png');
     expect(screen.getByText(/Ver semana/i)).toBeInTheDocument();
   });
 

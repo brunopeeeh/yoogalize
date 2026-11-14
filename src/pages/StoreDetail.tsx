@@ -235,22 +235,36 @@ const StoreDetail = () => {
         <div className="relative">
           {/* Banner da Capa */}
           <div
-            className={`h-44 sm:h-52 w-full bg-gradient-to-r ${visual.bannerGradient} relative sm:rounded-3xl shadow-md p-4 flex items-start justify-between`}
+            className={`h-44 sm:h-52 w-full bg-gradient-to-r ${visual.bannerGradient} relative sm:rounded-3xl shadow-md p-4 flex items-start justify-between overflow-hidden`}
           >
+            {/* Foto Real do Banner (se disponível) com fallback suave */}
+            {store.banner && (
+              <img
+                src={store.banner}
+                alt={`Banner de ${cleanName}`}
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="eager"
+              />
+            )}
+            {/* Overlay sutil para legibilidade dos botões se houver imagem */}
+            {store.banner && (
+              <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/30 pointer-events-none" />
+            )}
+
             {/* Botão Voltar redondo */}
             <button
               onClick={() => navigate(-1)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/90 text-foreground shadow-md backdrop-blur-md transition-transform active:scale-95 hover:scale-105"
+              className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/90 text-foreground shadow-md backdrop-blur-md transition-transform active:scale-95 hover:scale-105 cursor-pointer"
               aria-label="Voltar"
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
 
             {/* Ações superiores flutuantes */}
-            <div className="flex items-center gap-2">
+            <div className="relative z-10 flex items-center gap-2">
               <button
                 onClick={handleShare}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/90 text-foreground shadow-md backdrop-blur-md transition-transform active:scale-95 hover:scale-105"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/90 text-foreground shadow-md backdrop-blur-md transition-transform active:scale-95 hover:scale-105 cursor-pointer"
                 aria-label="Compartilhar link da loja"
                 title="Compartilhar"
               >
@@ -259,7 +273,7 @@ const StoreDetail = () => {
 
               <button
                 onClick={handleToggleFavorite}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/90 text-foreground shadow-md backdrop-blur-md transition-transform active:scale-95 hover:scale-105"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/90 text-foreground shadow-md backdrop-blur-md transition-transform active:scale-95 hover:scale-105 cursor-pointer"
                 aria-label={isFavorite ? "Remover dos favoritos" : "Salvar nos favoritos"}
                 title={isFavorite ? "Remover dos favoritos" : "Salvar nos favoritos"}
               >

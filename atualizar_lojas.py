@@ -51,7 +51,7 @@ with ac as (
   where address_state = 'ES'
 ),
 st as (
-  select installation_id, display_name, latitude, longitude, schedule_config
+  select installation_id, display_name, latitude, longitude, schedule_config, image_url
   from yooga_delta_lake_cleaned.mysql_yooga_delivery.stores
   where not coalesce(is_merge_deletion_detected, false)
   qualify row_number() over (partition by installation_id order by updated_at desc) = 1
@@ -69,6 +69,7 @@ select
   ac.address_street_name,
   ac.address_postal_code_cleaned,
   st.display_name as link_delivery,
+  st.image_url as banner,
   st.schedule_config,
   st.latitude as store_lat,
   st.longitude as store_lng,
@@ -421,6 +422,7 @@ def main():
                 "estado": "ES",
                 "cep": cep,
                 "link delivery": l["link_delivery"] or None,
+                "banner": l["banner"] or None,
             }
             loja["horario_funcionamento"] = montar_horario(l["schedule_config"])
 

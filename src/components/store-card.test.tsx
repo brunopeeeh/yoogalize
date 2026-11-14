@@ -60,4 +60,21 @@ describe("StoreCard component", () => {
     const badges = screen.getAllByLabelText("Parceiro Verificado Yooga");
     expect(badges.length).toBeGreaterThan(0);
   });
+
+  it("deve renderizar a imagem do banner da loja quando informada", () => {
+    const storeWithBanner = {
+      ...mockStore,
+      banner: "https://cdn-production.yooga.com.br/banner-test.png",
+    };
+
+    render(
+      <MemoryRouter>
+        <StoreCard store={storeWithBanner} isFavorite={false} onToggleFavorite={vi.fn()} />
+      </MemoryRouter>
+    );
+
+    const bannerImg = screen.getByAltText(/Banner de Vibowls Açaí/i);
+    expect(bannerImg).toBeInTheDocument();
+    expect(bannerImg).toHaveAttribute("src", "https://cdn-production.yooga.com.br/banner-test.png");
+  });
 });

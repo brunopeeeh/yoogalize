@@ -30,13 +30,22 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
           VISÃO MOBILE (< md): Card compacto em linha (Mockup 2)
           ======================================================== */}
       <div className="flex md:hidden items-center p-3.5 gap-3.5">
-        {/* Avatar quadrado arredondado com iniciais e cor do segmento */}
+        {/* Avatar quadrado arredondado com foto da capa ou iniciais */}
         <Link
           to={`/loja/${store.id}`}
-          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${visual.avatarBg} ${visual.avatarText} font-bold text-lg shadow-sm transition-transform active:scale-95`}
+          className={`relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${visual.avatarBg} ${visual.avatarText} font-bold text-lg shadow-sm transition-transform active:scale-95 overflow-hidden`}
           aria-label={`Ver detalhes de ${cleanName}`}
         >
-          {initials}
+          {store.banner ? (
+            <img
+              src={store.banner}
+              alt={`Avatar de ${cleanName}`}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            initials
+          )}
         </Link>
 
         {/* Informações centrais */}
@@ -108,8 +117,22 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
           VISÃO DESKTOP (>= md): Card rico com capa (Mockup 1)
           ======================================================== */}
       <div className="hidden md:flex flex-col h-full">
-        {/* Capa com gradiente do segmento */}
-        <div className={`relative h-24 w-full bg-gradient-to-r ${visual.bannerGradient} p-3 flex items-start justify-end gap-1.5`}>
+        {/* Capa com foto real do banner ou gradiente do segmento */}
+        <div
+          className={`relative h-24 w-full bg-gradient-to-r ${visual.bannerGradient} p-3 flex items-start justify-end gap-1.5 overflow-hidden`}
+        >
+          {store.banner && (
+            <img
+              src={store.banner}
+              alt={`Banner de ${cleanName}`}
+              className="absolute inset-0 w-full h-full object-cover"
+              loading="lazy"
+            />
+          )}
+          {store.banner && (
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20 pointer-events-none" />
+          )}
+
           {/* Botão Bora comer no WhatsApp sobre a capa */}
           <button
             onClick={(e) => {
@@ -120,7 +143,7 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
             }}
             aria-label={`Bora comer em ${cleanName}? Convidar no WhatsApp`}
             title="Bora comer aqui? (WhatsApp)"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-transform hover:scale-110 active:scale-95 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 cursor-pointer"
+            className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-transform hover:scale-110 active:scale-95 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 cursor-pointer"
           >
             <WhatsAppIcon className="h-4 w-4" />
           </button>
@@ -129,7 +152,7 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
           <button
             onClick={() => onToggleFavorite(store.id)}
             aria-label={isFavorite ? `Remover ${cleanName} dos favoritos` : `Favoritar ${cleanName}`}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-transform hover:scale-110 active:scale-95 text-slate-700 hover:text-red-500 cursor-pointer"
+            className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-transform hover:scale-110 active:scale-95 text-slate-700 hover:text-red-500 cursor-pointer"
           >
             <Heart
               className={`h-4 w-4 ${
@@ -140,7 +163,7 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
 
           {/* Avatar sobreposto à capa */}
           <div
-            className={`absolute -bottom-6 left-4 flex h-14 w-14 items-center justify-center rounded-2xl border-4 border-background ${visual.avatarBg} ${visual.avatarText} font-bold text-lg shadow-md`}
+            className={`absolute -bottom-6 left-4 z-10 flex h-14 w-14 items-center justify-center rounded-2xl border-4 border-background ${visual.avatarBg} ${visual.avatarText} font-bold text-lg shadow-md`}
           >
             {initials}
           </div>
