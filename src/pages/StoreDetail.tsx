@@ -28,6 +28,8 @@ import { cleanEstablishmentName } from "@/lib/normalizers";
 import { getStoreInitials, getCategoryVisual } from "@/lib/store-presentation";
 import { NormalizedEstablishment } from "@/lib/types";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { WhatsAppIcon } from "@/components/icons";
+import { shareToWhatsApp, buildWhatsAppInvite } from "@/lib/share";
 
 const StoreMiniMap = lazy(() => import("@/components/store-mini-map"));
 
@@ -122,8 +124,16 @@ const StoreDetail = () => {
     }
   };
 
+  const handleWhatsAppInvite = () => {
+    if (!store) return;
+    shareToWhatsApp(store);
+    toast.success("Abrindo WhatsApp com o convite!");
+  };
+
   const handleShare = async () => {
+    if (!store) return;
     const shareUrl = window.location.href;
+    const inviteText = buildWhatsAppInvite(store, { currentUrl: shareUrl });
     const isMobile =
       typeof navigator !== "undefined" &&
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -133,8 +143,8 @@ const StoreDetail = () => {
     if (isMobile && navigator.share) {
       try {
         await navigator.share({
-          title: store?.name || "Yoogalize",
-          text: `Confira ${store?.name || "esta loja"} no Yoogalize!`,
+          title: `Bora comer no ${cleanName}?`,
+          text: inviteText,
           url: shareUrl,
         });
         return;
@@ -146,10 +156,10 @@ const StoreDetail = () => {
     }
 
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success("Link copiado para a área de transferência!");
+      await navigator.clipboard.writeText(inviteText);
+      toast.success("Convite 'Bora comer aqui?' copiado para a área de transferência!");
     } catch {
-      toast.error("Não foi possível copiar o link.");
+      toast.error("Não foi possível copiar o convite.");
     }
   };
 
@@ -334,6 +344,20 @@ const StoreDetail = () => {
           )}
 
           {/* ========================================================
+              BOTÃO "BORA COMER AQUI?" (WhatsApp)
+              ======================================================== */}
+          <button
+            type="button"
+            onClick={handleWhatsAppInvite}
+            className="w-full h-12 rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-sm sm:text-base shadow-sm hover:shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2.5 group cursor-pointer"
+            aria-label={`Convidar amigos para comer em ${cleanName} via WhatsApp`}
+          >
+            <WhatsAppIcon className="h-5 w-5 fill-white group-hover:scale-110 transition-transform" />
+            <span>Bora comer aqui?</span>
+            <span className="text-xs font-normal opacity-90">(WhatsApp)</span>
+          </button>
+
+          {/* ========================================================
               BARRA DE AÇÕES RÁPIDAS (Mockup 3 - Item 3)
               ======================================================== */}
           <div className="grid grid-cols-4 gap-2.5 sm:gap-3">
@@ -378,15 +402,15 @@ const StoreDetail = () => {
               </span>
             </button>
 
-            {/* 4. Enviar / Compartilhar */}
+            {/* 4. WhatsApp / Bora comer */}
             <button
               type="button"
-              onClick={handleShare}
-              className="flex flex-col items-center justify-center py-3 px-2 rounded-2xl bg-muted/60 hover:bg-muted border border-border/80 transition-all active:scale-95 group text-center"
-              aria-label="Compartilhar loja"
+              onClick={handleWhatsAppInvite}
+              className="flex flex-col items-center justify-center py-3 px-2 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/20 hover:bg-emerald-100/70 dark:hover:bg-emerald-950/40 border border-emerald-500/30 transition-all active:scale-95 group text-center cursor-pointer"
+              aria-label="Convidar no WhatsApp"
             >
-              <Share2 className="h-5 w-5 text-purple-600 dark:text-purple-400 mb-1 group-hover:scale-110 transition-transform" />
-              <span className="text-[11px] font-semibold text-foreground">Enviar</span>
+              <WhatsAppIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mb-1 group-hover:scale-110 transition-transform" />
+              <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">WhatsApp</span>
             </button>
           </div>
 

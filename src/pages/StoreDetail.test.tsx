@@ -50,7 +50,31 @@ describe('StoreDetail page', () => {
     expect(screen.getByText(/Presencial e Delivery/)).toBeInTheDocument();
     expect(screen.getByText(/Avenida Dante Michelini/)).toBeInTheDocument();
     expect(screen.getByText(/Ver cardápio e pedir/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bora comer aqui\?/i)).toBeInTheDocument();
     expect(screen.getByText(/Ver semana/i)).toBeInTheDocument();
+  });
+
+  it('deve disparar abertura do WhatsApp ao clicar em Bora comer aqui?', () => {
+    const openMock = vi.fn();
+    vi.stubGlobal('open', openMock);
+
+    render(
+      <MemoryRouter initialEntries={[`/loja/${mockStore.id}`]}>
+        <Routes>
+          <Route path="/loja/:id" element={<StoreDetail />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const boraComerBtn = screen.getByRole('button', {
+      name: /Convidar amigos para comer em Restaurante Capixaba via WhatsApp/i,
+    });
+    expect(boraComerBtn).toBeInTheDocument();
+    boraComerBtn.click();
+
+    expect(openMock).toHaveBeenCalledTimes(1);
+    expect(openMock.mock.calls[0][0]).toContain('https://api.whatsapp.com/send?text=');
+    expect(openMock.mock.calls[0][0]).toContain(encodeURIComponent('Restaurante Capixaba'));
   });
 
   it('deve exibir mensagem de não encontrado quando o id for inválido', () => {

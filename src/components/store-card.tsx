@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Heart, ExternalLink, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { OpeningHoursStatus } from "@/components/opening-hours-status";
@@ -7,6 +8,8 @@ import { formatDistance } from "@/lib/distance";
 import { cleanEstablishmentName } from "@/lib/normalizers";
 import { getStoreInitials, getCategoryVisual } from "@/lib/store-presentation";
 import { NormalizedEstablishment } from "@/lib/types";
+import { WhatsAppIcon } from "@/components/icons";
+import { shareToWhatsApp } from "@/lib/share";
 
 export type StoreCardProps = {
   store: NormalizedEstablishment & { distance?: number };
@@ -60,20 +63,38 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
           </div>
         </div>
 
-        {/* Botão de Favoritar */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onToggleFavorite(store.id)}
-          aria-label={isFavorite ? `Remover ${cleanName} dos favoritos` : `Favoritar ${cleanName}`}
-          className="h-10 w-10 shrink-0 rounded-full text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
-        >
-          <Heart
-            className={`h-5 w-5 transition-transform active:scale-125 ${
-              isFavorite ? "fill-red-500 text-red-500" : ""
-            }`}
-          />
-        </Button>
+        {/* Ações Mobile: WhatsApp e Favoritar */}
+        <div className="flex items-center gap-0.5 shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              shareToWhatsApp(store);
+              toast.success("Abrindo WhatsApp com o convite!");
+            }}
+            aria-label={`Bora comer em ${cleanName}? Convidar no WhatsApp`}
+            title="Bora comer aqui? (WhatsApp)"
+            className="h-10 w-10 rounded-full text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+          >
+            <WhatsAppIcon className="h-4 w-4" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onToggleFavorite(store.id)}
+            aria-label={isFavorite ? `Remover ${cleanName} dos favoritos` : `Favoritar ${cleanName}`}
+            className="h-10 w-10 rounded-full text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+          >
+            <Heart
+              className={`h-5 w-5 transition-transform active:scale-125 ${
+                isFavorite ? "fill-red-500 text-red-500" : ""
+              }`}
+            />
+          </Button>
+        </div>
       </div>
 
       {/* ========================================================
@@ -81,12 +102,27 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
           ======================================================== */}
       <div className="hidden md:flex flex-col h-full">
         {/* Capa com gradiente do segmento */}
-        <div className={`relative h-24 w-full bg-gradient-to-r ${visual.bannerGradient} p-3 flex items-start justify-end`}>
+        <div className={`relative h-24 w-full bg-gradient-to-r ${visual.bannerGradient} p-3 flex items-start justify-end gap-1.5`}>
+          {/* Botão Bora comer no WhatsApp sobre a capa */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              shareToWhatsApp(store);
+              toast.success("Abrindo WhatsApp com o convite!");
+            }}
+            aria-label={`Bora comer em ${cleanName}? Convidar no WhatsApp`}
+            title="Bora comer aqui? (WhatsApp)"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-transform hover:scale-110 active:scale-95 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 cursor-pointer"
+          >
+            <WhatsAppIcon className="h-4 w-4" />
+          </button>
+
           {/* Botão de Favoritar sobre a capa */}
           <button
             onClick={() => onToggleFavorite(store.id)}
             aria-label={isFavorite ? `Remover ${cleanName} dos favoritos` : `Favoritar ${cleanName}`}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-transform hover:scale-110 active:scale-95 text-slate-700 hover:text-red-500"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-transform hover:scale-110 active:scale-95 text-slate-700 hover:text-red-500 cursor-pointer"
           >
             <Heart
               className={`h-4 w-4 ${
