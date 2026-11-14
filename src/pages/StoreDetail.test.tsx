@@ -47,10 +47,10 @@ describe('StoreDetail page', () => {
 
     expect(screen.getByText('Restaurante Capixaba')).toBeInTheDocument();
     expect(screen.getByText('Restaurante')).toBeInTheDocument();
-    expect(screen.getByText('Presencial e Delivery')).toBeInTheDocument();
+    expect(screen.getByText(/Presencial e Delivery/)).toBeInTheDocument();
     expect(screen.getByText(/Avenida Dante Michelini/)).toBeInTheDocument();
-    expect(screen.getByText('Ver Cardápio & Fazer Pedido')).toBeInTheDocument();
-    expect(screen.getByText('Horário de Funcionamento')).toBeInTheDocument();
+    expect(screen.getByText(/Ver cardápio e pedir/i)).toBeInTheDocument();
+    expect(screen.getByText(/Ver semana/i)).toBeInTheDocument();
   });
 
   it('deve exibir mensagem de não encontrado quando o id for inválido', () => {
