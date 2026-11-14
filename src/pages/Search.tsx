@@ -117,8 +117,8 @@ const Search = () => {
     }
   };
 
-  const executeSearch = useCallback(() => {
-    if (!effectiveLocation || isLoadingData) return;
+  const executeSearch = useCallback(async () => {
+    if (!effectiveLocation) return;
 
     setHasSearched(true);
     setIsSearching(true);
@@ -127,6 +127,34 @@ const Search = () => {
     const cityAlvo = selectedCity === "all" ? null : key(selectedCity);
     const segmentoAlvo = selectedCategory === "all" ? null : key(selectedCategory);
     const tipoAlvo = selectedServiceType === "all" ? null : key(selectedServiceType);
+
+    // 1. Tenta buscar via API serverless (com Edge caching da Vercel)
+    try {
+      const params = new URLSearchParams({
+        lat: String(effectiveLocation.lat),
+        lon: String(effectiveLocation.lon),
+        raio: String(radiusKm),
+        cidade: selectedCity,
+        categoria: selectedCategory,
+        tipo: selectedServiceType,
+        abertas: String(openNow),
+      });
+
+      const response = await fetch(`/api/lojas?${params.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data.results)) {
+          setFilteredResults(data.results);
+          setIsSearching(false);
+          return;
+        }
+      }
+    } catch {
+      // Ignora erro de rede e cai no fallback local
+    }
+
+    // 2. Fallback para cálculo local em memória (usado no dev com Vite ou offline)
+    if (isLoadingData) return;
 
     const results = allEstablishments
       .map(establishment => {
