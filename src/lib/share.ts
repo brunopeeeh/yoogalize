@@ -67,7 +67,7 @@ export function buildWhatsAppInvite(
   }
 
   if (storeUrl) {
-    lines.push(`👀 *Ver no Yoogalize:* ${storeUrl}`);
+    lines.push(`👀 *Ver no Descubra Yooga:* ${storeUrl}`);
   }
 
   return lines.join("\n");

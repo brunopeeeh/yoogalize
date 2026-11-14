@@ -38,8 +38,8 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen flex items-center justify-center p-4 bg-background">
           <div className="max-w-md w-full text-center space-y-4">
             <img
-              src="/yoogalize_triste.png"
-              alt="Mascote Yoogalize triste"
+              src="/descubra-yooga-triste.png"
+              alt="Mascote Descubra Yooga triste"
               className="h-28 w-auto mx-auto"
             />
             <h1 className="text-2xl font-semibold text-foreground">

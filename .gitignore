@@ -49,3 +49,6 @@ __pycache__/
 # Cache de auditoria adicional
 reports/.geocode-cache.json
 
+# PDFs locais
+*.pdf
+

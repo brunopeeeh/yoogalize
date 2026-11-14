@@ -126,9 +126,9 @@ export function calculateDistance(
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.sin(dLon / 2) *
-      Math.sin(dLon / 2) *
-      Math.cos(radLat1) *
-      Math.cos(radLat2);
+    Math.sin(dLon / 2) *
+    Math.cos(radLat1) *
+    Math.cos(radLat2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return Math.round(R * c * 10) / 10;
@@ -257,7 +257,7 @@ export async function loadStores(req?: VercelRequest): Promise<NormalizedEstabli
   if (rawList.length === 0 && req) {
     try {
       const protocol = req.headers['x-forwarded-proto'] || 'https';
-      const host = req.headers['x-forwarded-host'] || req.headers.host || 'yoogalize.vercel.app';
+      const host = req.headers['x-forwarded-host'] || req.headers.host || 'descubra-yooga.vercel.app';
       const url = `${protocol}://${host}/lojas.json`;
       const response = await fetch(url);
       if (response.ok) {

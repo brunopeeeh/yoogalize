@@ -29,7 +29,7 @@ describe("share utility (Bora comer aqui?)", () => {
     expect(invite).toContain("*Vibowls Açaí* • _Açaiteria_");
     expect(invite).toContain("📍 Rua Celso Calmon, 267 - Praia do Canto, Vitória - ES");
     expect(invite).toContain("🛵 *Cardápio & Pedidos:* https://delivery.yooga.app/vibowls-acai");
-    expect(invite).toContain("👀 *Ver no Yoogalize:* http://localhost:8080/loja/vibowls-acai");
+    expect(invite).toContain("👀 *Ver no Descubra Yooga:* http://localhost:8080/loja/vibowls-acai");
   });
 
   it("deve incluir URL completa de delivery caso já comece com http", () => {

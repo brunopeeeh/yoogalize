@@ -1,37 +1,45 @@
-# Contexto do Projeto: Yoggalize Painel
+# Contexto do Projeto: Descubra Yooga
 
 ## Visão Geral
-Este projeto é uma aplicação web front-end construída para ser um painel ou buscador de lojas/estabelecimentos da marca "Yoogalize". A aplicação permite aos usuários encontrar, filtrar e visualizar informações sobre as lojas.
 
-## Estrutura do Projeto e Tecnologias
-- **Framework Principal**: React com Vite.
-- **Linguagem**: TypeScript (`.ts` e `.tsx`).
-- **Estilização**: Tailwind CSS, com uma biblioteca de componentes baseada em `shadcn/ui` (indicado pela estrutura em `src/components/ui` e o arquivo `components.json`).
-- **Gerenciamento de Pacotes**: O projeto utiliza `package.json`, indicando o uso de `npm`, `yarn`, `pnpm` ou `bun`. A presença de `bun.lockb` sugere que `bun` é o gerenciador preferencial.
-- **Testes**: Existem arquivos de teste (`.test.ts`, `.test.tsx`), provavelmente utilizando Vitest, que é comum em projetos Vite.
-- **Dados**: As informações das lojas são primariamente carregadas a partir de um arquivo JSON estático (`public/lojas.json`).
-- **Scripts Auxiliares**: O projeto contém scripts Python (`.py`) que parecem ser usados para processamento, conversão e validação dos dados das lojas.
+Aplicação web front-end para buscar estabelecimentos parceiros da Yooga no
+Espírito Santo ("Descubra Yooga" — Onde comer e beber perto de você). O usuário
+informa a localização (GPS, endereço ou CEP) e o app lista as lojas próximas,
+ordenadas por distância, com filtros de cidade, segmento, tipo de atendimento,
+raio e "abertas agora".
 
-## Arquivos e Diretórios Chave
-- `src/`: Contém todo o código-fonte da aplicação React.
-- `src/pages/`: Componentes que representam as páginas principais da aplicação (ex: `Index.tsx`, `Results.tsx`, `Search.tsx`).
-- `src/components/`: Componentes reutilizáveis da interface do usuário.
-  - `src/components/ui/`: Componentes de UI base (botões, cards, etc.), padrão `shadcn/ui`.
-  - `filter-sidebar.tsx`: Um componente crucial para a funcionalidade de filtro.
-- `src/lib/`: Funções utilitárias, tipos (`types.ts`), e lógica de negócio (ex: `distance.ts` para cálculo de distância).
-- `src/hooks/`: Hooks customizados do React para encapsular lógicas reutilizáveis (ex: `useEstablishments.ts`).
-- `public/lojas.json`: Arquivo JSON que serve como a principal fonte de dados para os estabelecimentos.
-- `*.py`: Scripts para manipulação de dados, provavelmente executados offline para preparar o `lojas.json`.
+Produção: https://descubra-yooga.vercel.app
 
-## Funcionalidades Principais
-- Busca de estabelecimentos por geolocalização ou endereço.
-- Filtragem de resultados com base em critérios diversos.
-- Visualização dos detalhes de cada loja.
-- Sistema de favoritos (`src/lib/favorites.ts` e `src/pages/Favorites.tsx`).
-- Status de funcionamento (aberto/fechado) em tempo real (`opening-hours-status.tsx`).
+## Stack
 
-## Como Contribuir
-- Manter a consistência com o estilo de código e arquitetura existentes.
-- Utilizar TypeScript e seguir as convenções do projeto.
-- Ao adicionar ou modificar a lógica de negócio, verificar se os testes correspondentes precisam ser atualizados ou criados.
-- Componentes de UI devem ser reutilizáveis e seguir o padrão dos componentes em `src/components/ui`.
+- **Framework**: React 18 + TypeScript, build com Vite 5 (SWC)
+- **Estilo**: Tailwind CSS + componentes shadcn/ui (`src/components/ui`)
+- **Roteamento**: React Router DOM (`/`, `/busca`, `/favoritos`)
+- **Notificações**: Sonner
+- **Testes**: Vitest + Testing Library (`npx vitest run`)
+- **Geocodificação**: Mapbox Geocoding API e ViaCEP (tela inicial), Nominatim (busca)
+
+## Dados
+
+- `public/lojas.json` é a fonte única do front: catálogo gerado a partir do
+  Databricks da Yooga por `atualizar_lojas.py` (requer `databricks auth login
+  --profile yooga`).
+- Os IDs das lojas (`slug-nome-lat-lon`) são a chave dos favoritos no
+  `localStorage` — mudar nome ou coordenada de uma loja muda o ID.
+- `sql/` contém o schema do PostgreSQL no Raspberry Pi (carga via
+  `tools/load-lojas.py`); o front ainda não consome esse banco.
+
+## Estrutura
+
+- `src/pages/`: `Welcome.tsx` (localização), `Search.tsx` (busca/filtros),
+  `Favorites.tsx`, `NotFound.tsx`
+- `src/components/`: componentes da aplicação; `src/components/ui/` contém
+  apenas os componentes shadcn realmente usados
+- `src/lib/`: `distance.ts` (Haversine), `utils.ts` (status de horário),
+  `normalizers.ts` (normalização + detecção de link de delivery corrompido),
+  `address.ts` (formatação de endereço do Nominatim), `favorites.ts`
+- `src/hooks/useEstablishments.ts`: carrega e normaliza `lojas.json`
+- `tools/`: auditorias e carga (`audit-stores.mjs`, `validar-coordenadas.mjs`,
+  `data-quality.mjs`, `load-lojas.py`)
+- `reports/`: saídas das auditorias e patches de coordenadas
+- `ANALISE.md`: análise técnica completa do projeto (apêndices A–E)

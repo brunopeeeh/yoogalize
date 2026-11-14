@@ -417,7 +417,7 @@ const Search = () => {
               to="/"
               className="text-2xl font-black tracking-tight text-primary flex items-center gap-2 hover:opacity-90 transition-opacity"
             >
-              <span className="text-3xl">🍔</span> Yoogalize
+              <span className="text-3xl">🍔</span> Descubra Yooga
             </Link>
 
             {/* Chip de Endereço Desktop */}
@@ -687,15 +687,14 @@ const Search = () => {
                         chip.id === "all"
                           ? "all"
                           : selectedCategory === chip.id
-                          ? "all"
-                          : chip.id
+                            ? "all"
+                            : chip.id
                       )
                     }
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
-                      isSelected
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0 ${isSelected
                         ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-primary"
                         : "bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     <span>{chip.emoji}</span>
                     <span>{chip.label}</span>
@@ -709,11 +708,10 @@ const Search = () => {
               <button
                 type="button"
                 onClick={() => setOpenNow(!openNow)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
-                  openNow
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0 ${openNow
                     ? "bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-600"
                     : "bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 <span className={`h-2 w-2 rounded-full ${openNow ? "bg-white" : "bg-emerald-500"}`} />
                 <span>Abertas agora</span>
@@ -728,11 +726,10 @@ const Search = () => {
                     selectedServiceType.includes("Delivery") ? "all" : "Somente Delivery"
                   )
                 }
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
-                  selectedServiceType.includes("Delivery")
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0 ${selectedServiceType.includes("Delivery")
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 <span>🛵 Delivery</span>
                 {selectedServiceType.includes("Delivery") && <X className="h-3 w-3" />}
@@ -767,7 +764,7 @@ const Search = () => {
 
             {!hasSearched ? (
               <div className="flex flex-col items-center justify-center text-center h-full p-8">
-                <img src="/yoogalize.png" alt="Mascote Yoogalize" className="h-32 w-auto mb-6" />
+                <img src="/descubra-yooga.png" alt="Mascote Descubra Yooga" className="h-32 w-auto mb-6" />
                 <h2 className="text-2xl font-semibold mb-2">Bem-vindo ao Painel de Descoberta!</h2>
                 <p className="text-gray-500 max-w-md mx-auto mb-6">
                   Utilize os filtros na lateral ou a busca rápida para encontrar estabelecimentos perto de você.
@@ -783,7 +780,7 @@ const Search = () => {
               <>
                 {filteredResults.length === 0 ? (
                   <div className="flex flex-col items-center justify-center text-center h-full p-8 border border-dashed rounded-2xl bg-card">
-                    <img src="/yoogalize_triste.png" alt="Mascote Yoogalize triste" className="h-32 w-auto mb-6" />
+                    <img src="/descubra-yooga-triste.png" alt="Mascote Descubra Yooga triste" className="h-32 w-auto mb-6" />
                     <h2 className="text-2xl font-semibold mb-2">Nenhum resultado encontrado</h2>
                     <p className="text-gray-500 max-w-sm mx-auto mb-6 text-sm">
                       {searchTerm

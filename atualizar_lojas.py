@@ -159,7 +159,7 @@ class Geocoder:
             resp = requests.get(
                 "https://nominatim.openstreetmap.org/search",
                 params={"q": query, "format": "json", "limit": 1, "countrycodes": "br"},
-                headers={"User-Agent": "YoogalizeGeocodeScript/2.0"},
+                headers={"User-Agent": "DescubraYoogaGeocodeScript/2.0"},
                 timeout=15,
             )
             resp.raise_for_status()
@@ -188,7 +188,7 @@ class Geocoder:
             resp = requests.get(
                 "https://nominatim.openstreetmap.org/reverse",
                 params={"lat": lat, "lon": lng, "format": "json", "zoom": 10},
-                headers={"User-Agent": "YoogalizeGeocodeScript/2.0"},
+                headers={"User-Agent": "DescubraYoogaGeocodeScript/2.0"},
                 timeout=15,
             )
             resp.raise_for_status()

@@ -30,7 +30,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 const NOMINATIM = "https://nominatim.openstreetmap.org/search";
-const UA = "YoogalizeValidador/1.0 (catalogo de lojas; contato via repositorio)";
+const UA = "DescubraYoogaValidador/1.0 (catalogo de lojas; contato via repositorio)";
 
 const args = process.argv.slice(2);
 const arg = (n, d) => { const i = args.indexOf(`--${n}`); return i !== -1 && args[i + 1] ? args[i + 1] : d; };

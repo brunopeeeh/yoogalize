@@ -2,7 +2,7 @@
 /**
  * tools/audit-stores.mjs
  *
- * Auditoria das lojas do Yoogalize contra a API publica da Yooga.
+ * Auditoria das lojas do Descubra Yooga contra a API publica da Yooga.
  *
  *   GET https://delivery2.yooga.com.br/v2/stores/{slug}
  *     -> 200  loja existe

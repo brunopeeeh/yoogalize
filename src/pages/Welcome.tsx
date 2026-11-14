@@ -500,7 +500,7 @@ const Welcome = () => {
           <div className="flex items-center justify-center gap-2">
             <span className="text-4xl">🍔</span>
             <h1 className="text-4xl sm:text-5xl font-black text-primary tracking-tight">
-              Yoogalize
+              Descubra Yooga
             </h1>
           </div>
           <p className="text-muted-foreground text-sm sm:text-base font-medium">

@@ -952,3 +952,66 @@ python3 tools/load-lojas.py \
 3. **Não existe API REST ainda** — o Postgres tem as funções prontas, mas falta expô-las (`/api/lojas`, `/api/lojas/perto`, `/api/lojas/cidades`).
 4. **O `vw_lojas_json` já entrega o payload exato** que o front espera — é o caminho mais curto para migrar sem tocar em `src/`.
 
+
+
+---
+
+# Apêndice E — Correções aplicadas (14/11/2026)
+
+## E.1 Front-end (bugs B1–B15, P1, P3, P5)
+
+| Bug | Correção |
+|---|---|
+| **B1** "Limpar Filtros" incompleto | `handleClearFilters` agora reseta também `selectedServiceType` |
+| **B2** Filtro de cidade travava a busca | Cidade detectada **não** vira filtro (só o raio define a área); comparação por chave sem acento |
+| **B3** Editar endereço não re-buscava | `executeSearch` roda num `useEffect` que depende de todos os filtros + localização |
+| **B5** `useEffect` com closure obsoleta | Dependências corrigidas |
+| **B9** Slider uncontrolled | `defaultValue` → `value` |
+| **B11** Erro de lint em `Welcome.tsx` | `result.context` tipado (`MapboxContext`); lint 100% limpo |
+| **B12** `lang="en"` | `lang="pt-BR"` + OG tags próprias + manifest |
+| **B14** Endereços inconsistentes | `src/lib/address.ts` unifica `formatAddress`/`getCity` (mantém `town`/`village`/`suburb`) |
+| **B15** Sem ErrorBoundary | `src/components/error-boundary.tsx` envolvendo o app |
+| **B6/B7/B8** Código morto | `Index.tsx`, `Results.tsx`, `useGeolocation`, `address-autocomplete`, `theme-provider`, `use-toast`/`Toaster`, `data/*`, 34 componentes shadcn órfãos e ~40 dependências removidos (grafo de imports a partir de `main.tsx`) |
+| **P1** Cardápio de loja errada | `normalizers.ts` detecta slug compartilhado sem lista fixa: a loja cujo nome casa com o slug (ignorando o installation_id) mantém o cardápio; as demais perdem. 12 links corrompidos removidos nos dados reais |
+| **P3** "Abertas Agora" sumia com lojas sem horário | Novo status `unknown`: `isEstablishmentClosed` só exclui quem tem horário e está fechado; faixas degeneradas (start == end) descartadas |
+| **P5** Igualdade exata de cidade/segmento | Comparação por chave normalizada (sem acento/case/pontuação) |
+| Testes | `utils.test.ts` (9) + `normalizers.test.ts` (7) novos — 61/61 passando |
+
+## E.2 P2 — Coordenadas (resolvido com método auditável)
+
+**Causa raiz:** `atualizar_lojas.py` reusava a coordenada do JSON anterior sem
+validação — divergências se perpetuavam para sempre. Paralelamente, o pipeline
+foi corrigido (coordenada anterior agora exige confirmação de fonte fresca).
+
+**Método (`tools/validar-coordenadas.mjs`):** para cada loja divergente >5 km da
+API: descarta API de slug compartilhado (pertence a outra loja) e coordenada
+default do Yooga (repetida em ≥2 lojas); geocodifica o endereço de cada fonte
+(com variantes de consulta e filtro de estado); desempata com geocoding
+**reverso** ("que endereço existe no ponto?"); só adota correção com evidência
+de consulta com número/CEP.
+
+**Resultado:** 45 divergentes analisados — 44 mantidos com evidência (a API era
+default, pertencia a outra loja ou apontava para outro estado) e 1 corrigido
+(Sweetcakes, 2,4 km). A regeneração paralela do `lojas.json` aplicou
+independentemente as mesmas correções nas 6 lojas onde a API estava certa —
+verificação cruzada.
+
+**Pontos default (`--defaults`):** 7 lojas amontoadas nos 2 pontos default do
+sistema Yooga (em Cariacica) reposicionadas pelo geocode do endereço — incluíam
+lojas de Colatina, Guarapari e Baixo Guandu aparecendo a 100+ km de onde estão.
+`atualizar_lojas.py` ganhou `detectar_defaults()`: coordenada compartilhada por
+≥3 lojas só vale como último recurso (origem `default-yooga`).
+
+**P4 — 84 lojas sem `link delivery`:** não é bug. 74 são "Somente Presencial" e
+10 sem tipo informado; **zero** lojas de delivery ficaram sem cardápio.
+
+## E.3 Infra
+
+- `vercel.json`: `Cache-Control: public, max-age=0, must-revalidate` para
+  `/lojas.json` (catálogo nunca serve obsoleto da borda).
+- Banco no Pi recarregado com o catálogo corrigido: 1358 lojas, 6118 faixas de
+  horário, coordenadas verificadas no banco (Colatina→Colatina, Guarapari→Guarapari etc.).
+- **Pendente (requer decisão):** purga das credenciais Supabase do histórico do
+  git (force push); hardening do Pi (senha do sudo `123456`,
+  `PasswordAuthentication no`); senha do role `bruno_app` para API TCP.
+

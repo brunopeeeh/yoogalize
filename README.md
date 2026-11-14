@@ -1,10 +1,12 @@
-# Yoogalize
+# Descubra Yooga
 
-![Yoogalize](public/yoogalize.png)
+> Onde comer e beber perto de você
+
+![Descubra Yooga](public/descubra-yooga.png)
 
 Busca de estabelecimentos clientes da Yooga no Espírito Santo. O usuário informa a localização (GPS, endereço ou CEP) e o app lista as lojas próximas ordenadas por distância, com filtros de cidade, segmento, tipo de atendimento, raio e "abertas agora".
 
-Produção: https://yoogalize.vercel.app
+Produção: https://descubra-yooga.vercel.app
 
 ## Funcionalidades
 
@@ -68,7 +70,7 @@ Ferramentas de auditoria em `tools/`:
 | Arquivo | Para quê |
 |---|---|
 | `tools/audit-stores.mjs` | Compara o `lojas.json` com a API pública de delivery da Yooga |
-| `tools/validar-coordenadas.mjs` | Decide qual coordenada é a correta quando JSON e API divergem; grava `reports/patch-coordenadas.json` |
+| `tools/validar-coordenadas.mjs` | Decide qual coordenada é a correta quando JSON e API divergem; grava `reports/patch-coordenadas.json`. Com `--defaults`, corrige lojas amontoadas em pontos default do sistema Yooga |
 | `tools/data-quality.mjs` | Indicadores de qualidade do `lojas.json` |
 | `tools/load-lojas.py` | Carrega o `lojas.json` no PostgreSQL |
 

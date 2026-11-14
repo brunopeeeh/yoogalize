@@ -1,5 +1,5 @@
 -- =============================================================================
--- Yoogalize — schema do catalogo de lojas
+-- Descubra Yooga — schema do catalogo de lojas
 -- Alvo: PostgreSQL 17 (Raspberry Pi) / base bruno_db
 --
 -- Origem dos dados: public/lojas.json (gerado por atualizar_lojas.py a partir
@@ -60,7 +60,7 @@ CREATE TABLE lojas (
     updated_at        timestamptz NOT NULL DEFAULT now()
 );
 
-COMMENT ON TABLE  lojas IS 'Catalogo de estabelecimentos do Yoogalize (ES)';
+COMMENT ON TABLE  lojas IS 'Catalogo de estabelecimentos do Descubra Yooga (ES)';
 COMMENT ON COLUMN lojas.slug IS 'Identificador estavel, mesmo formato usado pelo front para favoritos';
 COMMENT ON COLUMN lojas.status_horario IS 'aberto | fechado | desconhecido (sem horario informado)';
 

@@ -1,4 +1,4 @@
-# Schema do catálogo — Yoogalize
+# Schema do catálogo — Descubra Yooga
 
 PostgreSQL 17 no Raspberry Pi (`bruno_db`). Dados originados de `public/lojas.json`.
 
