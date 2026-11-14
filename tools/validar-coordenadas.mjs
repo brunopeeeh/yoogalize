@@ -374,6 +374,75 @@ writeFileSync(outPath, JSON.stringify({
 }, null, 2), "utf8");
 console.log(`\nPatch gravado em ${outPath}`);
 
+// ---------- modo --defaults: lojas em pontos default do sistema ----------
+// Uma coordenada compartilhada por >=3 lojas nao e geolocalizacao real: e o
+// ponto default do Yooga (lojista nunca configurou) ou o centroid de cidade
+// do geocoder. Para essas, o geocode do endereco cadastrado e melhor.
+if (args.includes("--defaults")) {
+  const conta = new Map();
+  for (const l of lojas) {
+    const k = `${l.Latitude},${l.Longitude}`;
+    conta.set(k, (conta.get(k) ?? 0) + 1);
+  }
+  const chaves = [...conta.entries()].filter(([, n]) => n >= 3).map(([k]) => k);
+  const alvos = lojas.filter((l) => chaves.includes(`${l.Latitude},${l.Longitude}`));
+  console.log(`Lojas em pontos default (coordenada compartilhada por >=3 lojas): ${alvos.length}\n`);
+
+  const saidas = [];
+  let j = 0;
+  for (const l of alvos) {
+    j++;
+    const g = await geocode(l["endereco completo"], {
+      logradouro: l.logradouro, numero: l["número"], bairro: l.bairro,
+      cidade: l.cidade, uf: l.estado, cep: l.cep,
+    });
+    const km = g ? distKm(g.lat, g.lon, l.Latitude, l.Longitude) : null;
+    // so corrige com geocode de numero/CEP e deslocamento relevante (> 1 km)
+    const corrigir = g && g._via <= 1 && km > 1;
+    saidas.push({
+      loja: l.nome_empresa, slug: l["link delivery"],
+      decisao: corrigir ? "adotar_geocode" : "manter",
+      motivo: corrigir
+        ? `ponto default compartilhado; endereco cadastrado geocodifica a ${Math.round(km * 1000)} m`
+        : (g ? `geocode a ${Math.round(km * 1000)} m: proximo do cluster ou evidencia fraca` : "endereco nao geocodificou no OSM"),
+      lat_json: l.Latitude, lon_json: l.Longitude,
+      lat: g?.lat, lon: g?.lon,
+      endereco_json: l["endereco completo"],
+      cidade_json: l.cidade,
+      geocode_json: g,
+    });
+    process.stdout.write(`\r  ${j}/${alvos.length}  ${(corrigir ? "corrigir" : "manter").padEnd(9)} ${l.nome_empresa.slice(0, 44).padEnd(44)}   `);
+  }
+  salvarCache();
+  console.log("\n");
+
+  const defaultsPath = resolve(arg("out-defaults", "reports/patch-defaults.json"));
+  const resumo = saidas.reduce((a, r) => { a[r.decisao] = (a[r.decisao] ?? 0) + 1; return a; }, {});
+  console.log("  DECISAO:", JSON.stringify(resumo), "\n");
+  for (const r of saidas.filter((x) => x.decisao === "adotar_geocode")) {
+    console.log(`  ${r.loja}`);
+    console.log(`    atual : ${r.lat_json}, ${r.lon_json}  (${r.endereco_json})`);
+    console.log(`    novo  : ${r.lat}, ${r.lon}`);
+  }
+  mkdirSync(dirname(defaultsPath), { recursive: true });
+  writeFileSync(defaultsPath, JSON.stringify({ gerado_em: new Date().toISOString(), resumo, lojas: saidas }, null, 2), "utf8");
+  console.log(`\nPatch gravado em ${defaultsPath}`);
+
+  if (args.includes("--apply")) {
+    let n = 0;
+    for (const r of saidas.filter((x) => x.decisao === "adotar_geocode")) {
+      const loja = lojas.find((l) => l["link delivery"] === r.slug && l.nome_empresa === r.loja);
+      if (!loja) { console.error(`  ! nao encontrada: ${r.loja}`); continue; }
+      loja.Latitude = +r.lat.toFixed(7);
+      loja.Longitude = +r.lon.toFixed(7);
+      n++;
+    }
+    writeFileSync(inputPath, JSON.stringify(raw, null, 1), "utf8");
+    console.log(`\n${n} lojas reposicionadas em ${inputPath}`);
+  }
+  process.exit(0);
+}
+
 // ---------- aplicacao (--apply) ----------
 if (args.includes("--apply")) {
   const alteraveis = resultado.filter((r) => r.decisao === "adotar_api" || r.decisao === "adotar_geocode");

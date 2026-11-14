@@ -15,7 +15,11 @@ Coordenadas, em ordem de prioridade:
   2. geolocalização e coordenada do delivery, quando concordam (< 1 km);
   3. se divergem, desempata com o Nominatim (endereço com bairro); sem consenso, fica a do delivery;
   4. se só uma existe, usa ela;
-  5. sem nenhuma, geocodifica o endereço e por último o CEP (Nominatim, com cache local).
+  5. sem nenhuma, geocodifica o endereço e por último o CEP (Nominatim, com cache local);
+  6. ponto default (coordenada compartilhada por >= DEFAULT_MIN_LOJAS lojas) só é usado
+     como último recurso, quando nada acima existir — não é geolocalização real
+     (auditoria de 14/11/2026: 9 lojas amontoadas no default do Yooga em Cariacica,
+     sendo de Colatina, Guarapari, Vitória etc.).
 
 Requer o Databricks CLI autenticado: databricks auth login --profile yooga
 Uso: python atualizar_lojas.py
@@ -39,6 +43,7 @@ OUTPUT_FILE = "public/lojas.json"
 GEOCODE_CACHE_FILE = "geocode_cache.json"
 MAX_DIVERGENCIA_KM = 1.0
 TOLERANCIA_ANTERIOR_KM = 1.5  # mesma tolerância do tools/validar-coordenadas.mjs
+DEFAULT_MIN_LOJAS = 3         # coordenada repetida em >= N lojas = ponto default do sistema
 
 SQL = """
 with ac as (

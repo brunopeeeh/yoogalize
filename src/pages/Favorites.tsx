@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getFavoriteIds, removeFavoriteId } from '@/lib/favorites';
-import { OpeningHoursStatus } from '@/components/opening-hours-status';
-import { ArrowLeft, BookMarked, Heart, Frown } from 'lucide-react';
+import { ArrowLeft, Frown } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEstablishments } from '@/hooks/useEstablishments';
+import { StoreCard } from '@/components/store-card';
+import { MobileBottomNav } from '@/components/mobile-bottom-nav';
 
 const Favorites = () => {
   const navigate = useNavigate();
@@ -64,56 +64,19 @@ const Favorites = () => {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-20 md:pb-6">
           {favoriteStores.map((item) => (
-            <Card key={item.id} className="p-4 flex flex-col">
-              <div className="flex justify-between items-start">
-                <h3
-                  className="font-bold pr-2 cursor-pointer hover:text-primary transition-colors hover:underline"
-                  onClick={() => navigate(`/loja/${item.id}`, { state: { store: item } })}
-                >
-                  {item.name}
-                </h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="flex-shrink-0 h-8 w-8"
-                  onClick={() => handleRemoveFavorite(item.id)}
-                >
-                  <Heart className="w-5 h-5 fill-red-500 text-red-500" />
-                </Button>
-              </div>
-              <p className="text-sm text-primary font-semibold">{item.category}</p>
-              <p className="text-sm mt-2 text-muted-foreground">{item.address}</p>
-              <div className="flex-grow mt-2">
-                <OpeningHoursStatus operatingHours={item.operatingHours} />
-              </div>
-              <div className="flex justify-between items-center mt-4 pt-3 border-t border-border/50">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/loja/${item.id}`, { state: { store: item } })}
-                >
-                  Detalhes
-                </Button>
-                {item.linkDelivery ? (
-                  <Button asChild size="sm">
-                    <a
-                      href={`https://delivery.yooga.app/${item.linkDelivery}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <BookMarked className="mr-1.5 h-3.5 w-3.5" /> Cardápio
-                    </a>
-                  </Button>
-                ) : (
-                  <div />
-                )}
-              </div>
-            </Card>
+            <StoreCard
+              key={item.id}
+              store={item}
+              isFavorite={true}
+              onToggleFavorite={handleRemoveFavorite}
+            />
           ))}
         </div>
       )}
+
+      <MobileBottomNav />
     </div>
   );
 };

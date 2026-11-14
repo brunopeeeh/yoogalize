@@ -21,8 +21,9 @@ type FilterSidebarProps = {
   setRadiusKm: (radius: number) => void;
   openNow: boolean;
   setOpenNow: (open: boolean) => void;
-  onSearchClick: () => void;
-}
+  onSearchClick?: () => void;
+  onClearFilters?: () => void;
+};
 
 export const FilterSidebar = ({
   selectedCity,
@@ -40,6 +41,7 @@ export const FilterSidebar = ({
   openNow,
   setOpenNow,
   onSearchClick,
+  onClearFilters,
 }: FilterSidebarProps) => {
   return (
     <ScrollArea className="h-full">
@@ -130,10 +132,22 @@ export const FilterSidebar = ({
           </div>
         </div>
 
-        <div className="mt-auto pt-4">
-          <Button onClick={onSearchClick} className="w-full" disabled={isLoadingData}>
-            Buscar
-          </Button>
+        <div className="mt-auto pt-4 space-y-2">
+          {onClearFilters && (
+            <Button
+              variant="outline"
+              onClick={onClearFilters}
+              className="w-full text-xs"
+              disabled={isLoadingData}
+            >
+              Limpar Filtros
+            </Button>
+          )}
+          {onSearchClick && (
+            <Button onClick={onSearchClick} className="w-full text-xs" disabled={isLoadingData}>
+              Aplicar
+            </Button>
+          )}
         </div>
       </div>
     </ScrollArea>
