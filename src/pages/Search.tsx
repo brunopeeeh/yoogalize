@@ -146,7 +146,7 @@ const Search = () => {
     setIsSearching(true);
     setVisibleCount(10);
 
-    const cityAlvo = selectedCity === "all" ? null : key(selectedCity);
+    const cidadeAlvo = selectedCity === "all" ? null : key(selectedCity);
     const segmentoAlvo = selectedCategory === "all" ? null : key(selectedCategory);
     const tipoAlvo = selectedServiceType === "all" ? null : key(selectedServiceType);
     const searchTarget = debouncedSearch.trim() ? key(debouncedSearch) : null;

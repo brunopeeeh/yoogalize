@@ -31,9 +31,6 @@ type Suggestion = {
 type MapboxContext = {
   id?: string;
   text?: string;
-  place?: { name?: string };
-  region?: { name?: string };
-  postcode?: { name?: string };
 };
 
 type MapboxFeature = {
@@ -268,9 +265,9 @@ const Welcome = () => {
                   lon: feature.center[0].toString(),
                   address: {
                     road: feature.address?.road || feature.properties?.address || "",
-                    city: feature.context?.place?.name || "",
-                    state: feature.context?.region?.name || "",
-                    postcode: feature.context?.postcode?.name || "",
+                    city: feature.context?.find((c) => c.id?.startsWith("place"))?.text || "",
+                    state: feature.context?.find((c) => c.id?.startsWith("region"))?.text || "",
+                    postcode: feature.context?.find((c) => c.id?.startsWith("postcode"))?.text || "",
                     country: "Brasil",
                   },
                 }));

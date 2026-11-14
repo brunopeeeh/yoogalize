@@ -70,4 +70,24 @@ describe('Busca textual por nome e categoria da loja', () => {
     );
     expect(matched).toHaveLength(0);
   });
+
+  it('filtra corretamente por cidadeAlvo, segmentoAlvo e busca textual', () => {
+    const cidadeAlvo = key('Vila Velha');
+    const segmentoAlvo = key('Sorveteria');
+    const searchTarget = key('miguelu');
+
+    const matched = stores.filter((s) => {
+      if (cidadeAlvo && key(s.city) !== cidadeAlvo) return false;
+      if (segmentoAlvo && key(s.category) !== segmentoAlvo) return false;
+      if (searchTarget) {
+        const matchName = key(s.name).includes(searchTarget);
+        const matchCategory = key(s.category).includes(searchTarget);
+        if (!matchName && !matchCategory) return false;
+      }
+      return true;
+    });
+
+    expect(matched).toHaveLength(1);
+    expect(matched[0].name).toBe('Sorveteria Miguelu - Praia da Costa');
+  });
 });

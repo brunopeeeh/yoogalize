@@ -37,6 +37,9 @@ reports/audit-piloto.json
 # Scripts temporários de verificação
 .tmp-verify/
 
+# TypeScript build info
+*.tsbuildinfo
+
 # Python cache
 __pycache__/
 *.py[cod]
