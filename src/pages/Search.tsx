@@ -1,6 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { MapPin, Edit2, BookMarked, Heart } from "lucide-react";
+import {
+  MapPin,
+  Edit2,
+  BookMarked,
+  Heart,
+  Search as SearchIcon,
+  X,
+  Map as MapIcon,
+  List,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +24,7 @@ import { formatAddress, getCity } from "@/lib/address";
 import { getFavoriteIds, addFavoriteId, removeFavoriteId } from "@/lib/favorites";
 import { NominatimSuggestion, NominatimAddress, NormalizedEstablishment } from "@/lib/types";
 import { useEstablishments } from "@/hooks/useEstablishments";
+const StoreMap = lazy(() => import("@/components/store-map"));
 
 // Tipos
 type UserLocation = {
@@ -35,6 +45,8 @@ type SearchState = {
   selectedCity?: string;
   radiusKm?: number;
   openNow?: boolean;
+  searchTerm?: string;
+  viewMode?: "list" | "map";
   filteredResults?: EstablishmentWithDistance[];
   hasSearched?: boolean;
 };
@@ -94,6 +106,9 @@ const Search = () => {
   const [openNow, setOpenNow] = useState<boolean>(savedState?.openNow || false);
 
   // Estados de UI
+  const [searchTerm, setSearchTerm] = useState<string>(savedState?.searchTerm || "");
+  const [debouncedSearch, setDebouncedSearch] = useState<string>(savedState?.searchTerm || "");
+  const [viewMode, setViewMode] = useState<"list" | "map">(savedState?.viewMode || "list");
   const [isSearching, setIsSearching] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
   const [editedAddress, setEditedAddress] = useState(effectiveLocation?.address || "");
@@ -104,6 +119,13 @@ const Search = () => {
   const [visibleCount, setVisibleCount] = useState(10);
   const [hasSearched, setHasSearched] = useState<boolean>(savedState?.hasSearched || false);
   const [favoriteIds, setFavoriteIds] = useState<string[]>(() => getFavoriteIds());
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const handleToggleFavorite = (id: string) => {
     if (favoriteIds.includes(id)) {
@@ -127,6 +149,7 @@ const Search = () => {
     const cityAlvo = selectedCity === "all" ? null : key(selectedCity);
     const segmentoAlvo = selectedCategory === "all" ? null : key(selectedCategory);
     const tipoAlvo = selectedServiceType === "all" ? null : key(selectedServiceType);
+    const searchTarget = debouncedSearch.trim() ? key(debouncedSearch) : null;
 
     // 1. Tenta buscar via API serverless (com Edge caching da Vercel)
     try {
@@ -139,6 +162,10 @@ const Search = () => {
         tipo: selectedServiceType,
         abertas: String(openNow),
       });
+
+      if (debouncedSearch.trim()) {
+        params.set("q", debouncedSearch.trim());
+      }
 
       const response = await fetch(`/api/lojas?${params.toString()}`);
       if (response.ok) {
@@ -174,6 +201,11 @@ const Search = () => {
         // "Abertas Agora": remove apenas quem esta COM CERTEZA fechado.
         // Loja sem horario informado nao pode ser descartada.
         if (openNow && isEstablishmentClosed(establishment.operatingHours)) return false;
+        if (searchTarget) {
+          const matchName = key(establishment.name).includes(searchTarget);
+          const matchCategory = key(establishment.category).includes(searchTarget);
+          if (!matchName && !matchCategory) return false;
+        }
         return true;
       })
       .sort((a, b) => a.distance - b.distance);
@@ -189,6 +221,7 @@ const Search = () => {
     selectedCity,
     radiusKm,
     openNow,
+    debouncedSearch,
   ]);
 
   // Efeitos
@@ -217,6 +250,8 @@ const Search = () => {
         selectedCity,
         radiusKm,
         openNow,
+        searchTerm,
+        viewMode,
         filteredResults,
         hasSearched,
       };
@@ -229,6 +264,8 @@ const Search = () => {
     selectedCity,
     radiusKm,
     openNow,
+    searchTerm,
+    viewMode,
     filteredResults,
     hasSearched,
   ]);
@@ -322,6 +359,7 @@ const Search = () => {
     setSelectedCity("all");
     setRadiusKm(5);
     setOpenNow(false);
+    setSearchTerm("");
     toast.info("Filtros limpos!");
   };
 
@@ -426,7 +464,52 @@ const Search = () => {
           </Card>
         </aside>
 
-        <main className="md:col-span-3">
+        <main className="md:col-span-3 space-y-4">
+          {/* Barra de Busca Textual por Nome e Alternador de Visão (Lista / Mapa) */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="relative flex-1">
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Buscar por nome da loja ou categoria (ex: Pizza, Sorveteria, Bar)..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 pr-9 h-10 text-sm"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 rounded-full"
+                  title="Limpar busca"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1 bg-muted p-1 rounded-lg self-end sm:self-auto border border-border">
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="flex items-center gap-1.5 h-8 text-xs font-semibold"
+              >
+                <List className="h-3.5 w-3.5" />
+                <span>Lista</span>
+              </Button>
+              <Button
+                variant={viewMode === "map" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("map")}
+                className="flex items-center gap-1.5 h-8 text-xs font-semibold"
+              >
+                <MapIcon className="h-3.5 w-3.5" />
+                <span>Mapa ({filteredResults.length})</span>
+              </Button>
+            </div>
+          </div>
+
           {!hasSearched ? (
             <div className="flex flex-col items-center justify-center text-center h-full p-8">
               <img src="/yoogalize.png" alt="Mascote Yoogalize" className="h-32 w-auto mb-6" />
@@ -444,14 +527,32 @@ const Search = () => {
           ) : (
             <>
               {filteredResults.length === 0 ? (
-                <div className="flex flex-col items-center justify-center text-center h-full p-8">
+                <div className="flex flex-col items-center justify-center text-center h-full p-8 border border-dashed rounded-xl">
                   <img src="/yoogalize_triste.png" alt="Mascote Yoogalize triste" className="h-32 w-auto mb-6" />
                   <h2 className="text-2xl font-semibold mb-2">Nenhum resultado encontrado</h2>
                   <p className="text-gray-500 max-w-sm mx-auto mb-6">
-                    Tente ajustar os filtros, selecionar um segmento diferente ou aumentar o raio de busca para encontrar mais opções.
+                    {searchTerm
+                      ? `Nenhuma loja encontrada para "${searchTerm}". Tente outro termo ou ajuste os filtros.`
+                      : "Tente ajustar os filtros, selecionar um segmento diferente ou aumentar o raio de busca para encontrar mais opções."}
                   </p>
                   <Button onClick={handleClearFilters} variant="outline">Limpar Filtros</Button>
                 </div>
+              ) : viewMode === "map" ? (
+                <Suspense
+                  fallback={
+                    <div className="w-full h-[550px] md:h-[650px] rounded-xl border border-border flex flex-col items-center justify-center bg-muted/20 gap-2">
+                      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                      <p className="text-muted-foreground text-sm font-medium">Carregando mapa interativo...</p>
+                    </div>
+                  }
+                >
+                  <StoreMap
+                    stores={filteredResults}
+                    userLocation={effectiveLocation}
+                    radiusKm={radiusKm}
+                    onSelectStore={(store) => navigate(`/loja/${store.id}`, { state: { store } })}
+                  />
+                </Suspense>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {filteredResults.slice(0, visibleCount).map(item => (
