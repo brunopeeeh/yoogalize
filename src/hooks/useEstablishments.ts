@@ -28,49 +28,22 @@ export const fetchEstablishmentsData = async (): Promise<EstablishmentsData> => 
 
   cachedPromise = (async () => {
     try {
-      // 1. Tenta carregar da API oficial (/api/lojas, conectada ao banco de dados)
-      try {
-        const apiResponse = await fetch('/api/lojas');
-        if (apiResponse.ok) {
-          const apiJson = await apiResponse.json();
-          if (Array.isArray(apiJson.results) && apiJson.results.length > 0) {
-            cachedData = {
-              allEstablishments: apiJson.results,
-              dynamicCategories: apiJson.dynamicCategories || [],
-              dynamicCities: apiJson.dynamicCities || [],
-              dynamicServiceTypes: apiJson.dynamicServiceTypes || [],
-            };
-            return cachedData;
-          }
-        }
-      } catch {
-        // Silenciosamente faz fallback para /lojas.json
+      // Carrega da API oficial (/api/lojas, conectada ao Neon PostgreSQL)
+      const apiResponse = await fetch('/api/lojas');
+      if (!apiResponse.ok) {
+        throw new Error(`Falha ao consultar /api/lojas (status ${apiResponse.status})`);
       }
 
-      // 2. Fallback para public/lojas.json
-      const response = await fetch('/lojas.json');
-      if (!response.ok) {
-        throw new Error('Failed to fetch lojas.json');
+      const apiJson = await apiResponse.json();
+      if (!Array.isArray(apiJson.results)) {
+        throw new Error('Formato inválido retornado por /api/lojas');
       }
-      const data: { result: LojaRaw[] } = await response.json();
-      const allLojasRaw = data.result;
-      const normalized = normalizeEstablishments(allLojasRaw);
-
-      const uniqueCategories = [...new Set(normalized.map(e => e.category))].sort();
-      const uniqueCities = [...new Set(normalized.map(e => e.city.trim()))].sort();
-      const uniqueServiceTypes = [
-        ...new Set(
-          normalized
-            .map(e => e.description?.trim())
-            .filter((v): v is string => !!v)
-        )
-      ].sort();
 
       cachedData = {
-        allEstablishments: normalized,
-        dynamicCategories: uniqueCategories,
-        dynamicCities: uniqueCities,
-        dynamicServiceTypes: uniqueServiceTypes,
+        allEstablishments: apiJson.results,
+        dynamicCategories: apiJson.dynamicCategories || [],
+        dynamicCities: apiJson.dynamicCities || [],
+        dynamicServiceTypes: apiJson.dynamicServiceTypes || [],
       };
 
       return cachedData;

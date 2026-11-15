@@ -49,6 +49,9 @@ __pycache__/
 # Cache de auditoria adicional
 reports/.geocode-cache.json
 
+# Dados locais (atualizar_lojas.py)
+data/
+
 # PDFs locais
 *.pdf
 

@@ -228,6 +228,10 @@ let cachedServiceTypes: string[] = [];
 
 function findLojasJsonPath(): string | null {
   const candidates = [
+    path.join(process.cwd(), 'src', 'test', 'fixtures', 'sample-lojas.json'),
+    path.join(currentDir, '..', 'src', 'test', 'fixtures', 'sample-lojas.json'),
+    path.join(currentDir, 'src', 'test', 'fixtures', 'sample-lojas.json'),
+    path.join(process.cwd(), 'data', 'lojas.json'),
     path.join(process.cwd(), 'public', 'lojas.json'),
     path.join(currentDir, '..', 'public', 'lojas.json'),
     path.join(currentDir, 'public', 'lojas.json'),

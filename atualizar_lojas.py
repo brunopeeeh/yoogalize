@@ -39,7 +39,7 @@ import requests
 # ======= CONFIGURAÇÕES =======
 DATABRICKS_PROFILE = "yooga"
 WAREHOUSE_ID = "c6b0691159f45f15"
-OUTPUT_FILE = "public/lojas.json"
+OUTPUT_FILE = os.environ.get("OUTPUT_FILE", "data/lojas.json")
 GEOCODE_CACHE_FILE = "geocode_cache.json"
 MAX_DIVERGENCIA_KM = 1.0
 TOLERANCIA_ANTERIOR_KM = 1.5  # mesma tolerância do tools/validar-coordenadas.mjs
@@ -459,6 +459,7 @@ def main():
         geocoder.save()
 
     resultado.sort(key=lambda x: (x["cidade"], x["nome_empresa"]))
+    os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump({"result": resultado}, f, ensure_ascii=False, indent=1)
 

@@ -1,0 +1,214 @@
+{
+  "result": [
+    {
+      "nome_empresa": "Los Irmaos Hamburgueria",
+      "modelo_negocio": "Hamburgueria",
+      "tipo_atendimento": "Presencial e Delivery",
+      "logradouro": "Rua Misael Pedreira Da Silva",
+      "número": "98",
+      "bairro": "Santa Lúcia",
+      "cidade": "Vitória",
+      "estado": "ES",
+      "cep": "29056-230",
+      "link delivery": "los-hermanos-",
+      "horario_funcionamento": [
+        {
+          "day_of_week": 0,
+          "day": "Domingo",
+          "hours": [
+            {
+              "start": "18:00:00",
+              "end": "23:00:00",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 1,
+          "day": "Segunda-feira",
+          "hours": [
+            {
+              "start": "18:00:00",
+              "end": "23:00:00",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 2,
+          "day": "Terça-feira",
+          "hours": [
+            {
+              "start": "18:00:00",
+              "end": "23:00:00",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 3,
+          "day": "Quarta-feira",
+          "hours": [
+            {
+              "start": "18:00:00",
+              "end": "23:00:00",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 4,
+          "day": "Quinta-feira",
+          "hours": [
+            {
+              "start": "18:00:00",
+              "end": "23:00:00",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 5,
+          "day": "Sexta-feira",
+          "hours": [
+            {
+              "start": "18:00:00",
+              "end": "23:00:00",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 6,
+          "day": "Sábado",
+          "hours": [
+            {
+              "start": "18:00:00",
+              "end": "23:00:00",
+              "type": "Delivery"
+            }
+          ]
+        }
+      ],
+      "Latitude": -20.31003,
+      "Longitude": -40.300336,
+      "endereco completo": "Rua Misael Pedreira Da Silva, 98 - Santa Lúcia, Vitória - ES, 29056-230",
+      "banner": "https://cdn-production.yooga.com.br/855b93e02d95a285bcdf414391ebea9d.png",
+      "tem_clube_cupons": true
+    },
+    {
+      "nome_empresa": "Milquinha Sorvetes",
+      "modelo_negocio": "Sorveteria",
+      "tipo_atendimento": "Presencial e Delivery",
+      "logradouro": "Avenida Central",
+      "número": "100",
+      "bairro": "Praia da Costa",
+      "cidade": "Vila Velha",
+      "estado": "ES",
+      "cep": "29101-000",
+      "link delivery": "milquinha-sorvetes",
+      "horario_funcionamento": [
+        {
+          "day_of_week": 0,
+          "day": "Domingo",
+          "hours": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 1,
+          "day": "Segunda-feira",
+          "hours": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 2,
+          "day": "Terça-feira",
+          "hours": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 3,
+          "day": "Quarta-feira",
+          "hours": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 4,
+          "day": "Quinta-feira",
+          "hours": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 5,
+          "day": "Sexta-feira",
+          "hours": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59",
+              "type": "Delivery"
+            }
+          ]
+        },
+        {
+          "day_of_week": 6,
+          "day": "Sábado",
+          "hours": [
+            {
+              "start": "00:00:00",
+              "end": "23:59:59",
+              "type": "Delivery"
+            }
+          ]
+        }
+      ],
+      "Latitude": -20.33,
+      "Longitude": -40.29,
+      "endereco completo": "Avenida Central, 100 - Praia da Costa, Vila Velha - ES, 29101-000",
+      "banner": "https://cdn-production.yooga.com.br/sample-sorvete.png",
+      "tem_clube_cupons": true
+    },
+    {
+      "nome_empresa": "Deck Gastro Beer",
+      "modelo_negocio": "Bar / Petiscaria",
+      "tipo_atendimento": "Somente Presencial",
+      "logradouro": "Avenida Beira Mar",
+      "número": "50",
+      "bairro": "Centro",
+      "cidade": "Vitória",
+      "estado": "ES",
+      "cep": "29010-000",
+      "link delivery": null,
+      "horario_funcionamento": [],
+      "Latitude": -20.315,
+      "Longitude": -40.33,
+      "endereco completo": "Avenida Beira Mar, 50 - Centro, Vitória - ES, 29010-000",
+      "banner": null,
+      "tem_clube_cupons": false
+    }
+  ]
+}
