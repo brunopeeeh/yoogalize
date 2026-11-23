@@ -132,6 +132,11 @@ All colors MUST be HSL.
   font-family: inherit !important;
 }
 
+/* Versão escura dos tiles do OpenStreetMap (aplicada só à camada de tiles) */
+.map-tiles-dark {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.6);
+}
+
 .leaflet-bar {
   border: none !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
@@ -151,11 +156,32 @@ All colors MUST be HSL.
   color: hsl(var(--foreground)) !important;
 }
 
-.custom-store-pin {
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+/* O Leaflet posiciona o marcador via `transform` no próprio .custom-store-pin,
+   então a animação de hover é aplicada ao filho (propriedade `scale`, que
+   se compõe com o rotate inline do pin sem sobrescrever o posicionamento). */
+.custom-store-pin > div {
+  transition: scale 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .custom-store-pin:hover {
-  transform: scale(1.15) !important;
   z-index: 1000 !important;
+}
+
+.custom-store-pin:hover > div {
+  scale: 1.15;
+}
+
+.store-pin-tooltip {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px !important;
+}
+
+.store-pin-tooltip.leaflet-tooltip-top::before {
+  border-top-color: hsl(var(--border)) !important;
 }

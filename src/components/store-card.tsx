@@ -12,6 +12,7 @@ import { WhatsAppIcon } from "@/components/icons";
 import { shareToWhatsApp } from "@/lib/share";
 import { YoogaPartnerBadge } from "@/components/yooga-partner-badge";
 import { buildYoogaDeliveryUrl } from "@/lib/yooga";
+import { optimizedImageUrl } from "@/lib/image";
 
 export type StoreCardProps = {
   store: NormalizedEstablishment & { distance?: number };
@@ -38,7 +39,7 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
         >
           {store.banner ? (
             <img
-              src={store.banner}
+              src={optimizedImageUrl(store.banner, 128)}
               alt={`Avatar de ${cleanName}`}
               className="h-full w-full object-cover"
               loading="lazy"
@@ -123,7 +124,7 @@ export const StoreCard = ({ store, isFavorite, onToggleFavorite }: StoreCardProp
         >
           {store.banner && (
             <img
-              src={store.banner}
+              src={optimizedImageUrl(store.banner, 640)}
               alt={`Banner de ${cleanName}`}
               className="absolute inset-0 w-full h-full object-cover"
               loading="lazy"

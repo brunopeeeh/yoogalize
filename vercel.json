@@ -5,6 +5,17 @@
       "memory": 1024
     }
   },
+  "images": {
+    "sizes": [64, 128, 640, 1080],
+    "formats": ["image/webp"],
+    "minimumCacheTTL": 2592000,
+    "remotePatterns": [
+      {
+        "protocol": "https",
+        "hostname": "cdn-production.yooga.com.br"
+      }
+    ]
+  },
   "headers": [
     {
       "source": "/api/(.*)",

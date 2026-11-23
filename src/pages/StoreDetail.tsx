@@ -23,6 +23,7 @@ import { useEstablishments } from "@/hooks/useEstablishments";
 import { OpeningHoursStatus } from "@/components/opening-hours-status";
 import { getBrasiliaTimeInfo } from "@/lib/utils";
 import { calculateDistance, formatDistance } from "@/lib/distance";
+import { optimizedImageUrl } from "@/lib/image";
 import { getFavoriteIds, addFavoriteId, removeFavoriteId } from "@/lib/favorites";
 import { cleanEstablishmentName } from "@/lib/normalizers";
 import { getStoreInitials, getCategoryVisual } from "@/lib/store-presentation";
@@ -240,7 +241,7 @@ const StoreDetail = () => {
             {/* Foto Real do Banner (se disponível) com fallback suave */}
             {store.banner && (
               <img
-                src={store.banner}
+                src={optimizedImageUrl(store.banner, 1080)}
                 alt={`Banner de ${cleanName}`}
                 className="absolute inset-0 w-full h-full object-cover"
                 loading="eager"

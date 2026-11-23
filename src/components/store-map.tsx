@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { NormalizedEstablishment } from "@/lib/types";
 import { formatDistance } from "@/lib/distance";
 import { getOpeningHoursInfo } from "@/lib/utils";
+import { optimizedImageUrl } from "@/lib/image";
 
 type StoreWithDistance = NormalizedEstablishment & {
   distance?: number;
@@ -126,15 +127,14 @@ export const StoreMap = ({
       mapRef.current.removeLayer(tileLayerRef.current);
     }
 
-    const tileUrl = isDark
-      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-      : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
-
-    const newTileLayer = L.tileLayer(tileUrl, {
+    // Tiles do OpenStreetMap (sem API key). O CARTO passou a exigir chave e
+    // retornava apenas a imagem "API KEY REQUIRED". No tema escuro, os tiles
+    // são escurecidos via filtro CSS (classe .map-tiles-dark em index.css).
+    const newTileLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>',
+        '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>',
       maxZoom: 19,
-      subdomains: "abcd",
+      className: isDark ? "map-tiles-dark" : "",
     }).addTo(mapRef.current);
 
     tileLayerRef.current = newTileLayer;
@@ -190,16 +190,17 @@ export const StoreMap = ({
       markersGroup.addLayer(userMarker);
     }
 
-    // Ícone moderno para as lojas
-    const createStoreIcon = (isOpen: boolean) =>
+    // Ícone moderno para as lojas: capa da loja dentro do pin (casinha como fallback)
+    const createStoreIcon = (isOpen: boolean, banner?: string | null) =>
       L.divIcon({
         className: "custom-store-pin",
         html: `
           <div style="
+            position: relative;
             background: ${isOpen ? "#059669" : "#64748b"};
             color: white;
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             border-radius: 50% 50% 50% 0;
             transform: rotate(-45deg);
             display: flex;
@@ -209,31 +210,48 @@ export const StoreMap = ({
             border: 2px solid white;
             cursor: pointer;
           ">
-            <svg style="transform: rotate(45deg); width: 14px; height: 14px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg style="transform: rotate(45deg); width: 16px; height: 16px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
               <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
               <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
               <path d="M2 7h20"/>
             </svg>
+            ${
+              banner
+                ? `<img
+                    src="${escapeHtml(optimizedImageUrl(banner, 64))}"
+                    alt=""
+                    loading="lazy"
+                    onerror="this.remove()"
+                    style="position: absolute; inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); border-radius: 50%; object-fit: cover; transform: rotate(45deg); background: white;"
+                  />`
+                : ""
+            }
           </div>
         `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -30],
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -38],
       });
 
     // Adiciona cada loja ao mapa
     stores.forEach((store) => {
       const { status, message } = getOpeningHoursInfo(store.operatingHours);
       const isOpen = status === "open";
-      const icon = createStoreIcon(isOpen);
+      const icon = createStoreIcon(isOpen, store.banner);
 
       const marker = L.marker([store.latitude, store.longitude], {
         icon,
-        title: store.name,
+        alt: store.name,
       });
 
       const distanceText = store.distance !== undefined ? formatDistance(store.distance) : "";
+
+      // Nome do estabelecimento ao passar o mouse sobre o pin
+      marker.bindTooltip(
+        `${escapeHtml(store.name)}${distanceText ? ` <span style="opacity: 0.7; font-weight: 500;">· ${distanceText}</span>` : ""}`,
+        { direction: "top", offset: [0, -40], className: "store-pin-tooltip" }
+      );
 
       const deliveryHref = store.linkDelivery
         ? store.linkDelivery.startsWith("http")
